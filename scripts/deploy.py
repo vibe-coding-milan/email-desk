@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Publish only Email Desk; preserve root website, private keys and stored feedback."""
 from pathlib import Path
-import os,sys,shlex,subprocess,json,tarfile,io,secrets,base64
+import os,sys,shlex,subprocess,json,tarfile,io,secrets,base64,hashlib
+import urllib.request
 root=Path(__file__).resolve().parents[1];private=root/'.private';private.mkdir(mode=0o700,exist_ok=True);private.chmod(0o700)
-legacy=Path('/Users/milan/Documents/Financial Projection/.local-backups/deployment-config.env');config={}
-for line in legacy.read_text().splitlines():
- a=shlex.split(line)
- if a and a[0]=='export':
-  k,v=a[1].split('=',1);config[k]=v
+deployment=root/'.private/deployment.json'
+if not deployment.is_file():raise SystemExit('No domain-owner deployment connection configured. Use the authenticated mijatovic.com connection; never fall back to the financial-app user.')
+config=json.loads(deployment.read_text())
+if config.get('DREAMHOST_USER')!='dh_6zwyjw':raise SystemExit('Refuse a different hosting user for mijatovic.com')
 ssh=['ssh','-T','-i',str(Path(config['DREAMHOST_KEY_FILE']).expanduser()),'-F','/dev/null','-o','IdentitiesOnly=yes','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','UserKnownHostsFile='+str(Path.home()/'.ssh/known_hosts'),config['DREAMHOST_USER']+'@'+config['DREAMHOST_HOST']]
 keyfile=private/'reviewer_ed25519'
 if not keyfile.exists():subprocess.run(['ssh-keygen','-t','ed25519','-N','','-C','email-desk-reviewer','-f',str(keyfile)],check=True,stdout=subprocess.DEVNULL)
@@ -22,7 +22,9 @@ with tarfile.open(fileobj=buf,mode='w:gz')as tf:
   for p in (root/folder).rglob('*'):
    if p.is_file()and '__pycache__'not in p.parts:tf.add(p,arcname=str(p.relative_to(root)))
  tf.add(root/'docs/Email-Organization-Playbook.md',arcname='server/playbook.md')
-payload=json.dumps({'password':password,'public_key':keyfile.with_suffix('.pub').read_text().strip()}).encode()+b'\n'+buf.getvalue()
+with urllib.request.urlopen('https://mijatovic.com/',timeout=20) as response:
+ homepage_sha256=hashlib.sha256(response.read()).hexdigest()
+payload=json.dumps({'password':password,'public_key':keyfile.with_suffix('.pub').read_text().strip(),'expected_owner':'dh_6zwyjw','homepage_sha256':homepage_sha256}).encode()+b'\n'+buf.getvalue()
 remote=(root/'scripts/provision-remote.py').read_text()
 r=subprocess.run(ssh+['python3 -c '+shlex.quote(remote)],input=payload,capture_output=True)
 if r.returncode:

@@ -1,8 +1,10 @@
 """Executed over the owner's existing SSH connection; credentials arrive only on stdin."""
-import sys,os,json,tarfile,tempfile,subprocess,secrets,base64,shlex,shutil
+import sys,os,json,tarfile,tempfile,subprocess,secrets,base64,shlex,shutil,hashlib
 from pathlib import Path
 head=json.loads(sys.stdin.buffer.readline());home=Path.home();web=home/'mijatovic.com';dest=web/'email-desk';private=home/'.email-desk'
 if not web.is_dir() or web.is_symlink() or dest.is_symlink() or private.is_symlink():raise RuntimeError('Unexpected destination')
+if home.name!=head.get('expected_owner') or home.name!='dh_6zwyjw':raise RuntimeError('Incorrect domain owner')
+if hashlib.sha256((web/'index.html').read_bytes()).hexdigest()!=head.get('homepage_sha256'):raise RuntimeError('Destination does not match live homepage')
 if dest.exists() and not private.joinpath('config.php').is_file():raise RuntimeError('Destination already exists without Email Desk configuration')
 private.mkdir(mode=0o700,exist_ok=True);private.chmod(0o700)
 for folder in ['state','state/sessions']:
