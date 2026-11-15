@@ -1,0 +1,26 @@
+name: Project checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+      - name: Install PHP test runtime
+        run: sudo apt-get update && sudo apt-get install -y php-cli php-sqlite3
+      - name: Check source
+        run: |
+          node --check public/app.js
+          node scripts/check.mjs
+          find server public tests -name '*.php' -exec php -l {} \;
+          python3 -m py_compile scripts/*.py tests/*.py
+      - name: Verify storage and HTTP API
+        run: |
+          php tests/store.php
+          python3 tests/api_checks.py

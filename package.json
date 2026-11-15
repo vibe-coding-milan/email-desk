@@ -1,0 +1,9 @@
+{
+  "name": "email-desk",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check public/app.js && node scripts/check.mjs",
+    "test": "php tests/store.php"
+  }
+}
