@@ -74,3 +74,12 @@ Initial content: five actual conversations were freshly re-read from Gmail: Laur
 Existing scheduled task found in ChatGPT chat 6ae9e91b-4278-83ea-a83f-f0c122ee1cad (reports through November 14). The app tools cannot disable that ChatGPT task. Milan explicitly chose a new daily 9:00 a.m. New York Email Desk update and said he will pause the old task. Codex heartbeat automation review-email-desk was created ACTIVE on this chat. Verify the actual scheduler output before calling unattended review proven.
 
 Private repository is https://github.com/vibe-coding-milan/email-desk. Project registration and this chat's move into the project are complete. The initial 25-file implementation and automated checks were published; initial CI passed. No credentials or real message snapshots are tracked. Remaining acceptance: first unattended run, a user-originated real Gmail correction with verified acknowledgement, mobile Gmail handoff and cross-device behavior, and a recovery exercise. The Google Doc remains master.
+
+
+## Simplified interface — November 15, 2026
+
+Milan requested a substantially quieter board. Implemented two columns without search, account selection, filtering, hero copy, footer or playbook navigation. Refresh only fetches saved board data and never triggers an assistant run. Keep Sign out unobtrusive; authentication/session policy was not weakened. Incomplete, stale or failed reviews have a compact expandable coverage notice, distinct from individual card status.
+
+Cards expand inline, without a modal. Category, Active/Handled/Dismissed status, one optional checkbox label selector and a context box are available in the card. One Save handles all changes. Handled/dismissed cards leave the active columns and remain in a collapsed history section. Account identity and Gmail link are in expanded details. Unsaved drafts and expanded-card state survive the Refresh button; version conflicts preserve edits and offer an explicit latest-version reload. Fictional localhost checks verified editing, draft preservation through Refresh, saving handled status and history. No production feedback was fabricated and no Gmail labels were changed.
+
+The UI-only deployment helper scripts/update-ui-remote.py is executed through the authenticated correct-domain connection; it updates only index.html, app.js and styles.css after checking the domain homepage, and retains private recovery copies. It does not change private state, credentials, SSH access or the review schedule.

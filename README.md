@@ -2,7 +2,7 @@
 
 Private, self-hosted attention board for Milan's two email accounts. Planned address: https://mijatovic.com/email-desk/.
 
-The interface has two categories: Needs action and Worth knowing. Each card contains context, the reason it was surfaced, current or corrected labels, and a link to the original Gmail conversation. Comments and handled/dismissed status are stored on the server and preserved across scans. Handling a card does not send, archive, delete, or mark email read.
+The interface has two categories: Needs action and Worth knowing. Cards expand inline to edit category, status, a single label checklist and context, with one Save action. Refresh reloads saved cards and preserves unsaved edits on the page; it does not start an inbox review. Search, account filters, promotional copy, the playbook link and the footer have been removed. Handled/dismissed cards remain available in a compact history disclosure. Each card contains context, the reason it was surfaced, current or corrected labels, and a link to the original Gmail conversation. Comments and handled/dismissed status are stored on the server and preserved across scans. Handling a card does not send, archive, delete, or mark email read.
 
 ## Status
 
