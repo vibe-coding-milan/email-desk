@@ -1,12 +1,16 @@
 # Email Desk
 
-Private, self-hosted attention board for Milan's two email accounts. Planned address: https://mijatovic.com/email-desk/.
+Private, self-hosted attention board for Milan's two email accounts. Address: https://mijatovic.com/email-desk/.
 
-The interface has two categories: Needs action and Worth knowing. Cards expand inline to edit category, status, a single label checklist and context, with one Save action. Refresh reloads saved cards and preserves unsaved edits on the page; it does not start an inbox review. Search, account filters, promotional copy, the playbook link and the footer have been removed. Handled/dismissed cards remain available in a compact history disclosure. Each card contains context, the reason it was surfaced, current or corrected labels, and a link to the original Gmail conversation. Comments and handled/dismissed status are stored on the server and preserved across scans. Handling a card does not send, archive, delete, or mark email read.
+The interface has two categories: Needs action and Worth knowing. Cards expand inline to edit category, status, a single label checklist and context, with one Save action. Refresh reloads saved cards and preserves unsaved edits on the page; it does not start an inbox review. Search, account filters, the playbook link and the footer have been removed. Version 0.2.0 adds a bold cobalt/pixel visual system, System/Light/Dark themes, quick Handled/Dismiss decisions, reduced-motion-aware feedback and durable XP (10 per card, once; 100 per level). Version 0.2.0 was published on November 15, 2026; all saved cards were verified unchanged. Handled/dismissed cards remain available in a compact history disclosure. Each card contains context, the reason it was surfaced, current or corrected labels, and a link to the original Gmail conversation. Comments and handled/dismissed status are stored on the server and preserved across scans. Handling a card does not send, archive, delete, or mark email read.
+
+## Release documentation
+
+See [CHANGELOG.md](CHANGELOG.md) for version history and [docs/RELEASING.md](docs/RELEASING.md) for packaging, verification and rollback. Current release: **0.2.0**.
 
 ## Status
 
-Live at https://mijatovic.com/email-desk/. The owner explicitly approved credential creation, the restricted reviewer connection, and publication on November 15, 2026. Thirty storage tests, eighteen HTTP/API tests and twenty-three live checks passed. The live checks include owner login, protected data, Apache headers, preserved homepage and forced-command reviewer access. Five freshly checked email conversations have been published as a limited initial review; broader inbox and historical coverage remain incomplete.
+Live at https://mijatovic.com/email-desk/. The owner explicitly approved credential creation, the restricted reviewer connection, and publication on November 15, 2026. The current release passed 47 storage checks, 18 HTTP/API checks, 34 release/rollback checks, five provisioning-destination checks and 23 live checks. All 18 public release file hashes matched, and the saved card list exactly matched the pre-release snapshot. The live checks include owner login, protected data, Apache headers, preserved homepage and forced-command reviewer access. Five freshly checked email conversations have been published as a limited initial review; broader inbox and historical coverage remain incomplete.
 
 A daily 9:00 a.m. America/New_York review is configured in Codex after Milan's explicit approval. The first actual scheduled run is not yet verified. Milan will pause the previous ChatGPT task to avoid duplicate reviews. No Gmail labels have been changed by the app integration yet.
 
@@ -24,7 +28,7 @@ Deployment installs service code and state in a private sibling directory outsid
 
 ## Checks
 
-`node --check public/app.js` and `node scripts/check.mjs` run locally. `php tests/store.php` requires PHP 8.2+ with PDO SQLite and sodium. `python3 tests/api_checks.py` runs temporary local PHP HTTP tests with fictional data. The host-check helper runs these in an isolated temporary folder on the configured existing PHP host and cleans it up.
+`npm run check` validates both JavaScript files, the shared label vocabulary and local asset references. `php tests/store.php` requires PHP 8.2+ with PDO SQLite and sodium. `python3 tests/api_checks.py` runs temporary local PHP HTTP tests with fictional data. The host-check helper runs these in an isolated temporary folder on the configured existing PHP host and cleans it up.
 
 ## Private setup
 

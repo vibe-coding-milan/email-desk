@@ -1,1 +1,60 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Email Desk</title><link rel="stylesheet" href="styles.css"></head><body><header><h1>Email Desk</h1><nav aria-label="Board controls"><button id="refresh" title="Reload saved cards; does not start an inbox review" hidden>Refresh</button><button id="logout" hidden>Sign out</button></nav></header><main><section id="login" hidden><form id="loginForm" class="login-box"><label for="password">Your Email Desk password</label><input id="password" type="password" autocomplete="current-password" required maxlength="500"><button type="submit" class="primary">Sign in</button></form></section><div id="error" role="alert" hidden></div><section id="workspace" hidden><details id="scan" class="scan" hidden><summary id="scanTitle"></summary><p id="scanDetails"></p></details><div id="empty" class="empty" hidden>No active cards.</div><section id="board" class="board" aria-label="Email attention board"><section aria-labelledby="actionTitle"><div class="column-heading"><h2 id="actionTitle">Needs action</h2><span id="actionCount">0</span></div><div id="actionCards"></div></section><section aria-labelledby="awarenessTitle"><div class="column-heading"><h2 id="awarenessTitle">Worth knowing</h2><span id="awarenessCount">0</span></div><div id="awarenessCards"></div></section></section><details id="history" class="history" hidden><summary id="historyTitle">Handled</summary><div id="historyCards"></div></details></section></main><script src="app.js" defer></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="color-scheme" content="light dark">
+  <title>Email Desk</title>
+  <script src="theme.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="assets/mailbox.png" type="image/png">
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Skip to your board</a>
+  <header class="masthead">
+    <div class="brand"><h1>Email Desk</h1><img class="mailbox" src="assets/mailbox.png" width="80" height="80" alt=""></div>
+    <nav aria-label="Board controls">
+      <div class="theme-picker" role="group" aria-label="Color theme">
+        <button type="button" data-theme-choice="system" aria-pressed="true">System</button>
+        <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
+        <button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
+      </div>
+      <button id="refresh" title="Reload saved cards; does not start an inbox review" hidden><span class="icon icon-reload" aria-hidden="true"></span>Refresh</button>
+      <button id="logout" hidden>Sign out</button>
+    </nav>
+  </header>
+  <main>
+    <section id="login" hidden>
+      <form id="loginForm" class="login-box">
+        <h2>A little order awaits.</h2>
+        <label for="password">Your Email Desk password</label>
+        <input id="password" type="password" autocomplete="current-password" required maxlength="500">
+        <button type="submit" class="primary">Sign in<span class="icon icon-right" aria-hidden="true"></span></button>
+      </form>
+    </section>
+    <div id="error" role="alert" hidden></div>
+    <section id="workspace" tabindex="-1" hidden>
+      <details class="progress-info" id="progressInfo">
+        <summary aria-label="Your progress and how XP works">
+          <span class="level" id="level">Level 01</span>
+          <span class="xp-meter" id="xpMeter" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+          <span class="xp-caption"><span id="levelXP">0 / 100 XP</span><span class="icon icon-down" aria-hidden="true"></span></span>
+          <span class="progress-rule" aria-hidden="true"></span>
+        </summary>
+        <p id="progressDetails">Earn 10 XP the first time you handle or dismiss a card. Every 100 XP is a level. Reopening or editing a card never earns extra XP. Take it at your own pace.</p>
+      </details>
+      <div class="board-status"><time id="today"></time><details id="scan" class="scan" hidden><summary id="scanTitle"></summary><p id="scanDetails"></p></details></div>
+      <div id="empty" class="empty" hidden><h2>All clear. Nicely done.</h2><p>Your decisions are saved in history. Come back when there’s something new.</p></div>
+      <section id="board" class="board" aria-label="Email attention board">
+        <section aria-labelledby="actionTitle"><div class="column-heading"><span class="icon icon-trend" aria-hidden="true"></span><h2 id="actionTitle">Needs action</h2><span id="actionCount">0</span><span class="heading-rule" aria-hidden="true"></span></div><div id="actionCards"></div></section>
+        <section aria-labelledby="awarenessTitle"><div class="column-heading"><span class="icon icon-trend" aria-hidden="true"></span><h2 id="awarenessTitle">Worth knowing</h2><span id="awarenessCount">0</span><span class="heading-rule" aria-hidden="true"></span></div><div id="awarenessCards"></div></section>
+      </section>
+      <details id="history" class="history" hidden><summary id="historyTitle">Handled &amp; dismissed</summary><div id="historyCards"></div></details>
+    </section>
+  </main>
+  <div id="toast" class="toast" hidden><p id="toastMessage" role="status" aria-live="polite" aria-atomic="true"></p><button id="closeToast" type="button" aria-label="Dismiss notification"><span class="icon icon-close" aria-hidden="true"></span></button></div>
+  <div id="reward" class="reward" hidden aria-hidden="true"><span id="rewardTitle"></span><strong id="rewardValue"></strong><span id="rewardDetail"></span></div>
+  <script src="app.js" defer></script>
+</body>
+</html>

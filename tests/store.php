@@ -19,8 +19,41 @@ try{
  $bad=$c;$bad['labels']=['INBOX'];rejects(fn()=>pub($s,[$bad]),'labels');$bad=$c;$bad['account']='other@example.com';rejects(fn()=>pub($s,[$bad]),'account');$bad=$c;$bad['thread_id']='https://attacker.invalid';rejects(fn()=>pub($s,[$bad]),'thread_id');
  $c['reopen_reason']='A new fictional message asks a new question.';pub($s,[$c]);$b=array_values(array_filter($s->board()['cards'],fn($r)=>$r['account']===$c['account']))[0];check($b['state']==='open','explicit reason can reopen');check($b['note']===$a['note'],'reopen preserves note');
  $a2=['operation_id'=>op(),'card_id'=>$b['id'],'revision'=>$b['revision'],'labels'=>null,'note'=>'New fictional context.','state'=>'open','category'=>'action'];$f2=$s->feedback($a2);check($f2['card']['user_category']==='action','category correction');$s->acknowledge(['operation_id'=>op(),'feedback_id'=>$f2['feedback_id'],'status'=>'recorded','explanation'=>'Context recorded; no Gmail mutation.']);check($s->board()['cards'][0]['feedback_status']!==null,'context acknowledgement');
+ // Progress is awarded by a confirmed decision once per durable card, across accounts and restarts.
+ check($f['xp_earned']===10,'first handled earns 10 XP');
+ check($s->feedback($a)===$f,'retry preserves original award response');
+ check($s->board()['progress']['xp']===10,'scan and open edits do not earn XP');
+ $current=array_values(array_filter($s->board()['cards'],fn($row)=>$row['account']===$c['account']))[0];
+ $decision=['operation_id'=>op(),'card_id'=>$current['id'],'revision'=>$current['revision'],'labels'=>null,'note'=>$current['note'],'state'=>'dismissed','category'=>'action'];
+ $closed=$s->feedback($decision);check($closed['xp_earned']===0,'reopened card cannot earn again');
+ $decision['operation_id']=op();$decision['revision']=$closed['card']['revision'];$decision['state']='handled';
+ check($s->feedback($decision)['xp_earned']===0,'changing closed outcome cannot earn again');
+ $second=array_values(array_filter($s->board()['cards'],fn($row)=>$row['account']===$c2['account']))[0];
+ $decision2=['operation_id'=>op(),'card_id'=>$second['id'],'revision'=>$second['revision'],'labels'=>null,'note'=>'','state'=>'dismissed','category'=>'awareness'];
+ $dismissed=$s->feedback($decision2);check($dismissed['xp_earned']===10,'dismissal earns equal XP in second account');
+ check($s->board()['progress']['xp']===20,'shared board combines both accounts');
+ $stale=$decision2;$stale['operation_id']=op();rejects(fn()=>$s->feedback($stale),'conflict');
+ check($s->board()['progress']['xp']===20,'conflict does not award XP');
+ pub($s,[$c2]);check($s->board()['progress']['decisions']===2,'publishing preserves awards');
+ $more=[];for($i=0;$i<8;$i++){$next=$c2;$next['thread_id']='bbbbbbbbbbbbbbb'.$i;$next['message_ids']=[$next['thread_id']];$more[]=$next;}
+ pub($s,$more);
+ foreach($s->board()['cards'] as $next)if(!isset($next['decision_earned_at']))$s->feedback(['operation_id'=>op(),'card_id'=>$next['id'],'revision'=>$next['revision'],'labels'=>null,'note'=>'','state'=>'handled','category'=>'awareness']);
+ $score=$s->board()['progress'];check($score['xp']===100&&$score['level']===2&&$score['level_xp']===0,'100 XP advances level without losing lifetime XP');
+ $watch=$more[0];$watch['category']='action';$watch['reopen_reason']='A new fictional outstanding request.';pub($s,[$watch]);
+ $changed=$watch;$changed['category']='awareness';$changed['description']='New fictional summary, original request still unresolved.';pub($s,[$changed]);
+ $watched=array_values(array_filter($s->board()['cards'],fn($row)=>$row['thread_id']===$watch['thread_id']))[0];
+ check($watched['state']==='open'&&$watched['category']==='action','scan cannot downgrade unfinished action');
+ check($watched['context_history'][0]['description']===$watch['description'],'earlier unhandled context is retained');
+ pub($s,[],['run'=>['status'=>'partial','summary'=>'Fictional partial review']]);
+ $retained=array_values(array_filter($s->board()['cards'],fn($row)=>$row['id']===$watched['id']))[0];
+ check($retained===$watched,'omitted unfinished card remains unchanged');
+ $edit=['operation_id'=>op(),'card_id'=>$retained['id'],'revision'=>$retained['revision'],'labels'=>null,'note'=>'Explicit fictional category correction.','state'=>'open','category'=>'awareness'];$s->feedback($edit);pub($s,[$changed]);
+ $retained=array_values(array_filter($s->board()['cards'],fn($row)=>$row['id']===$watched['id']))[0];
+ check($retained['user_category']==='awareness','owner category correction remains authoritative');
+ check(count($retained['context_history'])===1,'identical re-review does not duplicate context');
  $raw=file_get_contents($dir.'/desk.sqlite');check(!str_contains($raw,$a['note'])&&!str_contains($raw,$c['subject'])&&!str_contains($raw,$c['account']),'database content encrypted');
  $wrong=new DeskStore($dir,random_bytes(32));rejects(fn()=>$wrong->board(),'storage');
- $reopened=new DeskStore($dir,$key);check(count($reopened->board()['cards'])===2,'durable restart');
+ $reopened=new DeskStore($dir,$key);check(count($reopened->board()['cards'])===10,'durable restart');
+ check($reopened->board()['progress']['xp']===100,'XP survives restart');
  echo "$count storage, isolation, retry, conflict and encryption checks passed.\n";
 }finally{foreach(glob($dir.'/*')as $f)unlink($f);rmdir($dir);}

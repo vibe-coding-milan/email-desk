@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check public/app.js && node scripts/check.mjs",
+    "check": "node --check public/app.js && node --check public/theme.js && node scripts/check.mjs",
     "test": "php tests/store.php"
-  }
+  },
+  "version": "0.2.0"
 }
