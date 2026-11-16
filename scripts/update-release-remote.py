@@ -19,7 +19,7 @@ if hashlib.sha256((web / 'index.html').read_bytes()).hexdigest() != expected_hom
     raise RuntimeError('Live homepage does not match destination')
 if archive.parent != private or archive.is_symlink() or not (private / 'state/desk.sqlite').is_file():
     raise RuntimeError('Expected private archive and existing state')
-fixed = {'public/index.html', 'public/app.js', 'public/styles.css', 'public/theme.js', 'public/.htaccess', 'server/Store.php'}
+fixed = {'public/index.html', 'public/app.js', 'public/styles.css', 'public/theme.js', 'public/.htaccess', 'public/api.php', 'server/Store.php', 'server/bootstrap.php', 'server/bridge.php', 'server/labels.json'}
 
 def allowed(name):
     p = PurePosixPath(name)
@@ -30,7 +30,7 @@ def allowed(name):
 def target(name):
     return (dest / name[7:]) if name.startswith('public/') else (private / name)
 
-release = 'arcade-' + datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ')
+release = 'arcade-' + datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
 backup = private / 'releases' / release
 backup.mkdir(parents=True, mode=0o700)
 os.chmod(backup, 0o700)
@@ -61,7 +61,9 @@ with tempfile.TemporaryDirectory(prefix='release-stage-', dir=private) as folder
                     break
                 if ancestor.is_symlink():
                     raise RuntimeError('Symlink destination refused')
-        subprocess.run(['php', '-l', str(stage / 'server/Store.php')], check=True, capture_output=True)
+        for name in files:
+            if name.endswith('.php'):
+                subprocess.run(['php', '-l', str(stage / name)], check=True, capture_output=True)
         # SQLite's backup API takes a consistent snapshot without reverting any live writes.
         with sqlite3.connect(private / 'state/desk.sqlite') as db, sqlite3.connect(backup / 'desk.sqlite') as snapshot:
             db.backup(snapshot)
@@ -77,7 +79,7 @@ with tempfile.TemporaryDirectory(prefix='release-stage-', dir=private) as folder
         (backup / 'homepage.sha256').write_text(expected_homepage)
         try:
             # Backend is backward-compatible. Install assets before the HTML entrypoint.
-            order = sorted(files, key=lambda n: (n == 'public/index.html', n != 'server/Store.php', n))
+            order = sorted(files, key=lambda n: (n == 'public/index.html', n.startswith('public/'), n))
             for name in order:
                 t = target(name)
                 t.parent.mkdir(parents=True, exist_ok=True)
@@ -90,6 +92,14 @@ with tempfile.TemporaryDirectory(prefix='release-stage-', dir=private) as folder
                     raise RuntimeError('Installed digest mismatch')
             if hashlib.sha256((web / 'index.html').read_bytes()).hexdigest() != expected_homepage:
                 raise RuntimeError('Homepage changed during release')
+            fd, metadata_name = tempfile.mkstemp(prefix='current-release-', dir=private)
+            try:
+                with os.fdopen(fd, 'w') as metadata:
+                    metadata.write(json.dumps({'version': manifest['version'], 'release': release, 'files': files, 'commit': manifest.get('commit')}))
+                Path(metadata_name).replace(private / 'current-release.json')
+            finally:
+                if Path(metadata_name).exists():
+                    Path(metadata_name).unlink()
         except BaseException:
             for name in reversed(installed):
                 t = target(name)
@@ -100,6 +110,4 @@ with tempfile.TemporaryDirectory(prefix='release-stage-', dir=private) as folder
                 else:
                     t.unlink()
             raise
-        (private / 'current-release.json').write_text(json.dumps({'version': manifest['version'], 'release': release, 'files': files}))
-        os.chmod(private / 'current-release.json', 0o600)
 print(json.dumps({'updated': True, 'version': manifest['version'], 'release': release, 'files': len(files), 'homepage_matched': True, 'state_preserved': True, 'credentials_unchanged': True}))

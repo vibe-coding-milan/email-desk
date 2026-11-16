@@ -26,7 +26,7 @@ for scenario in ['success', 'owner', 'homepage', 'path', 'digest', 'rollback']:
             db.execute('create table saved (value text)')
             db.execute("insert into saved values ('fictional durable state')")
         before = (private / 'state/desk.sqlite').read_bytes()
-        files = {name: ('new ' + name).encode() for name in ['public/index.html', 'public/app.js', 'public/styles.css', 'public/theme.js', 'public/.htaccess', 'server/Store.php', 'public/assets/demo.png']}
+        files = {name: ('new ' + name).encode() for name in ['public/index.html', 'public/app.js', 'public/styles.css', 'public/theme.js', 'public/.htaccess', 'public/api.php', 'server/Store.php', 'server/bootstrap.php', 'server/bridge.php', 'server/labels.json', 'public/assets/demo.png']}
         for name in files:
             target = dest / name[7:] if name.startswith('public/') else private / name
             if name not in ['public/theme.js', 'public/assets/demo.png']:

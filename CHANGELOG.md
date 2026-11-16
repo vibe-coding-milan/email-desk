@@ -2,6 +2,31 @@
 
 Changes are grouped by release. Dates use America/New_York. Email Desk is self-hosted under `/email-desk/`; release notes never contain private messages, feedback, credentials or connection settings.
 
+## 0.2.3 — 2026-11-16
+
+- Prepared a GitHub Actions deployment after shared checks, restricted to current `main`, with serialized releases, deterministic allowlisted bundles and a dedicated forced-command SSH key. Added bounded host receiver, private one-time bootstrap, receipt read-back, deduplicated retries, code rollback and public hash/access verification. Expanded the fixed bundle to include API/bootstrap/bridge/label code; credentials, state and deployment trust code stay excluded. Activation is pending host bootstrap and Actions secrets; no live GitHub deployment is claimed.
+
+- Grouped XP and update timing into one aligned status strip. A native progress bar fills as time passes toward the next planned review; the daily checkpoints show actual review outcomes. Removed decorative rule fragments and the unused full-width XP rule.
+- Added last publication time, Due for the first 15 minutes after a scheduled time, Late thereafter, and distinct complete/incomplete day states. Confirmed reviews do not require new cards to count as updated.
+- Covered loading, first-use, successful zero-card reviews, cleared history, partial/failed reviews, unavailable reads, saved offline results, overnight rollover, weekends, timezone consistency and reduced-motion layouts.
+- Investigated the 1 p.m. Waiting marker: the existing heartbeat actually executed five hours early (the 1 p.m. run published at 8:02 a.m. New York; the 5:30 p.m. run at 12:32 p.m.). Kept historical publication timestamps unchanged. Corrected that same ACTIVE heartbeat to explicit UTC equivalents of the existing New York cadence. A local schedule helper and reviewer maintenance instructions account for the next slot’s DST offset without adding an automation. Corrected future execution remains to be verified.
+- Local validation: schedule/outcome/analog-progress tests, UTC/DST helper checks and fictional browser QA across light/dark desktop/mobile, including the edge states above. Publication pending.
+
+## 0.2.2 — 2026-11-16
+
+- Replaced the countdown panel with a small row of today’s update times and pixel checkpoints. Shows actual Updated/Partial/Failed outcomes, Waiting for an elapsed slot without a recorded result, and Next/Later for remaining times. Shows No more planned today after the final slot.
+- Removed countdown, explanatory panel, schedule disclosure and manual refresh control. Automatic saved-board loading remains.
+- Reads timing/outcome metadata from the existing encrypted, deduplicated publish acknowledgements (up to 30 reviews among the latest 500 operations). A newer result never implies that earlier reviews happened. No schema, credential or card mutation.
+- Validation: daily schedule/outcome/DST checks, 53 isolated PHP storage checks, 18 isolated API checks, and fictional light/dark browser QA at 1440/390/320px. Published as `arcade-20261116T215218Z`. All 23 live acceptance checks and 18 public-file hashes passed. Saved cards and account cursors exactly matched the private pre-release snapshot; authenticated browser confirmed the daily checkpoints and removal of countdown/refresh controls.
+
+## 0.2.1 — 2026-11-16
+
+- Pixel-style “Next drop” countdown, planned New York review time, last published result and expandable schedule.
+- Mirrors the active cadence: 9 a.m. and 5:30 p.m. daily, plus 1 p.m. on weekdays. Handles daylight saving time. A due slot remains “Drop pending” until a review publishes; it never claims the reviewer is running.
+- Automatically loads saved board updates every minute while visible and on return to the tab. Defers while editing, preserves drafts and avoids replacing unchanged cards.
+- Moved Refresh out of the header and renamed it Check now beside the timer. This remains a saved-board reload, without starting a review.
+- Local checks: schedule boundary/DST tests, JavaScript/assets, fictional browser QA for countdown/pending, manual and automatic reloads, focus/draft preservation, and light/dark layouts at 1440/390/320px. Published to https://mijatovic.com/email-desk/ as `arcade-20261116T213758Z`. All 23 live acceptance checks and 18 public-file hashes passed; saved cards exactly matched the private pre-release snapshot. Authenticated browser verified the timer and sign-out without page errors.
+
 ## 0.2.0 — 2026-11-15
 
 ### Added

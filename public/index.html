@@ -20,7 +20,6 @@
         <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
         <button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
       </div>
-      <button id="refresh" title="Reload saved cards; does not start an inbox review" hidden><span class="icon icon-reload" aria-hidden="true"></span>Refresh</button>
       <button id="logout" hidden>Sign out</button>
     </nav>
   </header>
@@ -35,15 +34,22 @@
     </section>
     <div id="error" role="alert" hidden></div>
     <section id="workspace" tabindex="-1" hidden>
+      <div class="status-strip">
       <details class="progress-info" id="progressInfo">
         <summary aria-label="Your progress and how XP works">
           <span class="level" id="level">Level 01</span>
           <span class="xp-meter" id="xpMeter" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
           <span class="xp-caption"><span id="levelXP">0 / 100 XP</span><span class="icon icon-down" aria-hidden="true"></span></span>
-          <span class="progress-rule" aria-hidden="true"></span>
         </summary>
         <p id="progressDetails">Earn 10 XP the first time you handle or dismiss a card. Every 100 XP is a level. Reopening or editing a card never earns extra XP. Take it at your own pace.</p>
       </details>
+      <section class="review-day" aria-label="Inbox review schedule, New York time">
+        <p id="reviewHeading" class="review-day-label">Loading updates…</p>
+        <progress id="reviewMeter" class="review-meter" max="1" aria-label="Time toward next planned review"></progress>
+        <ol id="reviewSlots" class="review-slots" aria-label="Today's review results"></ol>
+        <p id="reviewNote" class="review-note">Checking saved review results.</p>
+      </section>
+      </div>
       <div class="board-status"><time id="today"></time><details id="scan" class="scan" hidden><summary id="scanTitle"></summary><p id="scanDetails"></p></details></div>
       <div id="empty" class="empty" hidden><h2>All clear. Nicely done.</h2><p>Your decisions are saved in history. Come back when there’s something new.</p></div>
       <section id="board" class="board" aria-label="Email attention board">
