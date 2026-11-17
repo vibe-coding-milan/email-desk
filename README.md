@@ -29,7 +29,7 @@ The [build notes](docs/BUILDING.md) connect these choices to source files, tests
 
 Cards explain the conversation and why it was surfaced. They expand inline for category, label, status, and context edits. Handling a card records a decision; it does not send, archive, delete, or mark email read.
 
-The interface pairs a cobalt/pixel visual style with light, dark, and system themes, illustrated empty states, and a four-frame robot companion. Animation can be paused and respects reduced-motion preferences. XP rewards confirmed decisions once per card.
+The interface pairs readable Inter text and pixel branding with light, dark, and system themes, illustrated empty states, and a four-frame robot companion. Animation can be paused and respects reduced-motion preferences. XP rewards confirmed decisions once per card.
 
 ## How it works
 
@@ -78,7 +78,7 @@ This covers JavaScript syntax, local assets, shared labels, guest-day behavior, 
 
 ## Current state
 
-**Version 0.3.0** was published November 17, 2026. Its recorded production acceptance includes 25 matching public-file hashes, 23 live access/security checks, and unchanged saved cards, checkpoints, and progress. See the [release run](https://github.com/vibe-coding-milan/email-desk/actions/runs/44023929595) and [changelog](CHANGELOG.md).
+**Version 0.3.1** adds larger text, stronger contrast and shorter copy throughout the site. Version 0.3.0 was published November 17, 2026. Its recorded production acceptance includes 25 matching public-file hashes, 23 live access/security checks, and unchanged saved cards, checkpoints, and progress. See the [release run](https://github.com/vibe-coding-milan/email-desk/actions/runs/44023929595) and [changelog](CHANGELOG.md).
 
 This remains a personal application with an owner-specific reviewer and hosting setup. Unattended reviewer publication after a recovered failure, physical-device/cross-device acceptance, and disaster-recovery exercises remain open verification work. The demo demonstrates the interaction; it does not establish live inbox coverage.
 
