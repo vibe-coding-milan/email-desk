@@ -45,7 +45,13 @@ final class DeskStore {
   $decisions=0;foreach($cards as $c)if(isset($c['decision_earned_at']))$decisions++;
   $xp=$decisions*10;return ['xp'=>$xp,'decisions'=>$decisions,'level'=>intdiv($xp,100)+1,'level_xp'=>$xp%100,'level_target'=>100];
  }
- public function board():array{$cards=[];foreach($this->query('SELECT payload FROM cards')->fetchAll(PDO::FETCH_COLUMN)as $p)$cards[]=$this->open($p);usort($cards,fn($a,$b)=>strcmp($b['date'],$a['date']));return ['cards'=>$cards,'labels'=>$this->labels,'run'=>$this->meta('run'),'checkpoints'=>$this->meta('checkpoints')??[],'progress'=>$this->progress($cards)];}
+ private function reviewRuns():array{
+  // Publish acknowledgements already form an encrypted, deduplicated review log.
+  // Return only timing/outcome metadata; never infer earlier reviews from the latest one.
+  $runs=[];foreach($this->query('SELECT payload FROM operations ORDER BY rowid DESC LIMIT 500')->fetchAll(PDO::FETCH_COLUMN)as $payload){$result=$this->open($payload);if(isset($result['run']['finished_at'],$result['run']['status']))$runs[]=['finished_at'=>$result['run']['finished_at'],'status'=>$result['run']['status']];if(count($runs)>=30)break;}
+  return $runs;
+ }
+ public function board():array{$cards=[];foreach($this->query('SELECT payload FROM cards')->fetchAll(PDO::FETCH_COLUMN)as $p)$cards[]=$this->open($p);usort($cards,fn($a,$b)=>strcmp($b['date'],$a['date']));return ['cards'=>$cards,'labels'=>$this->labels,'run'=>$this->meta('run'),'runs'=>$this->reviewRuns(),'checkpoints'=>$this->meta('checkpoints')??[],'progress'=>$this->progress($cards)];}
  public function publish(array $a):array{
   $cards=$a['cards']??[];if(!is_array($cards)||!array_is_list($cards)||count($cards)>200)throw new DeskError('batch_limit');$normalized=[];$ids=[];foreach($cards as $c){if(!is_array($c))throw new DeskError('card');$n=$this->normalize($c);if(isset($ids[$n['id']]))throw new DeskError('duplicate_card');$ids[$n['id']]=true;$normalized[]=$n;}
   $run=$a['run']??null;if(!is_array($run)||!in_array($run['status']??'',['success','partial','error'],true))throw new DeskError('run');

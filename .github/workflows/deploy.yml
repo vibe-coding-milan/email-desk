@@ -1,0 +1,31 @@
+name: Deploy Email Desk
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: email-desk-production
+  cancel-in-progress: false
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
+  deploy:
+    if: github.repository == 'vibe-coding-milan/email-desk' && github.ref == 'refs/heads/main'
+    needs: checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Publish verified code to DreamHost
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          EMAIL_DESK_DEPLOY_HOST: ${{ secrets.EMAIL_DESK_DEPLOY_HOST }}
+          EMAIL_DESK_DEPLOY_USER: ${{ secrets.EMAIL_DESK_DEPLOY_USER }}
+          EMAIL_DESK_DEPLOY_KEY: ${{ secrets.EMAIL_DESK_DEPLOY_KEY }}
+          EMAIL_DESK_KNOWN_HOSTS: ${{ secrets.EMAIL_DESK_KNOWN_HOSTS }}
+          EMAIL_DESK_HOMEPAGE_SHA256: ${{ secrets.EMAIL_DESK_HOMEPAGE_SHA256 }}
+        run: python3 scripts/github-deploy.py
