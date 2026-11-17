@@ -2,6 +2,15 @@
 
 Changes are grouped by release. Dates use America/New_York. Email Desk is self-hosted under `/email-desk/`; release notes never contain private messages, feedback, credentials or connection settings.
 
+## 0.3.0 — 2026-11-17
+
+- Public welcome explains the context-driven AI agent, periodic reviews, Needs action/Worth knowing and the feedback loop. Includes Milan’s GitHub profile, selected product notes and Milan sign in.
+- Separate playable demo uses twelve invented cards across accelerated 9 a.m., 1 p.m. and 5:30 p.m. reviews. Includes inline feedback/label corrections, preserved history, pause/skip/restart, 10-XP decisions and a Level 2 celebration at 100 XP. Demo state stays in page memory and never writes to the private board or Gmail.
+- Illustrated first-use, cleared-column and unconfirmed-coverage states are shared by the demo and signed-in workspace. Both columns remain visible when cleared; failed coverage never implies an all-clear. Added a compact How reviews work disclosure.
+- Approved robot companion appears in the logo, splash, process, empty states and rewards. Four drawn idle frames animate the head, forearm and eyes beside stationary props. Added pause/resume, offscreen pausing and a neutral reduced-motion still. Removed whole-image bobbing/rotation/pulse effects.
+- Extended locally hosted pixel typography into the signed-in board. Authentication, encrypted storage, feedback/revisions, reviewer permissions, Gmail boundaries and review schedule are unchanged.
+- Validation: local JavaScript/assets, fictional day/XP/empty-state and schedule/DST checks; deployment destination, release/rollback and GitHub deployment checks; fictional desktop/mobile browser QA. Production acceptance is recorded in the handoff after deployment.
+
 ## 0.2.3 — 2026-11-16
 
 - Prepared a GitHub Actions deployment after shared checks, restricted to current `main`, with serialized releases, deterministic allowlisted bundles and a dedicated forced-command SSH key. Added bounded host receiver, private one-time bootstrap, receipt read-back, deduplicated retries, code rollback and public hash/access verification. Expanded the fixed bundle to include API/bootstrap/bridge/label code; credentials, state and deployment trust code stay excluded. Activated after explicit one-time access approval on November 16 (New York time). PR #1 merged; the first GitHub deployment and live acceptance succeeded.
