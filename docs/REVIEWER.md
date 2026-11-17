@@ -30,8 +30,9 @@ A published card requires: `account` (one of the two approved addresses), `threa
 
 ## Scheduling
 
-The user described an existing ChatGPT inbox task. No local Codex automation files were found during inspection; this does not establish that the ChatGPT task no longer exists. Reconcile that task before enabling another recurring inbox review. Verify a real publish/read-feedback round trip with the restricted credential before claiming unattended operation. A daily morning cadence is a possible starting point, not yet scheduled.
+The active Codex review-email-desk cadence is 9:00 a.m. and 5:30 p.m. daily, plus 1:00 p.m. on weekdays, America/New_York. The heartbeat uses explicit UTC equivalents because the original wall-time recurrence executed five hours early. After each review, run scripts/review-schedule.py and update the same heartbeat only when its next-slot UTC hours differ, preserving its prompt, status and target. Do not add another reviewer automation. Milan said he would pause the earlier ChatGPT task; do not assume that was done solely from this release.
 
+The corrected evening execution was observed on November 16, but its publication required later recovery. Unattended publication after that recovery still needs observation. A code/UI release is not evidence of a new inbox scan or unattended review. Keep scan failures visible and never advance failed-account checkpoints.
 
 ## Public guest edition boundary (0.3.0)
 

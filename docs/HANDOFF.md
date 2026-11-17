@@ -1,8 +1,8 @@
 # Email Desk handoff
 
-## Current release work — November 17, 2026
+## Current production release — November 17, 2026
 
-Milan approved publishing the guest edition and updating all documentation. Version 0.3.0 is prepared from the current GitHub main, with the approved four-frame idle companion and all public/demo/signed-in UI refinements below. The prior preview sections are historical design iterations; the current animation is drawn sprite frames, never whole-image bobbing/rotation. Production acceptance will be appended after GitHub deployment finishes.
+Milan approved publishing the guest edition and updating all documentation. Version 0.3.0 is live through GitHub Actions, with the approved four-frame idle companion and all public/demo/signed-in UI refinements below. The prior preview sections are historical design iterations; the current animation is drawn sprite frames, never whole-image bobbing/rotation. Production acceptance is recorded below; older preview sections describe historical iterations, not the live release status.
 
 The local Git HEAD remains at the older 0.2.0 commit, while the working source already includes the complete deployed 0.2.3 implementation. Verified all unchanged source against current remote main b387f767364aeb3b3cdfb99c22e4e698420c4f69; only reviewed guest/UI/docs/test/assets changes differ. Use connected GitHub commits parented to current main, never a CLI push based on the old local HEAD. No credentials or private files are part of source publication.
 
@@ -238,3 +238,14 @@ A single shared CSS sprite plays a 5.6-second idle sequence: neutral hold, forea
 Added a page-local Pause animation/Resume animation control. It does not persist settings or touch theme/auth data. Reduced-motion preference forces the neutral first frame and marks the control Animation off; unconfirmed review coverage also uses a still first frame. A native visibility observer pauses offscreen sprites, with cleanup when card/empty presentations are replaced. No audio, GIF/video, canvas renderer, new dependency or animation polling timer. Review and XP behavior, server authentication/storage and schedules are unchanged.
 
 Validation: npm run check passes. Allowlisted archive includes the sprite and remains below the receiver limit (4.52 MiB). Browser inspected actual background-position frame changes including the blink cell while computed transforms/filters remain none; pause control sets both logo/hero to paused. Verified demo clearing to two animated empty scenes and preserved 40 XP/history, light desktop/dark mobile with no horizontal overflow. No production deployment, real Gmail/card/feedback changes or access expansion.
+
+
+## Version 0.3.0 published and live-verified — November 17, 2026
+
+Milan explicitly requested pushing live and updating all documentation. Created reviewed release commit c4dd49e3b6afd275e73604ad08da0463b2aab118 on codex/guest-edition-0.3.0, parented to current remote main rather than the older local HEAD. Both branch and PR GitHub checks passed (including PHP lint/storage/API checks). PR #2 https://github.com/vibe-coding-milan/email-desk/pull/2 merged as bdd43a230d8504873fc992f57e1f17c554715c34. Deploy Email Desk https://github.com/vibe-coding-milan/email-desk/actions/runs/44023929595 succeeded and the durable receipt identifies version 0.3.0, release arcade-20261117T052545918762Z and that merge commit.
+
+Post-release verification: all 25 served public-file hashes exactly matched the allowlisted manifest; all 23 live checks passed (unchanged root homepage, Apache CSP/no-store/noindex, owner sign-in/out, protected private APIs/files, secure session cookies, CSRF/origin rejection and restricted reviewer access). Private board read-back exactly matched all pre-release cards, account checkpoints and progress. Public demo decisions were exercised only in browser memory, never production feedback writes. No Gmail mutations, credential changes, access expansion, schema migration or schedule change occurred.
+
+Live in-app browser verified public copy/selected 0.3.0 notes, illustrated empty columns, simulated midday/evening arrivals, preserved fictional history, Level 2 at 100 XP, animation pause/resume, light mobile 390px without horizontal overflow, Milan’s sign-in form and no warnings/errors. Live API authentication was verified by the existing read-only acceptance script; no real card decision was used for QA. Private preservation snapshots, expected manifest and receipt are under ignored .private/. Public screenshot evidence is ignored .local/visual-qa/live-030-welcome.jpg.
+
+This release does not establish unattended reviewer publication, physical-device/cross-device behavior or disaster recovery. Existing operational limitations and the Google Doc master boundary remain. A documentation-only follow-up may produce a newer main/receipt with identical application code; the functional release and its acceptance evidence above remain the source of truth for 0.3.0 behavior.

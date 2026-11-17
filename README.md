@@ -6,13 +6,15 @@ The interface has two categories: Needs action and Worth knowing. Cards expand i
 
 ## Release documentation
 
-See [CHANGELOG.md](CHANGELOG.md) for version history and [docs/RELEASING.md](docs/RELEASING.md) for packaging, verification and rollback. Release **0.3.0** is approved for publication on November 17, 2026 (New York time). Deployment and live acceptance are being completed through GitHub Actions; the prior live version is 0.2.3.
+See [CHANGELOG.md](CHANGELOG.md) for version history and [docs/RELEASING.md](docs/RELEASING.md) for packaging, verification and rollback. Current release: **0.3.0**, published November 17, 2026 (New York time) through [GitHub Actions](https://github.com/vibe-coding-milan/email-desk/actions/runs/44023929595).
 
 ## Status
 
 The public page explains how the AI agent uses supplied priorities and organization rules to surface requests and relevant updates. **Play the demo** opens a separate fictional workspace: twelve invented cards across an accelerated weekday, temporary feedback and labels, history, XP and a Level 2 celebration. The guest demo never reads or mutates private card data or Gmail; reloading/restarting clears its page-memory state. **Milan sign in** opens the original authenticated workspace.
 
 Both workspaces share illustrated empty states and the approved pixel robot. The robot has four actual idle frames (head/arm/eye changes); props remain stationary. **Pause animation** is page-local, offscreen sprites pause, and reduced-motion preferences show a neutral still. Only the existing theme preference uses local storage. Original and selected artwork prompts are in [docs/ARTWORK.md](docs/ARTWORK.md), [docs/COMPANION-ARTWORK.md](docs/COMPANION-ARTWORK.md) and [docs/COMPANION-IDLE.md](docs/COMPANION-IDLE.md).
+
+Production acceptance passed: all 25 public-file hashes matched, all 23 live authentication/header/private-path/reviewer checks passed, and saved cards, account checkpoints and progress exactly matched the private pre-release snapshot. Live browser checks verified public/demo navigation, the 100-XP level-up, animation pause, mobile layout and Milan’s sign-in entry.
 
 Authentication remains mandatory for every private API operation. Saved comments, labels, status, history, XP and account checkpoints are preserved by code releases. The public page contains invented demo content only. Publication remains self-hosted at https://mijatovic.com/email-desk/; the earlier Sites prototype is separate.
 

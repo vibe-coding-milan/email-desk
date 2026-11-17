@@ -9,7 +9,7 @@ Changes are grouped by release. Dates use America/New_York. Email Desk is self-h
 - Illustrated first-use, cleared-column and unconfirmed-coverage states are shared by the demo and signed-in workspace. Both columns remain visible when cleared; failed coverage never implies an all-clear. Added a compact How reviews work disclosure.
 - Approved robot companion appears in the logo, splash, process, empty states and rewards. Four drawn idle frames animate the head, forearm and eyes beside stationary props. Added pause/resume, offscreen pausing and a neutral reduced-motion still. Removed whole-image bobbing/rotation/pulse effects.
 - Extended locally hosted pixel typography into the signed-in board. Authentication, encrypted storage, feedback/revisions, reviewer permissions, Gmail boundaries and review schedule are unchanged.
-- Validation: local JavaScript/assets, fictional day/XP/empty-state and schedule/DST checks; deployment destination, release/rollback and GitHub deployment checks; fictional desktop/mobile browser QA. Production acceptance is recorded in the handoff after deployment.
+- Validation: local JavaScript/assets, fictional day/XP/empty-state and schedule/DST checks; deployment destination, release/rollback and GitHub deployment checks; fictional desktop/mobile browser QA. Published through [GitHub Actions](https://github.com/vibe-coding-milan/email-desk/actions/runs/44023929595) from commit `bdd43a230d8504873fc992f57e1f17c554715c34`, release `arcade-20261117T052545918762Z`. Verified 25 public-file hashes, 23 live access/security checks and exact saved-card/checkpoint/progress preservation. Live public/demo, Level 2, animation pause, mobile layout and sign-in entry passed browser inspection.
 
 ## 0.2.3 — 2026-11-16
 
