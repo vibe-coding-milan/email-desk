@@ -2,6 +2,13 @@
 
 Changes are grouped by release. Dates use America/New_York. Email Desk is self-hosted under `/email-desk/`; release notes never contain private messages, feedback, credentials or connection settings.
 
+## 0.3.1 — 2026-11-17
+
+- Larger Inter text across the welcome, demo and private board, including history, forms, review status and notifications. Pixel type remains on branding and prominent decorative headings.
+- Stronger secondary-text contrast in light and dark themes, larger touch targets, wrapping card metadata and stacked mobile form fields.
+- Shorter onboarding, demo summaries, instructions, XP explanation, labels and empty states. Removed repeated fictional badges and corrected the source-repository link.
+- Validation: JavaScript/assets, guest/empty-state and schedule checks; provisioning, release/rollback and GitHub deployment checks; fictional light/dark browser QA at 1280, 390 and 320px. Existing comments, decisions, history, authentication and review behavior are preserved.
+
 ## 0.3.0 — 2026-11-17
 
 - Public welcome explains the context-driven AI agent, periodic reviews, Needs action/Worth knowing and the feedback loop. Includes Milan’s GitHub profile, selected product notes and Milan sign in.

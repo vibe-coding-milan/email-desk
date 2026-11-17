@@ -1,5 +1,15 @@
 # Email Desk handoff
 
+## Site-wide legibility and concise copy — local preview, November 17, 2026
+
+Milan requested larger, clearer text across mobile and MacBook Air, with shorter copy and less repetition. Everyday text now uses the existing local Inter font; Silkscreen remains on the brand, welcome headline/artwork and large reward value. Card titles are 22px, summaries 17px, editor text and controls 16px, and secondary metadata at least 14px. Most reading sizes use rem units. Strengthened secondary text contrast in both themes, added 44px minimum button/select targets, stacked mobile form fields and action details, and allowed sender/date wrapping. History uses the same readable summary size as active cards.
+
+Shortened welcome/process/about text, demo summaries and instructions, XP explanation, form labels, feedback confirmation and empty-state copy. Removed repeated Fictional badges from demo cards; the demo heading and boundary still identify the fictional/reset behavior. Corrected the outdated public-repository caption. Real stored summaries, comments, decisions, audit history and master organization rules are untouched; no clipping or line clamping hides card content.
+
+Validation: npm run check and git diff --check passed. Local fictional browser checks covered light/dark welcome/demo, 1280px laptop and 390/320px phone layouts without horizontal overflow, owner sign-in/out, 16px/44px editors, 37-label picker, saved note confirmation, handled history with retained note and 10 XP. Browser warning/error log was empty. Calculated secondary-text contrast is at least 6.66:1 on the tested light reading surfaces and 7.67:1 on dark surfaces; tested link pairs exceed 4.5:1. Screenshot: ignored .local/visual-qa/legibility-laptop.jpg. Preview: http://127.0.0.1:4187/ (fictional login preview-only). This is local implementation and UI validation, not a new production release or physical-device acceptance. Existing unrelated working changes remain in place.
+
+
+
 ## Public repository presentation — November 17, 2026
 
 Milan explicitly made the repository public and requested a restrained portfolio presentation showing his AI-assisted development process. This supersedes older private-repository recommendations below. The README now leads with the live fictional demo, the problem, product decisions, architecture, code navigation and a localhost preview. docs/BUILDING.md connects the process to source/tests and records verification limits. Public source/demo does not make private board data public; authentication and ignored private storage remain mandatory. Runtime, reviewer access, Gmail behavior and the Google Doc master are unchanged by this documentation work.

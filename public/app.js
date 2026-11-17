@@ -147,7 +147,7 @@ function renderProgress() {
   const p = progress(); $('level').textContent = 'Level ' + String(p.level).padStart(2, '0'); $('levelXP').textContent = p.levelXP + ' / 100 XP';
   $('xpMeter').setAttribute('aria-valuenow', p.levelXP); $('xpMeter').setAttribute('aria-valuetext', p.levelXP + ' of 100 XP toward level ' + (p.level + 1));
   $('xpMeter').replaceChildren(...Array.from({length: 10}, (_, i) => { const segment = node('span', 'xp-segment' + (i < p.levelXP / 10 ? ' filled' : '')); segment.setAttribute('aria-hidden', 'true'); return segment; }));
-  $('progressDetails').textContent = p.decisions + (p.decisions === 1 ? ' decision' : ' decisions') + ' · ' + p.xp + ' total XP. Earn 10 XP the first time you handle or dismiss a card. Every 100 XP is a level. Reopening or editing a card never earns extra XP. Take it at your own pace.';
+  $('progressDetails').textContent = p.decisions + (p.decisions === 1 ? ' decision' : ' decisions') + ' · ' + p.xp + ' total XP. 10 XP per card handled or dismissed, once per card. Level up every 100 XP.';
 }
 function renderReviewDay() {
   const meter = $('reviewMeter');
@@ -183,14 +183,14 @@ function scanStatus(failed = false) {
   const run = data.run, stale = run?.last_success_at && Date.now() - new Date(run.last_success_at).getTime() > 36 * 3600000;
   $('scan').hidden = (!run && !failed) || (!!run && run.status === 'success' && !stale && !failed);
   $('scanTitle').textContent = failed ? 'Couldn’t refresh the board' : !run ? 'Waiting for the first inbox review' : run.status === 'error' ? 'Inbox review couldn’t finish' : run.status === 'partial' ? 'Inbox review is incomplete' : 'The inbox review may be out of date';
-  $('scanDetails').textContent = failed ? 'Previously loaded cards and your unsaved changes are retained. The board will check for saved updates again automatically.' : run?.summary || 'Cards will appear after the scheduled review.';
+  $('scanDetails').textContent = failed ? 'Saved cards and unsaved edits are kept. Retrying automatically.' : run?.summary || 'Cards will appear after the scheduled review.';
 }
 // Shared empty-column presentation; a missing/failed review never means a clear inbox.
 function emptyColumnCopy(category, mode) {
   const action = category === 'action';
   if (mode === 'unconfirmed') return {title: 'No saved ' + (action ? 'action cards' : 'updates'), detail: 'Review coverage is unconfirmed. Check the review notice above; an empty column does not mean the inbox is clear.'};
-  if (mode === 'waiting') return {title: action ? 'Ready for the first review' : 'Watching for useful updates', detail: action ? 'Requests that need a decision will appear here after the first review.' : 'Relevant news and context will appear here after the first review. No review has been published yet.'};
-  return {title: action ? 'No decisions waiting' : 'Nothing new to catch up on', detail: action ? 'No action cards are currently open. New requests appear after a saved review; completed decisions stay in history.' : 'No saved updates are waiting here. The next review can bring more; your history stays available.'};
+  if (mode === 'waiting') return {title: action ? 'Ready for the first review' : 'Watching for useful updates', detail: action ? 'Requests appear after the first review.' : 'Useful updates appear after the first review.'};
+  return {title: action ? 'No decisions waiting' : 'Nothing new to catch up on', detail: action ? 'New requests appear after the next review.' : 'Useful updates appear after the next review.'};
 }
 function emptyColumn(category, mode = 'clear') {
   const copy = emptyColumnCopy(category, mode), section = node('div', 'column-empty illustrated-empty ' + mode);
@@ -218,7 +218,7 @@ function render() {
   for (const c of history) $('historyCards').append(card(c));
   $('history').open = historyOpen; $('empty').hidden = !!active.length;
   $('empty').querySelector('h2').textContent = boardReadFailed || (data.run && data.run.status !== 'success') ? 'No active saved cards. Coverage needs attention.' : history.length ? 'Board cleared. Nicely done.' : !data.run ? 'Your board is getting started.' : data.run.status === 'success' ? 'You’re up to date.' : 'No saved cards yet.';
-  $('empty').querySelector('p').textContent = boardReadFailed || (data.run && data.run.status !== 'success') ? 'An empty board is not a confirmed all-clear. Check the review notice for coverage details.' : history.length ? 'Your decisions are saved in history. New updates appear automatically.' : !data.run ? 'Your first review will appear here. Planned update times are shown above.' : data.run.status === 'success' ? 'The latest review found nothing to show here. Planned updates continue above.' : 'The latest review could not cover everything. See the review notice for details.';
+  $('empty').querySelector('p').textContent = boardReadFailed || (data.run && data.run.status !== 'success') ? 'An empty board is not a confirmed all-clear. Check the review notice for coverage details.' : history.length ? 'Decisions saved in history. New cards appear automatically.' : !data.run ? 'Waiting for the first review. Planned times are above.' : data.run.status === 'success' ? 'The latest review found no cards to add.' : 'The latest review could not cover everything. See the review notice for details.';
   if (!data.run && !data.cards.length) $('deskGuide').open = true;
   renderProgress(); scanStatus(); renderReviewDay();
 }
@@ -248,12 +248,12 @@ function card(c) {
   const link = node('a', 'email-link', 'Open email'); link.append(icon('right')); link.href = 'https://mail.google.com/mail/u/?authuser=' + encodeURIComponent(c.account) + '#all/' + encodeURIComponent(c.thread_id); link.target = '_blank'; link.rel = 'noopener noreferrer'; body.append(link, node('span', 'account', c.account));
   const form = node('form', 'feedback-form'); form.setAttribute('aria-label', 'Feedback for ' + c.subject);
   const fields = node('fieldset', 'feedback-fields'), row = node('div', 'fields');
-  const cat = selectField(row, 'Where should this appear?', [['action', 'Needs action'], ['awareness', 'Worth knowing']], draft?.category ?? category(c), 'category');
+  const cat = selectField(row, 'Category', [['action', 'Needs action'], ['awareness', 'Worth knowing']], draft?.category ?? category(c), 'category');
   const state = selectField(row, 'Status', [['open', 'Active'], ['handled', 'Handled'], ['dismissed', 'Dismissed']], draft?.state ?? c.state, 'state'); fields.append(row);
   const picker = node('details', 'label-picker'), pickerSummary = node('summary', '', 'Labels'), boxes = node('div', 'label-options'), chosen = draft?.labels ?? labels(c); picker.append(pickerSummary);
   for (const l of data.labels) { const label = node('label'), box = node('input'); box.type = 'checkbox'; box.name = 'labels'; box.value = l; box.checked = chosen.includes(l); label.append(box, node('span', '', l)); boxes.append(label); }
   picker.append(boxes); fields.append(picker);
-  const noteLabel = node('label', 'field', 'Context or explanation'), note = node('textarea'); note.name = 'note'; note.rows = 3; note.maxLength = 8000; note.placeholder = 'Anything that would help me understand or route this email?'; note.value = draft?.note ?? c.note ?? ''; noteLabel.append(note); fields.append(noteLabel); form.append(fields);
+  const noteLabel = node('label', 'field', 'Note'), note = node('textarea'); note.name = 'note'; note.rows = 3; note.maxLength = 8000; note.placeholder = 'Add context for the next review.'; note.value = draft?.note ?? c.note ?? ''; noteLabel.append(note); fields.append(noteLabel); form.append(fields);
   const result = node('p', 'save-result', draft ? 'Unsaved changes' : c.feedback_status ? feedbackLabel[c.feedback_status] || c.feedback_status : ''); result.setAttribute('role', 'status'); if (c.feedback_explanation) result.title = c.feedback_explanation;
   const actions = node('div', 'save-row'), save = node('button', 'primary', 'Save'); save.type = 'submit'; save.disabled = !draft; actions.append(save, result); form.append(actions); body.append(form); wrapper.append(details);
   const quick = node('div', 'quick-actions'), quickButtons = [];
@@ -264,7 +264,7 @@ function card(c) {
       button.onclick = () => { state.value = value; changed(); form.requestSubmit(); }; quick.append(button); quickButtons.push(button);
     }
   }
-  const toggle = node('button', 'detail-toggle', 'Details & feedback'); toggle.type = 'button'; toggle.append(icon('right')); toggle.setAttribute('aria-label', 'Details & feedback: ' + c.subject); toggle.setAttribute('aria-controls', body.id); toggle.setAttribute('aria-expanded', String(!body.hidden));
+  const toggle = node('button', 'detail-toggle', 'Details'); toggle.type = 'button'; toggle.append(icon('right')); toggle.setAttribute('aria-label', 'Details: ' + c.subject); toggle.setAttribute('aria-controls', body.id); toggle.setAttribute('aria-expanded', String(!body.hidden));
   function setExpanded(value) { body.hidden = !value; wrapper.classList.toggle('expanded', value); toggle.setAttribute('aria-expanded', String(value)); if (value) opened.add(c.id); else opened.delete(c.id); }
   toggle.onclick = () => setExpanded(body.hidden); quick.append(toggle); wrapper.append(quick, body);
   const read = () => ({category: cat.value, state: state.value, labels: [...boxes.querySelectorAll('input:checked')].map(x => x.value), note: note.value, revision: draft?.revision ?? c.revision});
@@ -336,22 +336,22 @@ today(); setInterval(today, 60000);
 // Guest workspace: isolated fictional day, styled like the authenticated board.
 (() => {
   const examples = [
-    {id: 'garden', sender: 'Maple Street volunteers', subject: 'Confirm your garden volunteer shift', description: 'The neighborhood garden crew needs one more volunteer for the morning planting shift. A quick yes or no will help them plan.', category: 'action', label: 'Neighborhood', reason: 'A direct question is still waiting on a reply. The supply-list update later in the thread did not resolve it.', next: 'Decide whether to take the morning shift, then reply in your email app.'},
-    {id: 'shelf', sender: 'Rowan at Corner Workshop', subject: 'The shelf plan needs your pick', description: 'Two finishes, one final decision. The workshop is waiting for a choice before it starts your bookshelf.', category: 'action', label: 'Home / Projects', reason: 'The next step belongs to you. This is a personal home project, rather than a shared-building decision.', next: 'Choose a finish. Try leaving a note below so the next review has your context.'},
-    {id: 'library', sender: 'Lantern Library', subject: 'The repair café is coming back', description: 'Bring a wobbly lamp or a curious mind. The library’s monthly repair café is back, with volunteers helping neighbors fix everyday things.', category: 'awareness', label: 'Around town', reason: 'A potentially useful local update. No RSVP is requested, so it belongs in Worth knowing.', next: 'Keep it on your radar, or dismiss it if it is not for you.'},
-    {id: 'tools', sender: 'Small Tools Dispatch', subject: 'A tiny tool for a calmer desktop', description: 'This week’s digest features an open-source window organizer and a thoughtful essay about making personal software.', category: 'awareness', label: 'Technology', reason: 'An interesting read, with no request or deadline. A newsletter does not automatically become a task.', next: 'Read when you have space. Dismiss when you have the gist.'}
+    {id: 'garden', sender: 'Maple Street volunteers', subject: 'Confirm your garden volunteer shift', description: 'The garden crew needs your yes or no for the morning planting shift.', category: 'action', label: 'Neighborhood', reason: 'The later supply update leaves the attendance question unanswered.', next: 'Decide whether to take the morning shift, then reply in your email app.'},
+    {id: 'shelf', sender: 'Rowan at Corner Workshop', subject: 'The shelf plan needs your pick', description: 'Choose a finish so the workshop can start your bookshelf.', category: 'action', label: 'Home / Projects', reason: 'Work is on hold until you choose a finish.', next: 'Add your preferred finish in a note for the next review.'},
+    {id: 'library', sender: 'Lantern Library', subject: 'The repair café is coming back', description: 'The library’s monthly repair café returns with volunteers offering household repairs.', category: 'awareness', label: 'Around town', reason: 'A local event that requires no RSVP.', next: 'Keep it on your radar, or dismiss it if it is not for you.'},
+    {id: 'tools', sender: 'Small Tools Dispatch', subject: 'A tiny tool for a calmer desktop', description: 'This week’s digest features a window organizer and an essay on personal software.', category: 'awareness', label: 'Technology', reason: 'Relevant to your interests; no request or deadline.', next: 'Read when you have space. Dismiss when you have the gist.'}
   ];
   const example = (id, sender, subject, description, category, label, reason, next) => ({id, sender, subject, description, category, label, reason, next});
   const batches = [examples, [
-    example('agenda', 'Maple Street volunteers', 'Review the updated planting plan', 'The coordinator has shared two layouts for the new garden beds. Feedback is requested before the supply order.', 'action', 'Neighborhood', 'A new decision arrived after the morning review. The earlier volunteer confirmation remains handled.', 'Review the two layouts and send your preference in email.'),
-    example('delivery', 'Corner Workshop', 'Choose a delivery window', 'Your finish selection is confirmed. The workshop now needs a choice between two delivery windows.', 'action', 'Home / Projects', 'A new question needs a decision. Your earlier bookshelf card stays in history.', 'Pick a delivery window. You can keep scheduling context below.'),
-    example('minutes', 'Harbor Neighbors', 'Meeting notes are available', 'The monthly neighborhood meeting notes include a summary of street improvements and an updated project calendar.', 'awareness', 'Neighborhood', 'An informational follow-up. There is no outstanding vote or request.', 'Keep it for reference or dismiss once you have the update.'),
-    example('exhibit', 'Lantern Library', 'A new exhibit opens this weekend', 'The library is hosting a small exhibit about neighborhood print shops. Admission is free; no booking is required.', 'awareness', 'Around town', 'A relevant local event with no action required.', 'Decide whether it is worth keeping on your radar.')
+    example('agenda', 'Maple Street volunteers', 'Review the updated planting plan', 'Choose between two garden layouts before supplies are ordered.', 'action', 'Neighborhood', 'A new decision arrived after the morning review. The earlier volunteer confirmation remains handled.', 'Review the two layouts and send your preference in email.'),
+    example('delivery', 'Corner Workshop', 'Choose a delivery window', 'Your finish is confirmed. Choose one of two delivery windows.', 'action', 'Home / Projects', 'A new question needs a decision. Your earlier bookshelf card stays in history.', 'Pick a delivery window. You can keep scheduling context below.'),
+    example('minutes', 'Harbor Neighbors', 'Meeting notes are available', 'Meeting notes cover street improvements and an updated project calendar.', 'awareness', 'Neighborhood', 'An informational follow-up. There is no outstanding vote or request.', 'Keep it for reference or dismiss once you have the update.'),
+    example('exhibit', 'Lantern Library', 'A new exhibit opens this weekend', 'A free exhibit on neighborhood print shops opens at the library. No booking needed.', 'awareness', 'Around town', 'A relevant local event with no action required.', 'Decide whether it is worth keeping on your radar.')
   ], [
-    example('proof', 'Studio Finch', 'Approve the poster proof', 'The community workshop poster is ready for a final check. The designer needs approval before printing.', 'action', 'Neighborhood', 'A direct approval request is waiting. The print job depends on your response.', 'Review the proof and reply with approval or specific changes.'),
-    example('rsvp', 'Weekend Makers', 'Confirm your workshop place', 'A place opened in the weekend bookbinding session. The organizer needs a reply to reserve it.', 'action', 'Learning', 'An invitation with a clear next step, rather than a general announcement.', 'Decide whether to attend and reply in email.'),
+    example('proof', 'Studio Finch', 'Approve the poster proof', 'The designer needs your approval to print the workshop poster.', 'action', 'Neighborhood', 'A direct approval request is waiting. The print job depends on your response.', 'Review the proof and reply with approval or specific changes.'),
+    example('rsvp', 'Weekend Makers', 'Confirm your workshop place', 'Reply to reserve an open place in the weekend bookbinding session.', 'action', 'Learning', 'Your place is unconfirmed until you reply.', 'Decide whether to attend and reply in email.'),
     example('dispatch', 'Small Tools Dispatch', 'Window organizer: release notes', 'The organizer from the morning digest has a new release with keyboard shortcut improvements.', 'awareness', 'Technology', 'A product update tied to an earlier interest. It does not require a response.', 'Read if useful, or dismiss the update.'),
-    example('receipt', 'Paper & Thread', 'Your supplies receipt', 'The receipt for your notebook and binding supplies is ready for your records.', 'awareness', 'Records', 'A receipt is a record, not an unresolved task. No payment issue is reported.', 'Keep for reference or dismiss the card. The original email stays where it is.')
+    example('receipt', 'Paper & Thread', 'Your supplies receipt', 'Your notebook and binding supplies receipt is ready.', 'awareness', 'Records', 'Payment is complete; keep the receipt for reference.', 'Dismiss when you’re done; the email stays in place.')
   ]];
   let state, paused = false, timer = null, lastTick = 0, generation = 0, levelRewardUntil = 0;
   const pending = new Set();
@@ -394,7 +394,7 @@ today(); setInterval(today, 60000);
     $('demoMeter').setAttribute('aria-valuenow', xp);
     $('demoMeter').setAttribute('aria-valuetext', xp + ' of 100 XP toward level ' + (level + 1));
     $('demoMeter').replaceChildren(...Array.from({length:10}, (_,i) => node('span','xp-segment' + (i < xp / 10 ? ' filled' : ''))));
-    $('demoProgressDetails').textContent = state.xp + ' total demo XP. Each first decision earns 10 XP. Every 100 XP is a level. These points are separate from Milan’s workspace.';
+    $('demoProgressDetails').textContent = state.xp + ' demo XP. 10 XP per decision. Level up every 100 XP.';
   }
   function renderDemo() {
     $('demoBoard').classList.remove('demo-arrival');
@@ -410,11 +410,11 @@ today(); setInterval(today, 60000);
     $('demoHistory').hidden = !history.length; $('demoHistoryTitle').textContent = 'Handled & dismissed · ' + history.length;
     $('demoHistoryCards').replaceChildren(...history.map(demoCard));
     $('demoEmpty').hidden = !clear;
-    if (clear && state.stage === 2) $('demoEmptyText').textContent = 'Three reviews complete · ' + state.xp + ' XP · Level ' + (Math.floor(state.xp / 100) + 1) + '. Your decisions are in history. Restart to try the day again.';
+    if (clear && state.stage === 2) $('demoEmptyText').textContent = 'Day complete · ' + state.xp + ' XP · Level ' + (Math.floor(state.xp / 100) + 1) + '. Decisions saved in history.';
   }
   function arrive() {
     renderDemo(); $('demoBoard').classList.remove('demo-arrival'); void $('demoBoard').offsetWidth; $('demoBoard').classList.add('demo-arrival');
-    $('demoAnnouncement').textContent = timeLabel(guestTimes[state.stage]) + ' review published. Four new cards are ready; your earlier decisions remain in history.';
+    $('demoAnnouncement').textContent = timeLabel(guestTimes[state.stage]) + ' review ready. Four new cards; earlier decisions saved in history.';
   }
   function reward(earned, levelUp) {
     if (!levelUp && performance.now() < levelRewardUntil) return;
@@ -430,7 +430,7 @@ today(); setInterval(today, 60000);
   }
   function demoCard(c) {
     const article = node('article','card demo-card'), summary = node('div','card-summary'), meta = node('div','meta');
-    meta.append(node('span','',c.sender), node('span','demo-fiction','Fictional'));
+    meta.append(node('span','',c.sender));
     summary.append(meta, node('h3','',c.subject), node('p','description',c.description));
     const tags = node('div','tags'); for (const label of c.labels ?? [c.label]) tags.append(node('span','tag',label));
     if (c.state !== 'open') tags.append(node('span','tag',c.state === 'handled' ? 'Handled' : 'Dismissed'));
@@ -440,7 +440,7 @@ today(); setInterval(today, 60000);
     body.append(node('p','reason',c.reason), node('p','',c.next), node('span','account','Sample account · No original email'));
     const form = node('form','feedback-form'); form.setAttribute('aria-label','Demo feedback for ' + c.subject);
     const fields = node('div','fields');
-    const categoryInput = selectField(fields,'Where should this appear?', [['action','Needs action'],['awareness','Worth knowing']],c.draftCategory || c.category,'category');
+    const categoryInput = selectField(fields,'Category', [['action','Needs action'],['awareness','Worth knowing']],c.draftCategory || c.category,'category');
     const stateInput = selectField(fields,'Status', [['open','Active'],['handled','Handled'],['dismissed','Dismissed']],c.state,'state');
     stateInput.disabled = c.state !== 'open';
     form.append(fields);
@@ -453,7 +453,7 @@ today(); setInterval(today, 60000);
     }
     picker.append(pickerTitle,boxes); form.append(picker);
     const readLabels = () => [...boxes.querySelectorAll('input:checked')].map(input => input.value);
-    const label = node('label','field','Context or explanation (demo only)'), note = node('textarea');
+    const label = node('label','field','Note'), note = node('textarea');
     note.rows = 3; note.maxLength = 500; note.value = c.draftNote ?? c.note; note.placeholder = 'Add context for the next review.'; label.append(note); form.append(label);
     note.oninput = () => { c.draftNote = note.value; }; categoryInput.onchange = () => { c.draftCategory = categoryInput.value; };
     const result = node('p','save-result'), saveRow = node('div','save-row'), save = node('button','primary','Save'); save.type = 'submit';
@@ -481,7 +481,7 @@ today(); setInterval(today, 60000);
       c.note = note.value; c.category = categoryInput.value; c.labels = readLabels(); delete c.draftNote; delete c.draftCategory; delete c.draftLabels;
       tags.replaceChildren(...c.labels.map(value => node('span','tag',value)));
       if (c.state !== 'open') tags.append(node('span','tag',c.state === 'handled' ? 'Handled' : 'Dismissed'));
-      result.textContent = 'Saved for this demo. No email or private workspace was changed.';
+      result.textContent = 'Saved for this demo.';
       // Keep history read-only for outcomes; editing context never awards XP.
       if (c.state !== 'open') stateInput.value = c.state;
       if (categoryInput.value !== article.dataset.category) { renderDemo(); focusHeading(c.category === 'action' ? 'demoActionTitle' : 'demoAwarenessTitle'); }
@@ -493,8 +493,8 @@ today(); setInterval(today, 60000);
       if (outcome === 'handled') button.append(icon('check')); button.append(document.createTextNode(caption));
       button.setAttribute('aria-label',caption + ': ' + c.subject); button.onclick = () => decide(outcome); actions.append(button);
     }
-    const toggle = node('button','detail-toggle','Details & feedback'); toggle.type = 'button'; toggle.append(icon('right'));
-    toggle.setAttribute('aria-label','Details & feedback: ' + c.subject); toggle.setAttribute('aria-controls',body.id); toggle.setAttribute('aria-expanded',String(!body.hidden));
+    const toggle = node('button','detail-toggle','Details'); toggle.type = 'button'; toggle.append(icon('right'));
+    toggle.setAttribute('aria-label','Details: ' + c.subject); toggle.setAttribute('aria-controls',body.id); toggle.setAttribute('aria-expanded',String(!body.hidden));
     toggle.onclick = () => { c.expanded = !c.expanded; body.hidden = !c.expanded; article.classList.toggle('expanded',c.expanded); toggle.setAttribute('aria-expanded',String(c.expanded)); };
     actions.append(toggle); article.append(actions,body);
     return article;
@@ -502,7 +502,7 @@ today(); setInterval(today, 60000);
   function reset() {
     generation++; pending.clear(); state = createGuestDay(batches); paused = false; levelRewardUntil = 0;
     clearTimeout(rewardTimer); $('reward').hidden = true; $('demoHistory').open = false;
-    renderDemo(); $('demoAnnouncement').textContent = '9 AM review published. Handle or dismiss the four cards to advance to 1 PM. Each decision earns 10 XP.';
+    renderDemo(); $('demoAnnouncement').textContent = '9 AM review ready. Handle or dismiss the cards to advance to 1 PM.';
     if (guestActive) runClock();
   }
   function enter() {
