@@ -30,18 +30,20 @@ function reviewDay(now, runs = []) {
       const finished = Date.parse(run.finished_at);
       return finished >= time && finished <= now && finished < (slots[i + 1] ?? Infinity) && dateKey(finished) === dateKey(now);
     }).sort((a, b) => Date.parse(b.finished_at) - Date.parse(a.finished_at))[0];
-    const state = result ? ({success:'updated', partial:'partial', error:'failed'}[result.status] || 'late') : time <= now ? (now - time <= 15 * 60000 ? 'due' : 'late') : time === firstFuture ? 'next' : 'later';
+    const state = result ? ({success:'updated', partial:'partial', error:'failed'}[result.status] || 'missed') : time <= now ? (now - time <= 15 * 60000 ? 'due' : 'missed') : time === firstFuture ? 'next' : 'later';
     return {time, state, finishedAt: result?.finished_at || null};
   });
 }
 function reviewStatus(now, runs = []) {
   const slots = reviewDay(now, runs), allSlots = reviewSlots(new Date(now));
-  const next = allSlots.find(t => t > now), previous = allSlots.filter(t => t <= now).at(-1);
+  const next = allSlots.find(t => t > now);
   const finalDue = slots.at(-1).time <= now;
   const allUpdated = slots.every(s => s.state === 'updated');
-  const pendingFinal = finalDue && ['due', 'late'].includes(slots.at(-1).state);
+  const pendingFinal = finalDue && ['due', 'missed'].includes(slots.at(-1).state);
   const phase = pendingFinal ? slots.at(-1).state : finalDue ? (allUpdated ? 'complete' : 'incomplete') : 'scheduled';
-  const fraction = finalDue ? 1 : Math.max(0, Math.min(1, (now - previous) / (next - previous)));
+  // Equal route segments land exactly on each checkpoint at its planned time.
+  const segment = slots.findIndex(t => t.time > now);
+  const fraction = now <= slots[0].time ? 0 : segment < 0 ? 1 : ((segment - 1) + (now - slots[segment - 1].time) / (slots[segment].time - slots[segment - 1].time)) / (slots.length - 1);
   return {slots, next, fraction, phase, finalDue};
 }
 // End schedule helpers.
@@ -104,9 +106,9 @@ function renderReviewDay() {
   const now = Date.now(), runs = data.runs || (data.run ? [data.run] : []), timing = reviewStatus(now, runs);
   const clock = new Intl.DateTimeFormat('en-US', {timeZone: reviewZone, hour:'numeric', minute:'2-digit'});
   const timeLabel = value => clock.format(value).replace(':00', '');
-  const captions = {updated:'Updated', partial:'Partial', failed:'Failed', due:'Due', late:'Late', next:'Next', later:'Later'};
-  $('reviewHeading').textContent = timing.phase === 'complete' ? 'Today’s updates complete' : timing.phase === 'incomplete' ? 'Today’s reviews need attention' : ['due','late'].includes(timing.phase) ? timeLabel(timing.slots.at(-1).time) + ' review ' + timing.phase : 'Next update ' + timeLabel(timing.next);
-  meter.value = timing.fraction; meter.setAttribute('aria-valuetext', timing.finalDue ? (timing.phase === 'complete' ? 'All scheduled reviews today published successfully.' : 'Today’s planned times have passed; see each review outcome below.') : Math.round(timing.fraction * 100) + '% of the time to the next planned review at ' + timeLabel(timing.next) + ' New York time. This measures time, not review completion.');
+  const captions = {updated:'Updated', partial:'Partial', failed:'Failed', due:'Due', missed:'Missed', next:'Next', later:'Later'};
+  $('reviewHeading').textContent = 'Today’s updates';
+  meter.value = timing.fraction; meter.setAttribute('aria-valuetext', Math.round(timing.fraction * 100) + '% of today’s route from ' + timeLabel(timing.slots[0].time) + ' to ' + timeLabel(timing.slots.at(-1).time) + ' New York time. Checkpoints show actual publication results; the route measures time.');
   const latest = runs.filter(r => Number.isFinite(Date.parse(r.finished_at)) && Date.parse(r.finished_at) <= now).sort((a,b) => Date.parse(b.finished_at) - Date.parse(a.finished_at))[0];
   const dateKey = value => new Intl.DateTimeFormat('en-CA', {timeZone: reviewZone}).format(value);
   const nextText = timing.finalDue ? 'Next tomorrow ' + timeLabel(timing.next) + ' · New York' : 'New York time';
@@ -115,8 +117,11 @@ function renderReviewDay() {
   $('reviewSlots').replaceChildren(...timing.slots.map(slot => {
     const item = node('li', 'review-slot ' + slot.state), mark = node('span', 'slot-mark'); mark.setAttribute('aria-hidden', 'true');
     if (slot.state === 'updated') mark.append(icon('check'));
+    else if (slot.state === 'missed') mark.textContent = '–';
     const time = node('time', '', timeLabel(slot.time)); time.dateTime = new Date(slot.time).toISOString();
     item.append(mark, time, node('span', 'slot-state', captions[slot.state]));
+    if (slot.state === 'next' || slot.state === 'due') item.setAttribute('aria-current', 'step');
+    if (slot.state === 'missed') item.title = 'No publication recorded for this review time. Later reviews run independently.';
     if (slot.finishedAt) item.title = captions[slot.state] + ' · published ' + timeLabel(new Date(slot.finishedAt)) + ' New York time';
     return item;
   }));

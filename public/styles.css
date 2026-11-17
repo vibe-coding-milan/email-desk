@@ -1028,7 +1028,7 @@ textarea, input[type=password], .label-options label {
   .theme-picker { padding-right:6px; }
 }
 
-/* One status strip: earned XP and time until the next planned review. */
+/* Shared baseline: XP progress and the daily review route. */
 .status-strip { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:48px; align-items:start; margin:12px 0 30px; }
 .status-strip .progress-info { margin:0; }
 .status-strip .progress-info>summary { display:grid; grid-template-columns:1fr auto; gap:12px; min-height:0; }
@@ -1040,25 +1040,25 @@ textarea, input[type=password], .label-options label {
 .status-strip .xp-caption .icon { opacity:.6; }
 .review-day { font-family:Silkscreen,monospace; min-width:0; }
 .review-day-label { font-size:12px; line-height:1.5; margin:0 0 12px; }
-.review-meter { appearance:none; display:block; width:100%; height:14px; border:1px solid var(--line); background:var(--tag); color:var(--blue); border-radius:0; overflow:hidden; }
-.review-meter::-webkit-progress-bar { background:var(--tag); }
+.review-route { position:relative; }
+.review-meter { appearance:none; position:absolute; left:40px; top:6px; display:block; width:calc(100% - 80px); height:4px; border:0; background:var(--line); color:var(--blue); border-radius:0; overflow:hidden; }
+.review-meter::-webkit-progress-bar { background:var(--line); }
 .review-meter::-webkit-progress-value { background:var(--blue); }
 .review-meter::-moz-progress-bar { background:var(--blue); }
-.review-meter:not([value]) { opacity:.4; }
-.review-slots { display:flex; justify-content:space-between; list-style:none; padding:0; margin:11px 0 0; gap:8px; }
-.review-slot { display:flex; align-items:center; gap:5px; font-size:10px; flex-wrap:wrap; }
-.slot-mark { width:12px; height:12px; border:1px solid var(--muted); display:inline-flex; align-items:center; justify-content:center; }
-.slot-mark .icon { width:11px; height:11px; }
+.review-meter:not([value]) { visibility:hidden; }
+.review-slots { position:relative; display:flex; justify-content:space-between; list-style:none; padding:0; margin:0; gap:4px; }
+.review-slot { display:grid; justify-items:center; align-content:start; width:80px; flex:0 0 80px; gap:7px; font-size:10px; line-height:1.5; text-align:center; }
+.review-slot::before,.review-slot::after { content:none; }
+.slot-mark { box-sizing:border-box; width:16px; height:16px; border:1px solid var(--muted); background:var(--bg); display:inline-flex; align-items:center; justify-content:center; font-family:Inter,Arial,sans-serif; line-height:1; }
+.slot-mark .icon { width:13px; height:13px; }
 .slot-state { font-size:9px; color:var(--muted); }
 .review-slot.updated .slot-mark { background:var(--blue); border-color:var(--blue); color:var(--accent-ink); }
 .review-slot.next { color:var(--blue); }
 .review-slot.next .slot-mark { border:2px solid var(--blue); }
-.review-slot.partial,.review-slot.late,.review-slot.due { color:var(--notice); }
-.review-slot.partial .slot-mark,.review-slot.late .slot-mark,.review-slot.due .slot-mark { border-color:var(--notice); }
+.review-slot.partial,.review-slot.missed,.review-slot.due { color:var(--notice); }
+.review-slot.partial .slot-mark,.review-slot.missed .slot-mark,.review-slot.due .slot-mark { border-color:var(--notice); }
 .review-slot.failed { color:var(--error); }
 .review-slot.failed .slot-mark { border-color:var(--error); }
 .review-note { font-family:Inter,Arial,sans-serif; font-size:11px; line-height:1.5; color:var(--muted); margin:10px 0 0; }
-@media(max-width:1050px) { .status-strip { grid-template-columns:1fr; gap:24px; } .status-strip .progress-info { max-width:620px; } .review-day { max-width:620px; } }
-@media(max-width:380px) { .review-slot { gap:4px; font-size:9px; } .slot-state { font-size:8px; } .review-slots { gap:6px; } .status-strip .level,.status-strip .xp-caption,.review-day-label { font-size:11px; } }
-
-@media(max-width:760px) { .review-slot { display:grid; grid-template-columns:12px auto; gap:3px 6px; font-size:10px; } .review-slot .slot-mark { grid-row:1 / 3; } .review-slot .slot-state { grid-column:2; font-size:9px; } }
+@media(max-width:760px) { .status-strip { grid-template-columns:1fr; gap:24px; } }
+@media(max-width:380px) { .status-strip .level,.status-strip .xp-caption,.review-day-label { font-size:11px; } }
