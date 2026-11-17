@@ -2,7 +2,7 @@
 
 Use the existing mijatovic.com domain account. Verify the root homepage digest before any installation. Never use the financial-app deployment user, expand reviewer access, or rotate credentials as part of a code release. `.private/` stays ignored and outside web root.
 
-Normal releases should use the GitHub Actions path after the one-time setup in [GITHUB_DEPLOYMENT.md](GITHUB_DEPLOYMENT.md). Its activation is currently pending. Push reviewed source to `main`; the Deploy Email Desk workflow calls the shared checks, packages the exact commit, deploys through a separate forced-command key and verifies served hashes/access. No owner password, reviewer key or database enters GitHub. Until host bootstrap and Actions secrets are installed, the pipeline must not be described as operational.
+Normal releases should use the GitHub Actions path after the one-time setup in [GITHUB_DEPLOYMENT.md](GITHUB_DEPLOYMENT.md). It was activated and live-verified on November 16, 2026. Push reviewed source to `main`; the Deploy Email Desk workflow calls the shared checks, packages the exact commit, deploys through a separate forced-command key and verifies served hashes/access. No owner password, reviewer key or database enters GitHub. The fixed host receiver and five Actions secrets are installed. Retain their separation from the reviewer connection.
 
 The following remains the guarded release/recovery contract, including the previously used owner-connection installation path:
 
