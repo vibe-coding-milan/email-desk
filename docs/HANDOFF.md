@@ -1,5 +1,9 @@
 # Email Desk handoff
 
+## Public repository presentation — November 17, 2026
+
+Milan explicitly made the repository public and requested a restrained portfolio presentation showing his AI-assisted development process. This supersedes older private-repository recommendations below. The README now leads with the live fictional demo, the problem, product decisions, architecture, code navigation and a localhost preview. docs/BUILDING.md connects the process to source/tests and records verification limits. Public source/demo does not make private board data public; authentication and ignored private storage remain mandatory. Runtime, reviewer access, Gmail behavior and the Google Doc master are unchanged by this documentation work.
+
 ## Current production release — November 17, 2026
 
 Milan approved publishing the guest edition and updating all documentation. Version 0.3.0 is live through GitHub Actions, with the approved four-frame idle companion and all public/demo/signed-in UI refinements below. The prior preview sections are historical design iterations; the current animation is drawn sprite frames, never whole-image bobbing/rotation. Production acceptance is recorded below; older preview sections describe historical iterations, not the live release status.

@@ -1,49 +1,85 @@
 # Email Desk
 
-Personal, self-hosted AI email attention board with a public, fictional guest demo. Address: https://mijatovic.com/email-desk/.
+An AI-assisted email attention board, built by **Milan Mijatovic** with Codex and self-hosted on DreamHost.
 
-The interface has two categories: Needs action and Worth knowing. Cards expand inline to edit category, status, a single label checklist and context, with one Save action. An aligned status strip groups XP with a connected daily time track, today’s actual outcomes and the latest publication time. Due and Missed distinguish missing results from completed reviews. Saved updates load automatically every minute while the board is visible, with checks deferred during editing. The board has no manual refresh control. Search, account filters, the playbook link and the footer have been removed. Version 0.2.0 adds a bold cobalt/pixel visual system, System/Light/Dark themes, quick Handled/Dismiss decisions, reduced-motion-aware feedback and durable XP (10 per card, once; 100 per level). Version 0.2.0 was published on November 15, 2026; all saved cards were verified unchanged. Handled/dismissed cards remain available in a compact history disclosure. Each card contains context, the reason it was surfaced, current or corrected labels, and a link to the original Gmail conversation. Comments and handled/dismissed status are stored on the server and preserved across scans. Handling a card does not send, archive, delete, or mark email read.
+Email Desk turns inbox conversations into two useful views: **Needs action** and **Worth knowing**. It is a personal app I use and a public example of how I work: define a practical problem, build with AI, refine the experience, and verify what ships.
 
-## Release documentation
+**[Try the live demo](https://mijatovic.com/email-desk/)** · **[How I built it](docs/BUILDING.md)** · **[Release history](CHANGELOG.md)**
 
-See [CHANGELOG.md](CHANGELOG.md) for version history and [docs/RELEASING.md](docs/RELEASING.md) for packaging, verification and rollback. Current release: **0.3.0**, published November 17, 2026 (New York time) through [GitHub Actions](https://github.com/vibe-coding-milan/email-desk/actions/runs/44023929595).
+Choose **Play the demo** to explore an accelerated day with twelve fictional conversations. Try handling a card, changing a label, adding context, and skipping to the next review. Decisions move into history, earn XP, and carry through later arrivals. Demo changes live in browser memory and reset on restart or reload; no sign-in or inbox access is needed.
 
-## Status
+## The problem
 
-The public page explains how the AI agent uses supplied priorities and organization rules to surface requests and relevant updates. **Play the demo** opens a separate fictional workspace: twelve invented cards across an accelerated weekday, temporary feedback and labels, history, XP and a Level 2 celebration. The guest demo never reads or mutates private card data or Gmail; reloading/restarting clears its page-memory state. **Milan sign in** opens the original authenticated workspace.
+An inbox mixes requests, useful updates, receipts, and noise. Labels help organize it, but they do not answer “What needs my attention?” Email Desk adds that missing layer: a short explanation of what matters, why it matters, and a link back to the original conversation.
 
-Both workspaces share illustrated empty states and the approved pixel robot. The robot has four actual idle frames (head/arm/eye changes); props remain stationary. **Pause animation** is page-local, offscreen sprites pause, and reduced-motion preferences show a neutral still. Only the existing theme preference uses local storage. Original and selected artwork prompts are in [docs/ARTWORK.md](docs/ARTWORK.md), [docs/COMPANION-ARTWORK.md](docs/COMPANION-ARTWORK.md) and [docs/COMPANION-IDLE.md](docs/COMPANION-IDLE.md).
+The board stays small. Both email accounts share one organization vocabulary and one attention board. Handled and dismissed items remain in history, and later scans preserve my notes, corrections, and decisions.
 
-Production acceptance passed: all 25 public-file hashes matched, all 23 live authentication/header/private-path/reviewer checks passed, and saved cards, account checkpoints and progress exactly matched the private pre-release snapshot. Live browser checks verified public/demo navigation, the 100-XP level-up, animation pause, mobile layout and Milan’s sign-in entry.
+## How I work
 
-Authentication remains mandatory for every private API operation. Saved comments, labels, status, history, XP and account checkpoints are preserved by code releases. The public page contains invented demo content only. Publication remains self-hosted at https://mijatovic.com/email-desk/; the earlier Sites prototype is separate.
+I use AI to help implement and explore ideas, while directing the product, reviewing behavior, and setting the boundaries. A few decisions show that process:
 
-The active Codex review cadence, verified November 16, is 9:00 a.m. and 5:30 p.m. daily, plus 1:00 p.m. on weekdays, in America/New_York. The status strip mirrors that schedule; changes to the automation must also update the UI schedule. November 16 investigation found that the heartbeat evaluated its hours as UTC despite its New York TZID. The same heartbeat now uses explicit UTC equivalents. scripts/review-schedule.py computes the next slot’s New York offset, and the reviewer prompt requires comparing/updating those UTC hours before overnight DST changes. The corrected evening execution is verified; its publication required later recovery, so unattended publication after recovery still needs observation. Milan will pause the previous ChatGPT task to avoid duplicate reviews. Explicit user-originated label feedback has been applied and verified; deployment does not change Gmail.
+- **Simplify through use.** A countdown and extra controls became a compact daily review track. The interface distinguishes confirmed updates from missing or failed reviews.
+- **Make feedback durable.** Corrections and notes survive new summaries. Revision checks and deduplicated writes protect against stale edits and retries.
+- **Make the real interaction explorable.** The public demo simulates arrivals, feedback, history, and rewards using invented conversations, separate from the private workspace.
+- **Carry the idea through delivery.** The project includes automated checks, a restricted deployment path, code rollback, and live verification on the existing host.
 
-The earlier Sites prototype is separate and is not the target architecture. Do not continue or automatically deploy that prototype. The user's chosen destination is a subfolder on the existing DreamHost site.
+The [build notes](docs/BUILDING.md) connect these choices to source files, tests, and specific iterations.
 
-## Structure
+## What the app does
 
-- `public/`: HTML/CSS/JavaScript and authenticated PHP API, scoped to `/email-desk/`.
-- `server/`: encrypted SQLite store, restricted reviewer CLI, shared label vocabulary.
-- `scripts/`: checks, deployment, and the reviewer bridge client.
-- `docs/`: handoff, decisions, and reference playbook.
-- `.private/`: ignored local credentials and deployment configuration; never commit it.
+Cards explain the conversation and why it was surfaced. They expand inline for category, label, status, and context edits. Handling a card records a decision; it does not send, archive, delete, or mark email read.
 
-Deployment installs service code and state in a private sibling directory outside the domain's web root. Browser access uses an owner password and secure HTTP-only sessions. The reviewer uses a separate SSH key with a forced command and forwarding disabled; it can read the board/playbook, publish selected cards, retrieve feedback, and acknowledge results. It cannot obtain an interactive shell through that key. This bridge does not connect the website directly to Gmail.
+The interface pairs a cobalt/pixel visual style with light, dark, and system themes, illustrated empty states, and a four-frame robot companion. Animation can be paused and respects reduced-motion preferences. XP rewards confirmed decisions once per card.
 
-## Checks
+## How it works
 
-`npm run check` validates both JavaScript files, the shared label vocabulary and local asset references. `php tests/store.php` requires PHP 8.2+ with PDO SQLite and sodium. `python3 tests/api_checks.py` runs temporary local PHP HTTP tests with fictional data. The host-check helper runs these in an isolated temporary folder on the configured existing PHP host and cleans it up.
+An AI reviewer reads email through connected tools and uses my priorities and organization rules to curate cards. A restricted SSH bridge publishes those cards and retrieves feedback for later reviews. The website itself does not connect directly to Gmail or call a model API.
 
-## GitHub deployment
+```text
+Email + priorities → AI reviewer → restricted bridge → encrypted store
+                         ↑                                  ↕
+                         └──────── saved feedback ───── authenticated board
 
-GitHub Actions deployment runs checks before sending a verified code-only release from `main` to the existing DreamHost site. It uses a dedicated forced-command deployment key, pinned host identity, private recovery backups, rollback and live hash/access checks. The Mac is not a normal deployment dependency. The one-time host bootstrap and five Actions secrets are installed. The first production Actions release passed, including receipt/hash verification, unchanged saved cards and all 23 live access checks. See [docs/GITHUB_DEPLOYMENT.md](docs/GITHUB_DEPLOYMENT.md).
+Public guest demo → fictional browser-memory state
+```
 
-## Private setup
+The frontend uses plain JavaScript, HTML, and CSS. The backend uses PHP 8.2+, SQLite, and sodium encryption for stored card and feedback payloads. Python handles packaging, deployment, and bridge tooling. GitHub Actions checks and deploys reviewed code to the existing DreamHost site.
 
-Do not run `python3 scripts/deploy.py` until explicit approval covers creation of owner credentials, adding the restricted reviewer SSH public key, and publication to the selected destination. The command-line deployment script requires an explicit domain-owner .private/deployment.json; it refuses a different user or a destination that does not match the live homepage. It never falls back to the financial app's deployment account. Initial publication used the saved authenticated Cyberduck connection for the correct domain user. It preserves existing website files and stored feedback. First setup saves owner-login details and a configuration recovery copy into ignored `.private/` files. Store these securely outside the project as well.
+Private API operations require authentication. State and configuration live outside web root; reviewer and deployment keys have separate forced commands. The guest demo cannot read or change the private board.
 
-Once provisioned, `python3 scripts/bridge.py` accepts one JSON request on standard input and prints its result. Read `docs/REVIEWER.md` before using the bridge or setting up scheduling.
+## Explore the code
 
-GitHub publication, the restricted reviewer bridge, corrected review execution and a user-originated Gmail feedback correction are verified. Unattended publication after recovery, physical-device/cross-device acceptance and recovery exercises remain separate checks. See `docs/HANDOFF.md` for the precise remaining steps and acceptance limits.
+| Area | Start here |
+| --- | --- |
+| Board, guest simulation, and review status | [public/app.js](public/app.js) |
+| Visual system and motion | [public/styles.css](public/styles.css) |
+| Durable cards, feedback, and revisions | [server/Store.php](server/Store.php) |
+| Authentication and API boundaries | [public/api.php](public/api.php) |
+| Reviewer contract | [docs/REVIEWER.md](docs/REVIEWER.md) |
+| Checks and deployment | [.github/workflows](.github/workflows), [deployment guide](docs/GITHUB_DEPLOYMENT.md) |
+
+## Run a fictional preview
+
+Requires Python 3. From a clone of this repository:
+
+```sh
+python3 tests/preview.py
+```
+
+Open http://127.0.0.1:4180/. The public demo is available without signing in; the mocked owner workspace uses the password `preview-only`. This server binds to localhost, uses fictional data, and keeps changes in memory. It is a UI preview, not the production PHP backend.
+
+For checks, use Node.js and Python 3:
+
+```sh
+npm run check
+```
+
+This covers JavaScript syntax, local assets, shared labels, guest-day behavior, and review timing including DST. PHP 8.2+ with PDO SQLite and sodium is needed for `php tests/store.php` and `python3 tests/api_checks.py`. GitHub CI also runs provisioning, release, and deployment regression checks.
+
+## Current state
+
+**Version 0.3.0** was published November 17, 2026. Its recorded production acceptance includes 25 matching public-file hashes, 23 live access/security checks, and unchanged saved cards, checkpoints, and progress. See the [release run](https://github.com/vibe-coding-milan/email-desk/actions/runs/44023929595) and [changelog](CHANGELOG.md).
+
+This remains a personal application with an owner-specific reviewer and hosting setup. Unattended reviewer publication after a recovered failure, physical-device/cross-device acceptance, and disaster-recovery exercises remain open verification work. The demo demonstrates the interaction; it does not establish live inbox coverage.
+
+For maintenance, read [AGENTS.md](AGENTS.md), the [handoff](docs/HANDOFF.md), [reviewer contract](docs/REVIEWER.md), and [release guide](docs/RELEASING.md). The Google Doc remains the master organization playbook; the Markdown copy is a reference snapshot. Credentials, connection configuration, real message fixtures, and recovery material belong outside Git in ignored private storage.
