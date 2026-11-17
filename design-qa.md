@@ -64,3 +64,8 @@ User explicitly requested arcade typography for the date, theme picker and empty
 ## Production publication
 
 Version 0.2.0 was published as `arcade-20261115T154502Z`. Authenticated live browser inspection confirmed Silkscreen interface typography, loaded artwork, the preserved active cards and visible incomplete-review coverage notice. Desktop DOM width matched viewport and browser logs were empty. Live evidence is private at `.private/arcade-live-desktop.jpg` and is intentionally excluded from source control. All 18 public asset hashes and 23 live acceptance checks passed; saved cards exactly matched the pre-release snapshot. Production feedback was not changed to demonstrate rewards. Physical-device/cross-device acceptance remains outstanding. final result: passed.
+
+
+## Version 0.3.0 guest edition acceptance
+
+Current design uses the approved cobalt/cream robot with actual four-frame idle poses beside fixed props. The earlier still-image rotation/bob treatment is superseded. Fictional localhost QA covered public/process/demo navigation, all three review batches, 100-XP level-up, retained notes/history/labels, both illustrated empty columns, sign-in/out, light/dark responsive layouts, pause/resume and no horizontal overflow or console errors. Production acceptance is recorded in docs/HANDOFF.md after deployment. No production card decisions are used for visual QA.

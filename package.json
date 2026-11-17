@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check public/app.js && node --check public/theme.js && node scripts/check.mjs && node tests/review-timing.mjs && python3 tests/review_schedule.py",
+    "check": "node --check public/app.js && node --check public/theme.js && node scripts/check.mjs && node tests/review-timing.mjs && node tests/guest-day.mjs && python3 tests/review_schedule.py",
     "test": "php tests/store.php"
   },
-  "version": "0.2.3"
+  "version": "0.3.0"
 }

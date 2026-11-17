@@ -31,3 +31,8 @@ A published card requires: `account` (one of the two approved addresses), `threa
 ## Scheduling
 
 The user described an existing ChatGPT inbox task. No local Codex automation files were found during inspection; this does not establish that the ChatGPT task no longer exists. Reconcile that task before enabling another recurring inbox review. Verify a real publish/read-feedback round trip with the restricted credential before claiming unattended operation. A daily morning cadence is a possible starting point, not yet scheduled.
+
+
+## Public guest edition boundary (0.3.0)
+
+The public welcome and accelerated demo contain invented conversations in browser memory only. Demo cards, labels, notes, history and XP are never reviewer feedback and never authorize a Gmail mutation. The mascot’s idle frames are decorative; only server-authored review results establish publication outcomes. Continue using the authenticated restricted bridge and the master Google Doc for all real review work.
