@@ -1,5 +1,10 @@
 # Email Desk handoff
 
+## Version 0.3.1 published and verified — November 17, 2026
+
+Published the approved legibility/copy update through PR #4 and Deploy Email Desk run https://github.com/vibe-coding-milan/email-desk/actions/runs/44119249425, commit 6451533f9b3dfc62356c54bfb19573fa55ea47c6, release arcade-20261117T155249532810Z. Both PR check runs and the production workflow passed. All 25 public-file hashes match; all 23 live access/security checks passed. Saved cards, checkpoints and progress exactly match the private pre-release snapshot. Production browser verified Inter at 18px on the welcome, 17px card summaries and 16px editor text, light/dark mobile at 390px without overflow and no warnings/errors. Screenshot evidence and preservation snapshots remain ignored. No real decisions, feedback writes, Gmail mutations, credential changes, access expansion or schedule change were used for acceptance. Physical-device and cross-device review remain separate.
+
+
 ## Site-wide legibility and concise copy — local preview, November 17, 2026
 
 Milan requested larger, clearer text across mobile and MacBook Air, with shorter copy and less repetition. Everyday text now uses the existing local Inter font; Silkscreen remains on the brand, welcome headline/artwork and large reward value. Card titles are 22px, summaries 17px, editor text and controls 16px, and secondary metadata at least 14px. Most reading sizes use rem units. Strengthened secondary text contrast in both themes, added 44px minimum button/select targets, stacked mobile form fields and action details, and allowed sender/date wrapping. History uses the same readable summary size as active cards.

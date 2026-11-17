@@ -9,6 +9,8 @@ Changes are grouped by release. Dates use America/New_York. Email Desk is self-h
 - Shorter onboarding, demo summaries, instructions, XP explanation, labels and empty states. Removed repeated fictional badges and corrected the source-repository link.
 - Validation: JavaScript/assets, guest/empty-state and schedule checks; provisioning, release/rollback and GitHub deployment checks; fictional light/dark browser QA at 1280, 390 and 320px. Existing comments, decisions, history, authentication and review behavior are preserved.
 
+- Published through [GitHub Actions](https://github.com/vibe-coding-milan/email-desk/actions/runs/44119249425), commit `6451533f9b3dfc62356c54bfb19573fa55ea47c6`, release `arcade-20261117T155249532810Z`. All 25 public hashes and 23 live access checks passed; saved cards/checkpoints/progress are unchanged. Live light/dark mobile typography and editor checks passed.
+
 ## 0.3.0 — 2026-11-17
 
 - Public welcome explains the context-driven AI agent, periodic reviews, Needs action/Worth knowing and the feedback loop. Includes Milan’s GitHub profile, selected product notes and Milan sign in.

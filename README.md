@@ -78,7 +78,7 @@ This covers JavaScript syntax, local assets, shared labels, guest-day behavior, 
 
 ## Current state
 
-**Version 0.3.1** adds larger text, stronger contrast and shorter copy throughout the site. Version 0.3.0 was published November 17, 2026. Its recorded production acceptance includes 25 matching public-file hashes, 23 live access/security checks, and unchanged saved cards, checkpoints, and progress. See the [release run](https://github.com/vibe-coding-milan/email-desk/actions/runs/44023929595) and [changelog](CHANGELOG.md).
+**Version 0.3.1** is live with larger text, stronger contrast and shorter copy throughout the site. Its [production deployment](https://github.com/vibe-coding-milan/email-desk/actions/runs/44119249425) passed; all 25 public-file hashes, 23 live access checks and saved-card/checkpoint/progress preservation were verified. Version 0.3.0 was published November 17, 2026. Its recorded production acceptance includes 25 matching public-file hashes, 23 live access/security checks, and unchanged saved cards, checkpoints, and progress. See the [release run](https://github.com/vibe-coding-milan/email-desk/actions/runs/44023929595) and [changelog](CHANGELOG.md).
 
 This remains a personal application with an owner-specific reviewer and hosting setup. Unattended reviewer publication after a recovered failure, physical-device/cross-device acceptance, and disaster-recovery exercises remain open verification work. The demo demonstrates the interaction; it does not establish live inbox coverage.
 
