@@ -48,3 +48,8 @@ Milan selected 10 XP for a first handled/dismissed board decision within 48 elap
 ## Interface refinement (0.4.0)
 
 Bucket and label controls still publish the same feedback fields. Save context preserves card status; Handled/Dismiss include pending context and History offers Reopen. The countdown visual does not change receipt chronology, source deadlines or the 10/5-XP policy. Removed routine coverage prose does not remove failure/partial/stale/offline notices. No reviewer, account, taxonomy, Gmail or schedule change is part of this release.
+
+
+## Sender and timing presentation (0.4.1)
+
+Publish the faithful source sender as before. Friendly display-name extraction is presentation only; do not rewrite existing cards solely for display formatting. An amber past-target pill replaces the expired meter without changing source chronology, XP, decisions or the review cadence.

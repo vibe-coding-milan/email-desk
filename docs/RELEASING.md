@@ -14,7 +14,7 @@ Normal releases should use the GitHub Actions path after the one-time setup in [
 6. Inspect the live public welcome/demo, responsive layouts, one-cycle/reduced-motion artwork and sign-in/sign-out. Verify private state read-only. Distinguish browser/CI/live checks from unattended review, physical devices, cross-device acceptance and recovery exercises.
 7. Record the deployed commit, Actions run, release receipt, preservation results and acceptance limits in README/CHANGELOG/HANDOFF. Documentation follow-up commits use the same main/Actions path. Retain private recovery archives; never restore the database for a code-only rollback.
 
-The older owner-connection updater remains an authorized recovery path; it is not needed for routine GitHub releases. It must use the verified domain account, pinned host identity and homepage guard, with private code/database recovery copies and allowlisted manifest hashes. Never use the reviewer key for deployment. Version 0.3.2 uses additive encrypted payload fields. Version 0.4.0 changes only the interface and related assets; neither requires a schema migration or credential change.
+The older owner-connection updater remains an authorized recovery path; it is not needed for routine GitHub releases. It must use the verified domain account, pinned host identity and homepage guard, with private code/database recovery copies and allowlisted manifest hashes. Never use the reviewer key for deployment. Version 0.3.2 uses additive encrypted payload fields. Versions 0.4.0 and 0.4.1 change only the interface and related assets; none requires a schema migration or credential change.
 
 ## Rollback
 
