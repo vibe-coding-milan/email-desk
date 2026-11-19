@@ -23,3 +23,10 @@ The updater automatically restores only files installed by a failing attempt. Fo
 Do not restore the database snapshot for a code rollback: doing so could erase decisions made since publication. The additive payload fields remain readable by earlier code. However, releases before 0.3.2 calculate every award as 10 XP and therefore misdisplay new 5-XP awards. Prefer a forward fix or rollback to a timing-aware release; never alter stored award amounts or restore the database to compensate. A database recovery is a separate deliberate procedure. Never expose or copy recovery files into web root.
 
 Unattended review, physical-device/cross-device acceptance and recovery exercises are separate from deployment checks. Do not claim them from unit tests or a desktop preview.
+
+
+## Reconciling a final public-verification failure
+
+If the GitHub client fails after installation, read the existing restricted release receipt first. Compare its commit and deterministic bundle digest, then verify public hashes, homepage/access checks and private board preservation independently. A failed public connection is not proof that installation failed, and a matching receipt alone is not public acceptance. The 0.3.2 run installed successfully but its GitHub runner timed out connecting to the homepage twice; independent live acceptance passed. Keep the workflow’s failure visible and record it separately. Do not weaken TLS, homepage or authentication checks, expand keys, or restore the database to work around network reachability.
+
+The legacy scripts/remote-check.py still reads obsolete financial-app deployment metadata; do not run it as-is. Use GitHub CI for PHP checks, or an isolated temporary check through the verified, authorized mijatovic.com domain-owner connection. The restricted reviewer/deployment keys do not provide a general test shell.

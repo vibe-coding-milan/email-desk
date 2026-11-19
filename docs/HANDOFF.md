@@ -1,5 +1,15 @@
 # Email Desk handoff
 
+## Version 0.3.2 live and independently verified — November 19, 2026
+
+Published Milan’s approved message-age/48-hour XP update through PR #5 https://github.com/vibe-coding-milan/email-desk/pull/5, merged as bfc2412e7aaaf9c02fe093f7cd9686b18a399235. The restricted deployment receipt identifies version 0.3.2 and release arcade-20261119T165206798169Z. PR CI passed PHP lint, 63 storage checks and 19 HTTP/API checks, plus all JavaScript/Python/provisioning/release/deployment regressions. The main deployment’s shared checks also passed.
+
+Important distinction: Deploy Email Desk run https://github.com/vibe-coding-milan/email-desk/actions/runs/44570797542 installed the release and read back its matching receipt, but failed its final public verification while connecting to https://mijatovic.com/ (30-second TCP timeout). A single retry reconciled the existing receipt without reinstalling, then failed at the same connection check. Do not describe this Actions run as successful. Independent verification from the Mac passed all 25 served public-file hashes and the complete 23-check live suite: unchanged homepage, Apache headers, owner sign-in/out, protected private APIs/files, cookie/CSRF/origin checks and restricted reviewer key. Before/after cards, checkpoints and progress match exactly across all 29 saved cards. Private snapshots, receipt and manifest are ignored under .private/ with 032 names. No rollback, credential/access change or real decisions were needed.
+
+Live browser acceptance verified the public 0.3.2 release note, receipt-age/full-credit labels in both demo columns, a fictional 10-XP decision, frozen first-decision timing in history, light/dark UI and 390px layout without horizontal overflow or console warnings/errors. Screenshot: ignored .local/visual-qa/live-032-demo.jpg. These are public/demo interactions and read-only real-board checks; they do not establish physical-device/cross-device acceptance or a new unattended inbox review. No Gmail, reviewer schedule or master playbook change. Google Doc version 1.1 was read successfully before publication and remains master.
+
+All current product/reviewer/build/release/QA documentation and public selected notes now describe 0.3.2. A documentation-only follow-up may have a newer main/receipt with identical runtime files; this entry records the functional release acceptance. Keep runner-to-site connectivity as a separate deployment verification issue if later Actions runs also time out; do not disable homepage/TLS/access checks or expand keys to make a run green.
+
 ## Version 0.3.2 release preparation — November 19, 2026
 
 Milan explicitly approved publishing the card timing/XP update and updating documentation. Release is based on current GitHub main eb003f61f7377c4482595dc2cbbbc7c746236a82, not the stale local HEAD. The actual changed source was compared against a clean snapshot of that commit. Existing restricted reviewer and deployment connections are verified; a private pre-release snapshot preserves all 29 cards, checkpoints and progress. GitHub CI must pass PHP lint/storage/API tests before merge, and production acceptance must follow. Local npm, provisioning, release/rollback and GitHub deployment regression checks pass. The master Google Doc was successfully read through the Workspace connection on November 19; version 1.1 remains master and no classification rule change is part of this release.
@@ -44,7 +54,7 @@ The earlier ChatGPT inbox task was found paused and permanently deleted on Novem
 
 Milan explicitly made the repository public and requested a restrained portfolio presentation showing his AI-assisted development process. This supersedes older private-repository recommendations below. The README now leads with the live fictional demo, the problem, product decisions, architecture, code navigation and a localhost preview. docs/BUILDING.md connects the process to source/tests and records verification limits. Public source/demo does not make private board data public; authentication and ignored private storage remain mandatory. Runtime, reviewer access, Gmail behavior and the Google Doc master are unchanged by this documentation work.
 
-## Current production release — November 17, 2026
+## Historical 0.3.0 production release — November 17, 2026
 
 Milan approved publishing the guest edition and updating all documentation. Version 0.3.0 is live through GitHub Actions, with the approved four-frame idle companion and all public/demo/signed-in UI refinements below. The prior preview sections are historical design iterations; the current animation is drawn sprite frames, never whole-image bobbing/rotation. Production acceptance is recorded below; older preview sections describe historical iterations, not the live release status.
 

@@ -78,7 +78,7 @@ This covers JavaScript syntax, local assets, shared labels, guest-day behavior, 
 
 ## Current state
 
-**Version 0.3.2** adds message age and a 48-hour XP window in both columns: 10 XP for a first handled/dismissed decision within 48 elapsed hours of receipt, 5 XP afterward. Earlier awards stay earned. Gentle emphasis increases after 24 and 48 hours; history records decision timing. This tracks board decisions, not verified sent replies. Release validation and deployment acceptance are recorded in the [changelog](CHANGELOG.md) and [handoff](docs/HANDOFF.md).
+**Version 0.3.2 is live.** It adds message age and a 48-hour XP window in both columns: 10 XP for a first handled/dismissed decision within 48 elapsed hours of receipt, 5 XP afterward. Earlier awards stay earned. Gentle emphasis increases after 24 and 48 hours; history records decision timing. This tracks board decisions, not verified sent replies. The production receipt, all 25 public-file hashes, all 23 live access checks and exact preservation of 29 cards/checkpoints/progress were verified. The [GitHub deployment run](https://github.com/vibe-coding-milan/email-desk/actions/runs/44570797542) installed the release, but its final homepage connection check timed out on two attempts; independent live checks passed. Details are in the [changelog](CHANGELOG.md) and [handoff](docs/HANDOFF.md).
 
 This remains a personal application with an owner-specific reviewer and hosting setup. Unattended reviewer publication after a recovered failure, physical-device/cross-device acceptance, and disaster-recovery exercises remain open verification work. The demo demonstrates the interaction; it does not establish live inbox coverage.
 

@@ -46,3 +46,8 @@ References: [GitHub encrypted secrets](https://docs.github.com/en/actions/securi
 ## Subsequent release verification
 
 Version 0.3.0 was published November 17, 2026 through [Deploy Email Desk](https://github.com/vibe-coding-milan/email-desk/actions/runs/44023929595) after PR #2 passed CI and merged. Receipt commit bdd43a230d8504873fc992f57e1f17c554715c34, 25 public hashes, all 23 live access checks and unchanged saved cards/checkpoints/progress were verified. No bootstrap or credential changes were needed. See HANDOFF for the exact release identifier and acceptance limits. Documentation-only follow-ups retain the same validated runtime behavior.
+
+
+## 0.3.2 acceptance note — November 19, 2026
+
+The release installed through the restricted key and its receipt was verified. The GitHub runner then timed out connecting to the public root homepage on two attempts, so that Actions run is failed even though independent checks verified the 25 public hashes, all 23 live access checks and unchanged saved board/checkpoints/progress. See HANDOFF and RELEASING for the evidence and reconciliation procedure. No keys, trust rules, authentication or homepage checks were changed to work around the timeout.
