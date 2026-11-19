@@ -44,3 +44,7 @@ The public welcome and accelerated demo contain invented conversations in browse
 ## Card timing and XP policy (0.3.2, November 19, 2026)
 
 Milan selected 10 XP for a first handled/dismissed board decision within 48 elapsed hours of receipt and 5 XP afterward, across both columns. This is a personal board target, not evidence of a sender deadline or verified email response. Keep `date` faithful to source chronology; summary updates must not manufacture a newer receipt. Server-owned `attention_started_at` preserves the original target through summary/category updates; only a materially new request reopening a closed card resets it. The one-award-per-card rule still applies. Existing awarded XP remains earned, and neither aging nor scan failures remove XP or cards. No sending, social-pressure notifications or new automation is authorized by this policy. The server computes and freezes awards; reviewer publication does not award XP.
+
+## Interface refinement (0.4.0)
+
+Bucket and label controls still publish the same feedback fields. Save context preserves card status; Handled/Dismiss include pending context and History offers Reopen. The countdown visual does not change receipt chronology, source deadlines or the 10/5-XP policy. Removed routine coverage prose does not remove failure/partial/stale/offline notices. No reviewer, account, taxonomy, Gmail or schedule change is part of this release.

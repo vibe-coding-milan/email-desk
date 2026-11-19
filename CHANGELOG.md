@@ -2,6 +2,14 @@
 
 Changes are grouped by release. Dates use America/New_York. Email Desk is self-hosted under `/email-desk/`; release notes never contain private messages, feedback, credentials or connection settings.
 
+## 0.4.0 — 2026-11-19
+
+- Refactored the landing page, demo and signed-in board around two stepped 16-bit sections, a compact Board/History rail and a locally served desk illustration. Smoother buttons and label tiles preserve the playful style while making actions consistent.
+- Simplified the content and information hierarchy: visible review checkpoints replace repeated update summaries; card-level timing replaces the global overdue count. Failure, partial, stale and offline notices remain visible.
+- Bucket is a two-part segmented choice. Searchable checkbox labels retain the shared vocabulary. Removed the duplicate Status editor: Save context preserves state, and Handled/Dismiss include unsaved context with explicit Save & handle / Save & dismiss labels. History retains Reopen.
+- The meter decreases through the existing 48-hour 10-XP window; late decisions still earn 5 XP, and prior awards remain earned. Removed pause controls, extra dividers and routine congratulatory copy. The robot greets once and settles; the fictional demo advances automatically.
+- Prepared for publication with desktop/mobile light/dark QA, context/history/XP checks and the complete 12-card demo. Authentication, encrypted storage, reviewer permissions, Gmail boundaries and review schedule are unchanged. Live acceptance pending.
+
 ## 0.3.2 — 2026-11-19
 
 - Active cards show age and remaining full-credit time in both columns, with quiet emphasis after 24 hours and a text-labelled 48-hour target indicator. A compact notice counts cards past the target; timing refreshes without replacing editors.

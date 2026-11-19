@@ -1,3 +1,109 @@
+# Control and copy polish — November 19, 2026
+
+final result: passed
+
+## Target and evidence
+
+The latest user feedback supersedes the prior stepped-control treatment: retain the accepted pixel section frames, artwork and palette; simplify interactive edges, binary choice, dividers and copy. Original selected source remains the 1487×1058 image recorded below. This scoped pass uses `.local/polish/before-demo.jpg` as its rendered baseline, with the same fictional morning, light theme, four active cards and 1440px desktop viewport in `.local/polish/demo-final.jpg`. `.local/polish/comparison-full.jpg` puts their top 1440×1024 regions together at 1:1 density and was opened and inspected after the final capture. Content height changes deliberately with reduced toolbar copy/dividers. `.local/polish/comparison-controls.jpg` shows readable before/after controls and was also inspected.
+
+Focused/editor evidence: `editor-initial.jpg`, `owner-desktop.jpg`, `owner-mobile.jpg`, `owner-320-dark.jpg` in the same folder. Final 320px `demo-320.jpg` and `landing-mobile.jpg` were opened and inspected. Desktop landing is `landing-final.jpg`. Screenshots are ignored local artifacts, all using fictional content.
+
+## Findings resolved
+
+- P2 jagged interactive shapes and inconsistent action affordances: replaced stepped buttons/nav/label tiles with restrained 3–4px corners, common target sizes and consistent outlined secondary actions. Stepped section headings remain. Bucket is now one two-part segmented control with native radio semantics and keyboard navigation.
+- P2 redundant demo structure: removed Pause timeline, repeated demo heading and outer toolbar/guide divider lines. Clearing a batch advances automatically and shows one transition empty state. Retained dividers separate cards inside the containers.
+- P2 copy and feedback density: shortened landing, board, demo instructions and decision feedback; removed routine congratulatory reward prose. Level-up remains explicit. No extra slogan was introduced.
+- P2 meter direction/award ambiguity: meter now counts down the remaining 48-hour full-credit window. The accessible explanation states 10 XP before the boundary, 5 afterward, and distinguishes it from a sender deadline. Cards with an existing award do not advertise a new countdown. XP policy is unchanged.
+
+## Final surfaces and behavior
+
+Typography retains local Inter and short Silkscreen landmarks. Layout keeps both accepted stacked containers and full wrapping; 320/390/1440px checks found no horizontal overflow, and final 320px demo actions fit. Cream/cobalt/lavender tokens and dark theme mapping remain; secondary borders were strengthened. Existing local artwork is unchanged and crisp. Copy is direct and shorter across public, demo and owner views.
+
+A complete fictional demo passed all three review batches, automatic advancement, 12 history entries, 120 XP and Level 2. A context-only note save left XP/state unchanged, then survived handling and History. Keyboard Left changed the segmented selection. Read-only fictional owner checks confirmed countdown values against receipt age (within the one-minute refresh interval), and suppressed countdowns on awarded cards. Light/dark editors and mobile action rows were inspected. Browser warning/error logs were empty. `npm run check` and `git diff --check` passed after the final source edit.
+
+No actionable P0/P1/P2 findings remain in this scope. Native radio semantics were tested by keyboard; this is not a full screen-reader, physical-device or cross-browser acceptance claim. Local preview uses port 8000. Firefox successfully rendered that port in the prior port-fix pass; this polish pass was validated in the in-app browser, with no browser-security override. No backend, live-data or production changes.
+
+---
+
+# Interaction refinement — November 19, 2026
+
+final result: passed
+
+## Scope and visual truth
+
+Milan's latest detailed feedback supersedes the selected mock's status/editor/timing treatment. Preserve the approved two stacked pixel containers, rail, fonts and artwork; refine the specific controls and repeated copy. Original source: `/Users/milan/.codex/generated_images/01a1f4ce-9f44-7760-b76c-8dca9063cc2f/exec-ae2970d4-8368-4617-8d99-46efcb6f084a.png`, 1487×1058, normalized to 1440×1024 at `.local/design-refactor/reference.jpg` (rounding below one pixel). Final owner capture `.local/interaction-refinement/board-final.jpg` is 1440×1024 CSS/pixels, density 1, light, four active fictional conversations, disclosures collapsed. `.local/interaction-refinement/comparison-final.jpg` combines both in one input and was opened and inspected. New visible timeline, framed History, visual age/XP and actual fixture awards are deliberate user-directed changes.
+
+Focused editor evidence: `.local/interaction-refinement/editor-final.jpg`; same-input initial/final control comparison `compare-editor.jpg` was opened and inspected. Left has the first implementation's plain bucket tiles/closed labels; right has final stepped choices and open searchable labels. Disclosure state differs intentionally to expose the refinement, so do not treat increased editor height as a fidelity defect. This focused image predates only the final compact desktop timeline layout; editor controls are unchanged. `editor-dark.jpg`, `editor-320.jpg` and `labels-mobile.jpg` show dark/light responsive editors. The 320px dark capture and final desktop editor were opened and inspected. Existing sections/fonts/palette/artwork remain the visual baseline; there is no new illustration or concept selection.
+
+## Changes and comparison history
+
+- Replaced the ambiguous reload icon with the unmodified MIT Pixelarticons archive icon and gave both navigation buttons stepped outlines. Fill still identifies the current location.
+- Removed decorative Pause animation and How reviews work. Idle character animation now completes one 4.8-second cycle and settles; reduced-motion settings still disable motion. The demo's Pause timeline remains a functional simulation control.
+- Made the daily timeline visible; removed Last update/Next review/coverage-summary duplication and the global overdue count. Actual scan failures/partial/stale/offline notices remain, and timeline markers retain Updated/Missed/Failed/Partial/Due states. A P2 density pass compacted desktop times/states onto one row below the markers; all four primary card action rows fit in the final 1440px capture.
+- Replaced the two-option Category select with native radio choices styled as stepped tiles. Removed Status from the context editor entirely. Handled/Dismiss are the only closing actions; History has explicit Reopen. Save context appears only for dirty context. Primary decisions include unsaved context and change their visible/accessibility names to Save & handle / Save & dismiss / Save & reopen. A context save preserves the existing state and never awards XP.
+- Added stepped checkbox label tiles and local search over the existing vocabulary. Selected hidden matches remain selected. Labels still use the existing pending-feedback/reviewer contract; no Gmail labels are applied by the page itself.
+- Replaced long receipt/target/XP sentences with age, a small elapsed-window meter, a compact XP chip and quiet card-level age borders. Past 48h retains a short text marker; full timing is available in an accessible group name and a focus/hover explanation. Unknown/future dates do not invent an available award. No XP policy/server change.
+
+## Fidelity surfaces
+
+Typography: existing local Inter remains on prose/controls; Silkscreen on short landmarks. Full content wraps, no line clamp. Spacing/layout: approved shell and containers preserved; direct radio choices and wrapped label tiles have at least 44px targets; 320/390/1440px geometry checks showed no horizontal overflow. Color/tokens: cream/ink/cobalt and peach/ice/lavender retained, with readable dark mapping and text as well as color for late/missed states. Assets: existing robot/desk artwork unchanged; only genuine local library archive.svg added. Copy/content: repeated explanations removed, precise context/decision labels added, saved feedback and prior notes retained. No new account boards or taxonomy.
+
+## Behavioral checks
+
+Fictional owner preview 4190: changed bucket and selected an additional label while searching; Save context moved the open card and preserved both selected labels (including one filtered out of view), without changing state or XP. Restored the comparison bucket/label while preserving its prior note. Typed a note on a late card, used Save & handle, verified +5 XP and retained note in History, then used Reopen and verified total XP stayed 15. Notes, revisions and existing feedback mechanisms remain intact. Context saves explicitly name Context saved. No real card or Gmail mutation.
+
+Isolated fictional demo 4191: Save context saved a note without closing the card or increasing XP, restored the plain Handled/Dismiss labels, then Handled awarded 10 demo XP and moved the card to History. Native radios, searchable labels and no Status select were verified in both editors. New preview 4191 was isolated from owner state; its temporary browser tab was closed after checking. Existing public/owner tabs remain.
+
+Checks: npm run check passes syntax, shared vocabulary/local assets, timing/DST, card policy and guest-day tests. git diff --check passes. Browser warning/error logs were empty in owner and demo. Browser read-back confirmed animation iteration count 1 and no decorative pause control. No PHP/backend change; no production deployment, live-auth/access/security/cross-device or screen-reader claim. Root report retains earlier releases below for history.
+
+## Remaining findings
+
+No actionable P0/P1/P2 issues in the tested scope. P3: native radio/checkbox internals vary slightly by browser while retaining semantics and keyboard support. Source mock's exact data/counts/clock and four illustrative XP blocks differ from actual fixture progress by design.
+
+---
+
+# Pocket Console refactor — November 19, 2026
+
+final result: passed
+
+## Target and evidence
+
+Milan selected the third displayed concept, then approved the revised stepped-container treatment. Visual truth: `/Users/milan/.codex/generated_images/01a1f4ce-9f44-7760-b76c-8dca9063cc2f/exec-ae2970d4-8368-4617-8d99-46efcb6f084a.png` (1487 × 1058). Reference normalized proportionally to 1440 × 1024, rounding below one pixel: `.local/design-refactor/reference.jpg`. Browser-rendered owner screenshot: `.local/design-refactor/board-final.jpg`, 1440 × 1024 CSS/pixels, density 1. State: light, authenticated fictional preview, four active conversations, disclosures collapsed.
+
+Full-view same-input comparison: `.local/design-refactor/comparison-final.jpg`. Focused same-input comparisons: `compare-header.jpg` and `compare-frames.jpg` in the same folder. All three combined images were opened and inspected. Fixture copy, actual timestamps, a 3-day-old card, retained award after reopening, and the visible age notice differ from the illustrative source; these are intentional functional constraints, not fabricated state. Longer summaries wrap fully. Both sections and all four primary action rows fit in the desktop capture.
+
+Other evidence in `.local/design-refactor/`: `landing-desktop-final.jpg`, `landing-mobile-final.jpg`, `landing-320.jpg`, `board-dark.jpg`, `mobile-light-final.jpg`, `mobile-dark-final.jpg`, `mobile-320.jpg`, `appearance-320.jpg`, and `demo-tablet.jpg`. Some intermediate captures predate the final compact menu/navigation refinements; browser read-back checked those fixes afterward.
+
+## Comparison history
+
+1. Initial capture `implementation-initial.jpg` / `comparison-initial.jpg`: P2 density and border fidelity. Separate metadata rows and large chrome pushed the fourth conversation below the viewport; clipped controls lost their border corners. Fixed grouped card metadata, compact review/notice spacing, and independent stepped border/fill layers for sections, tabs and controls.
+2. Refined capture `board-refined.jpg`: checked practical full-summary wrapping and the visible overdue notice. Reduced excess header/row space; increased subject hierarchy; exposed source email as the primary link and kept Handled, Details and Dismiss beside it. `comparison-final.jpg` and focused comparisons show the post-fix result.
+3. Narrow-screen captures: P2 cramped navigation, third action wrapping and a crowded appearance menu. Fixed one-line Board/History beside compact XP, two aligned action rows, separate full-width motion/sign-out menu buttons, nonbreaking review times, and a simple sender row at tablet widths. Geometry checks passed at 320/390/900/1440px with no horizontal overflow. Mobile source was not supplied, so responsive states are adaptations, not claims of 1:1 mobile fidelity.
+
+## Required fidelity surfaces
+
+- Typography: local Inter for 17px prose, 23px desktop subjects/21px mobile, and readable form controls. Local Silkscreen for short wordmark, section tabs and eyebrow. Main heading 56px desktop, 32px mobile. Full summaries/labels wrap; no line clamps. Pixel headings remain restrained and legible rather than replacing email prose.
+- Spacing/layout: 220px desktop rail, full-width reading rows and two vertically stacked framed groups match the selected composition. Desktop metadata is beside the message, actions at right; smaller widths move metadata/actions into reading order. Each bucket has one stepped outline, inset edge and hard lavender shadow. History is an existing expandable area reached by the rail, not a new data route. Appearance holds themes, motion and owner sign-out.
+- Colors/tokens: retained cream/ink/cobalt, peach action tab, ice awareness tab and lavender button/shadow accents. Dark mode retains readable contrast and semantic late/failed/partial text. Palette details differ slightly from raster antialiasing. No scanline or texture layer competes with reading.
+- Image quality: new transparent `public/assets/desk-vignette.png` generated with the selected reference attached and inspected. Existing robot idle sheet/mailbox and unmodified Pixelarticons are reused. No illustration is replaced by CSS drawing. Stepped container/button borders are functional UI treatments. The supplied illustration is decorative, not review telemetry.
+- Content/IA: public page now leads with promise, demo and two-bucket preview, followed by three short steps and footer links for build story/changelog/source. Owner view leads with the same identity, compact confirmed/next review status, visible exceptions, then work. Help is below the board. Source email is exposed; deadline text is shown before expansion when present. Notes, category/label corrections and earlier context remain in Details. Shared board/account vocabulary and 48-hour XP policy are preserved. Raw timezone/internal concept wording from the mock is omitted.
+
+## Interaction and checks
+
+Fictional local server on `http://127.0.0.1:4190/` (owner password `preview-only`); existing preview on 4180 left intact. Verified public/demo entry/exit, owner sign-in/out, light/dark theme, review disclosure/checkpoints, card details, saved note + Handled, preserved note in History, reopening without another XP award, demo note + decision + history/XP, and History navigation in both views. Original email links were inspected, not opened or used to change Gmail. Keyboard order of primary actions matches visual order. Focus/disclosure attributes, revision-aware existing saves, draft deferral and confirmed-save rewards remain intact.
+
+`npm run check` passes syntax, 37-label/local-asset validation, review timing/DST, card timing and guest-day tests. `git diff --check` passes. HTML has 82 unique IDs. Browser warning/error logs checked; no application errors. No backend change or new PHP claim; no deployment, live-auth/Apache/restricted-key, physical-device or screen-reader acceptance is implied.
+
+## Findings and follow-up
+
+No actionable P0/P1/P2 findings remain in the tested scope. P3: existing library trend/history icons and the exact desk vignette drawing vary slightly from the mock; the robot retains its approved four drawn poses. The XP bezel uses real ten-segment values rather than the mock's illustrative segment count. Those differences preserve the established functional system.
+
+Implementation checklist: selected direction implemented; landing content/IA revised; shared board/history preserved; local asset placed; affected checks passed; desktop and responsive comparisons reviewed. Publication to the existing DreamHost site remains a separate next step.
+
+---
+
+# Historical design QA (earlier releases)
+
 # Email Desk graphics refactor — visual QA
 
 final result: passed
