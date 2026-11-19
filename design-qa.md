@@ -2,6 +2,10 @@
 
 final result: passed
 
+## Live acceptance
+
+Version 0.4.0 published November 19 through PR #6, commit 9a21d30d3555dc2a9308aca1892adcb0cfa5d0fb. Actions run 44598409634 passed. The exact tested UI bytes and artwork were verified by all 27 public hashes. Live browser confirmed landing/demo/version, a fictional 10-XP decision and History, segmented details, owner sign-in/read-only details/sign-out, 390px light demo/dark owner without overflow and empty warning/error logs. Public screenshots: `.local/live-040/landing.jpg`, `demo.jpg`, `demo-mobile.jpg`, `landing-final-dark.jpg`; private owner capture is excluded from public artifacts. All 23 live access checks passed and all 32 saved cards/checkpoints/progress matched exactly. Earlier local-only statements describe pre-publication QA. Physical devices/cross-device use and new unattended review remain separate.
+
 ## Target and evidence
 
 The latest user feedback supersedes the prior stepped-control treatment: retain the accepted pixel section frames, artwork and palette; simplify interactive edges, binary choice, dividers and copy. Original selected source remains the 1487×1058 image recorded below. This scoped pass uses `.local/polish/before-demo.jpg` as its rendered baseline, with the same fictional morning, light theme, four active cards and 1440px desktop viewport in `.local/polish/demo-final.jpg`. `.local/polish/comparison-full.jpg` puts their top 1440×1024 regions together at 1:1 density and was opened and inspected after the final capture. Content height changes deliberately with reduced toolbar copy/dividers. `.local/polish/comparison-controls.jpg` shows readable before/after controls and was also inspected.

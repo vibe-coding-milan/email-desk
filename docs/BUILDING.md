@@ -61,6 +61,8 @@ The release tooling checks the destination against the existing homepage, pins t
 
 See the [workflow](../.github/workflows/deploy.yml), [bundle builder](../scripts/release_bundle.py), [receiver](../scripts/receive-release.py), and [deployment regression checks](../tests/github_deploy_checks.py).
 
+For 0.4.0, [the release workflow](https://github.com/vibe-coding-milan/email-desk/actions/runs/44598409634) passed, including publication and public verification. Independent acceptance checked 27 public hashes, 23 live access checks and exact preservation of all 32 saved cards/checkpoints/progress. Live owner sign-in/out, demo handling/history and 390px light/dark wrapping passed. [Usability notes](USABILITY_TESTING.md) support feedback from normal use.
+
 For 0.3.2, PHP CI passed 63 storage and 19 HTTP/API checks. The restricted production receipt, 25 public-file hashes, 23 live access checks and unchanged state across 29 cards were verified independently. The GitHub job installed the release but timed out in its final homepage connection check on two attempts; installation and end-to-end workflow success are recorded separately in the [release history](../CHANGELOG.md). A subsequent documentation-only deployment passed GitHub’s public verification with identical runtime files.
 
 For 0.3.0, recorded acceptance verified 25 served public-file hashes, 23 live access/security checks, and preservation of saved cards, checkpoints, and progress. Browser inspection covered the public demo, level-up, pause control, mobile layout, and sign-in entry. The [release history](../CHANGELOG.md) records that evidence.

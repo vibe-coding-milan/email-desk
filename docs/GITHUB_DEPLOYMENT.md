@@ -53,3 +53,7 @@ Version 0.3.0 was published November 17, 2026 through [Deploy Email Desk](https:
 The release installed through the restricted key and its receipt was verified. The GitHub runner then timed out connecting to the public root homepage on two attempts, so that Actions run is failed even though independent checks verified the 25 public hashes, all 23 live access checks and unchanged saved board/checkpoints/progress. See HANDOFF and RELEASING for the evidence and reconciliation procedure. No keys, trust rules, authentication or homepage checks were changed to work around the timeout.
 
 The subsequent documentation-only deployment https://github.com/vibe-coding-milan/email-desk/actions/runs/44571631736 passed all checks and public verification with identical runtime files. Its receipt, public hashes and saved-state preservation were read back successfully; the earlier timeout remains a historical run failure.
+
+## 0.4.0 acceptance — November 19, 2026
+
+[PR #6](https://github.com/vibe-coding-milan/email-desk/pull/6) merged as 9a21d30d3555dc2a9308aca1892adcb0cfa5d0fb. [Deploy Email Desk](https://github.com/vibe-coding-milan/email-desk/actions/runs/44598409634) passed including public verification, publishing arcade-20261119T192807422976Z. Receipt and 27 served public hashes matched; all 23 independent live access checks and exact 32-card/checkpoint/progress preservation passed. No trust/bootstrap, key, owner-login or backend changes. Documentation-only follow-ups may have newer receipts with identical runtime files.
