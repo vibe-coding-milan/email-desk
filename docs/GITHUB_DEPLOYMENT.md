@@ -51,3 +51,5 @@ Version 0.3.0 was published November 17, 2026 through [Deploy Email Desk](https:
 ## 0.3.2 acceptance note — November 19, 2026
 
 The release installed through the restricted key and its receipt was verified. The GitHub runner then timed out connecting to the public root homepage on two attempts, so that Actions run is failed even though independent checks verified the 25 public hashes, all 23 live access checks and unchanged saved board/checkpoints/progress. See HANDOFF and RELEASING for the evidence and reconciliation procedure. No keys, trust rules, authentication or homepage checks were changed to work around the timeout.
+
+The subsequent documentation-only deployment https://github.com/vibe-coding-milan/email-desk/actions/runs/44571631736 passed all checks and public verification with identical runtime files. Its receipt, public hashes and saved-state preservation were read back successfully; the earlier timeout remains a historical run failure.

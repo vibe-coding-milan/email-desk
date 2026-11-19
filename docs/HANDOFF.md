@@ -1,6 +1,8 @@
 # Email Desk handoff
 
-## Version 0.3.2 live and independently verified — November 19, 2026
+## Version 0.3.2 live and verified — November 19, 2026
+
+The documentation-only follow-up 8d6e41d34ec8e91759bc9206ddbf095237d8b520 deployed successfully through https://github.com/vibe-coding-milan/email-desk/actions/runs/44571631736, release arcade-20261119T165707703718Z. Both CI and deployment including public verification passed. Its receipt, all 25 public-file hashes and exact preservation of all 29 cards/checkpoints/progress were verified independently. Runtime files are identical to the functional release below. The earlier runner timeout is historical; the latest completed follow-up passed.
 
 Published Milan’s approved message-age/48-hour XP update through PR #5 https://github.com/vibe-coding-milan/email-desk/pull/5, merged as bfc2412e7aaaf9c02fe093f7cd9686b18a399235. The restricted deployment receipt identifies version 0.3.2 and release arcade-20261119T165206798169Z. PR CI passed PHP lint, 63 storage checks and 19 HTTP/API checks, plus all JavaScript/Python/provisioning/release/deployment regressions. The main deployment’s shared checks also passed.
 
