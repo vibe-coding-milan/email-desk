@@ -42,8 +42,12 @@ final class DeskStore {
  private function meta(string $n):?array{$r=$this->query('SELECT payload FROM metadata WHERE name=?',[$n])->fetchColumn();return $r===false?null:$this->open($r);}
  private function setMeta(string $n,array $v):void{$this->query('INSERT INTO metadata VALUES(?,?) ON CONFLICT(name) DO UPDATE SET payload=excluded.payload',[$n,$this->seal($v)]);}
  private function progress(array $cards):array{
-  $decisions=0;foreach($cards as $c)if(isset($c['decision_earned_at']))$decisions++;
-  $xp=$decisions*10;return ['xp'=>$xp,'decisions'=>$decisions,'level'=>intdiv($xp,100)+1,'level_xp'=>$xp%100,'level_target'=>100];
+  $decisions=0;$xp=0;foreach($cards as $c)if(isset($c['decision_earned_at'])){$decisions++;$xp+=$c['decision_xp']??10;}
+  return ['xp'=>$xp,'decisions'=>$decisions,'level'=>intdiv($xp,100)+1,'level_xp'=>$xp%100,'level_target'=>100];
+ }
+ public static function decisionXp(array $card,int $now):int{
+  $start=strtotime($card['attention_started_at']??$card['reopened_at']??$card['date']);
+  return $start!==false&&$now-$start>48*3600?5:10;
  }
  private function reviewRuns():array{
   // Publish acknowledgements already form an encrypted, deduplicated review log.
@@ -57,13 +61,13 @@ final class DeskStore {
   $run=$a['run']??null;if(!is_array($run)||!in_array($run['status']??'',['success','partial','error'],true))throw new DeskError('run');
   $summary=self::text($run['summary']??'',1500,true);$checkpoints=$run['checkpoints']??[];if(!is_array($checkpoints))throw new DeskError('checkpoints');foreach($checkpoints as $acct=>$stamp){if(!in_array($acct,['mijatovic@gmail.com','milan@mijatovic.com'],true)||!is_string($stamp)||strtotime($stamp)===false||strlen($stamp)>40)throw new DeskError('checkpoints');}if($run['status']==='error'&&count($checkpoints))throw new DeskError('checkpoints');
   return $this->mutate($a['operation_id']??'',$a,function()use($normalized,$run,$summary,$checkpoints){$now=gmdate('c');$created=0;$updated=0;foreach($normalized as $n){$old=null;try{$old=$this->card($n['id']);}catch(DeskError $e){if($e->reason!=='not_found')throw $e;}
-   if($old){$c=array_merge($old,$n);
+   if($old){$c=array_merge($old,$n);$c['attention_started_at']=$old['attention_started_at']??$old['reopened_at']??$old['date'];
     // An unattended review cannot quietly downgrade an unfinished request.
     if($old['state']==='open'&&$old['category']==='action')$c['category']='action';
     $contextKeys=['subject','description','reason','deadline','question'];$prior=array_intersect_key($old,array_flip($contextKeys));$next=array_intersect_key($n,array_flip($contextKeys));
     if($old['state']==='open'&&$prior!==$next){$history=$old['context_history']??[];$prior['saved_at']=$now;$history[]=$prior;$c['context_history']=$history;}
-    $c['revision']=$old['revision']+1;$c['updated_at']=$now;if(($n['reopen_reason']??'')!==''&&$old['state']!=='open'){$c['state']='open';$c['reopened_at']=$now;}$updated++;}
-   else{if((int)$this->query('SELECT COUNT(*) FROM cards')->fetchColumn()>=3000)throw new DeskError('capacity',409);$c=array_merge($n,['revision'=>1,'state'=>'open','user_category'=>null,'user_labels'=>null,'note'=>'','feedback_status'=>null,'created_at'=>$now,'updated_at'=>$now]);$created++;}$this->putCard($c);}
+    $c['revision']=$old['revision']+1;$c['updated_at']=$now;if(($n['reopen_reason']??'')!==''&&$old['state']!=='open'){$c['state']='open';$c['reopened_at']=$now;$c['attention_started_at']=$now;}$updated++;}
+   else{if((int)$this->query('SELECT COUNT(*) FROM cards')->fetchColumn()>=3000)throw new DeskError('capacity',409);$c=array_merge($n,['attention_started_at'=>$n['date'],'revision'=>1,'state'=>'open','user_category'=>null,'user_labels'=>null,'note'=>'','feedback_status'=>null,'created_at'=>$now,'updated_at'=>$now]);$created++;}$this->putCard($c);}
    $previous=$this->meta('run');$r=['status'=>$run['status'],'summary'=>$summary,'finished_at'=>$now,'last_success_at'=>$run['status']==='success'?$now:($previous['last_success_at']??null)];$this->setMeta('run',$r);$cp=array_merge($this->meta('checkpoints')??[],$checkpoints);$this->setMeta('checkpoints',$cp);return ['created'=>$created,'updated'=>$updated,'run'=>$r];});
  }
  public function feedback(array $a):array{
@@ -71,8 +75,8 @@ final class DeskStore {
   $state=$a['state']??'';$category=$a['category']??'';if(!in_array($state,['open','handled','dismissed'],true)||!in_array($category,['action','awareness'],true))throw new DeskError('state');$note=self::text($a['note']??'',8000);
   return $this->mutate($a['operation_id']??'',$a,function()use($id,$rev,$labels,$state,$category,$note){$c=$this->card($id);if($c['revision']!==$rev)throw new DeskError('conflict',409);
    $earned=$c['state']==='open'&&$state!=='open'&&!isset($c['decision_earned_at']);
-   if($earned)$c['decision_earned_at']=gmdate('c');
-   $c['revision']++;$c['state']=$state;$c['user_category']=$category;$c['user_labels']=$labels;$c['note']=$note;$c['updated_at']=gmdate('c');$c['feedback_status']='pending';$fid=bin2hex(random_bytes(16));$event=['id'=>$fid,'card_id'=>$id,'account'=>$c['account'],'thread_id'=>$c['thread_id'],'message_ids'=>$c['message_ids'],'subject'=>$c['subject'],'observed_labels'=>$c['labels'],'requested_labels'=>$labels,'note'=>$note,'state'=>$state,'category'=>$category,'created_at'=>$c['updated_at'],'status'=>'pending','card_revision'=>$c['revision']];$this->query('INSERT INTO feedback(id,card_id,payload) VALUES(?,?,?)',[$fid,$id,$this->seal($event)]);$c['latest_feedback_id']=$fid;$this->putCard($c);return ['card'=>$c,'feedback_id'=>$fid,'xp_earned'=>$earned?10:0,'progress'=>$this->board()['progress']];});
+   if($earned){$c['decision_started_at']=$c['attention_started_at']??$c['reopened_at']??$c['date'];$c['decision_earned_at']=gmdate('c');$c['decision_xp']=self::decisionXp($c,strtotime($c['decision_earned_at']));}
+   $c['revision']++;$c['state']=$state;$c['user_category']=$category;$c['user_labels']=$labels;$c['note']=$note;$c['updated_at']=gmdate('c');$c['feedback_status']='pending';$fid=bin2hex(random_bytes(16));$event=['id'=>$fid,'card_id'=>$id,'account'=>$c['account'],'thread_id'=>$c['thread_id'],'message_ids'=>$c['message_ids'],'subject'=>$c['subject'],'observed_labels'=>$c['labels'],'requested_labels'=>$labels,'note'=>$note,'state'=>$state,'category'=>$category,'created_at'=>$c['updated_at'],'status'=>'pending','card_revision'=>$c['revision']];$this->query('INSERT INTO feedback(id,card_id,payload) VALUES(?,?,?)',[$fid,$id,$this->seal($event)]);$c['latest_feedback_id']=$fid;$this->putCard($c);return ['card'=>$c,'feedback_id'=>$fid,'xp_earned'=>$earned?$c['decision_xp']:0,'progress'=>$this->board()['progress']];});
  }
  public function pending():array{$events=[];foreach($this->query('SELECT payload FROM feedback ORDER BY seq')->fetchAll(PDO::FETCH_COLUMN) as $v){$e=$this->open($v);if(in_array($e['status'],['pending','error'],true))$events[]=$e;}return ['feedback'=>array_slice($events,0,100),'remaining'=>max(0,count($events)-100)];}
  public function acknowledge(array $a):array{

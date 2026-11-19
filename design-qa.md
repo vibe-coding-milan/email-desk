@@ -69,3 +69,8 @@ Version 0.2.0 was published as `arcade-20261115T154502Z`. Authenticated live bro
 ## Version 0.3.0 guest edition acceptance
 
 Current design uses the approved cobalt/cream robot with actual four-frame idle poses beside fixed props. The earlier still-image rotation/bob treatment is superseded. Fictional localhost QA covered public/process/demo navigation, all three review batches, 100-XP level-up, retained notes/history/labels, both illustrated empty columns, sign-in/out, light/dark responsive layouts, pause/resume and no horizontal overflow or console errors. Production acceptance is recorded in docs/HANDOFF.md: 0.3.0 live browser public/demo/level-up/pause/mobile checks passed on November 17, with 25 public hashes, 23 access/security checks and unchanged saved state. No production card decisions are used for visual QA.
+
+
+## 0.3.2 card age and XP — November 19, 2026
+
+Fictional browser QA verified fresh/one-day/three-day age labels, the count of cards beyond the 48-hour target, a confirmed late decision earning 5 XP, retained first-decision timing in history and half-filled XP segments. Light/dark themes and 390px phone wrapping were checked without horizontal overflow; no browser warnings/errors. Timing text updates in place to preserve editors. The generic target is distinct from a sender deadline, and decisions are not presented as verified replies. Screenshot evidence is ignored under .local/visual-qa/card-timing.jpg. Physical-device acceptance remains separate. Production browser acceptance is recorded in HANDOFF after publication.

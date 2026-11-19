@@ -5,9 +5,15 @@ $dir=sys_get_temp_dir().'/email-desk-test-'.bin2hex(random_bytes(8));$key=random
 function check(bool $v,string $m):void{global $count;if(!$v)throw new RuntimeException($m);$count++;}
 function rejects(callable $f,string $reason):void{try{$f();throw new RuntimeException('Expected '.$reason);}catch(DeskError $e){check($e->reason===$reason,'Expected '.$reason.', got '.$e->reason);}}
 function op():string{return bin2hex(random_bytes(16));}
-$c=['account'=>'mijatovic@gmail.com','thread_id'=>'abcdef1234567890','message_ids'=>['abcdef1234567890'],'subject'=>'Fictional dinner receipt','sender'=>'Fictional restaurant','date'=>'2026-11-15T10:00:00Z','description'=>'A fictional restaurant payment.','reason'=>'Keep the purchase record.','category'=>'awareness','labels'=>['Dining Out'],'question'=>'','deadline'=>''];
+$c=['account'=>'mijatovic@gmail.com','thread_id'=>'abcdef1234567890','message_ids'=>['abcdef1234567890'],'subject'=>'Fictional dinner receipt','sender'=>'Fictional restaurant','date'=>gmdate('c'),'description'=>'A fictional restaurant payment.','reason'=>'Keep the purchase record.','category'=>'awareness','labels'=>['Dining Out'],'question'=>'','deadline'=>''];
 function pub(DeskStore $s,array $cards,array $over=[]):array{return $s->publish(array_merge(['operation_id'=>op(),'cards'=>$cards,'run'=>['status'=>'success','summary'=>'Fictional review','checkpoints'=>['mijatovic@gmail.com'=>'2026-11-15T10:00:00Z']]],$over));}
 try{
+ $stamp=strtotime('2026-11-19T12:00:00Z');$timed=['date'=>gmdate('c',$stamp)];
+ check(DeskStore::decisionXp($timed,$stamp+48*3600)===10,'exactly 48 hours retains full credit');
+ check(DeskStore::decisionXp($timed,$stamp+48*3600+1)===5,'one second beyond window earns 5');
+ check(DeskStore::decisionXp($timed,$stamp-3600)===10,'future timestamp cannot create a penalty');
+ $timed['attention_started_at']=gmdate('c',$stamp+72*3600);
+ check(DeskStore::decisionXp($timed,$stamp+73*3600)===10,'new request uses fresh window');
  check(count($s->board()['cards'])===0,'starts empty');check($s->board()['runs']===[],'no invented review history');
  $p=['operation_id'=>op(),'cards'=>[$c],'run'=>['status'=>'success','summary'=>'Fictional review']];$r=$s->publish($p);check($r['created']===1,'created');check($s->publish($p)===$r,'publish duplicate acknowledged');check(count($s->board()['runs'])===1,'retry does not duplicate review history');check($s->board()['runs'][0]===['finished_at'=>$r['run']['finished_at'],'status'=>'success'],'review history returns only timing and outcome');$p['run']['summary']='different';rejects(fn()=>$s->publish($p),'operation_reused');
  $b=$s->board()['cards'][0];$a=['operation_id'=>op(),'card_id'=>$b['id'],'revision'=>$b['revision'],'labels'=>['Dining Out','Records/Receipts & Statements'],'note'=>'Fictional personal context: restaurant receipt.','state'=>'handled','category'=>'awareness'];$f=$s->feedback($a);check($f['card']['state']==='handled','handled');check($s->feedback($a)===$f,'feedback idempotent');
@@ -55,5 +61,21 @@ try{
  $wrong=new DeskStore($dir,random_bytes(32));rejects(fn()=>$wrong->board(),'storage');
  $reopened=new DeskStore($dir,$key);check(count($reopened->board()['cards'])===10,'durable restart');
  check($reopened->board()['progress']['xp']===100,'XP survives restart');check($reopened->board()['runs']===$s->board()['runs'],'review history survives restart');
+ // The awarded amount is frozen, encrypted, deduplicated and retained on re-review.
+ $late=$c2;$late['thread_id']='cccccccccccccccc';$late['message_ids']=[$late['thread_id']];$late['date']=gmdate('c',time()-49*3600);unset($late['reopen_reason']);pub($s,[$late]);
+ $lateCard=array_values(array_filter($s->board()['cards'],fn($row)=>$row['thread_id']===$late['thread_id']))[0];
+ $late['date']=gmdate('c');pub($s,[$late]);
+ $lateCard=array_values(array_filter($s->board()['cards'],fn($row)=>$row['id']===$lateCard['id']))[0];
+ check(strtotime($lateCard['attention_started_at'])<time()-48*3600,'new summary date cannot reset target');
+ $lateDecision=['operation_id'=>op(),'card_id'=>$lateCard['id'],'revision'=>$lateCard['revision'],'labels'=>null,'note'=>'','state'=>'handled','category'=>'awareness'];
+ $lateResult=$s->feedback($lateDecision);check($lateResult['xp_earned']===5&&$lateResult['card']['decision_xp']===5,'late decision freezes 5 XP');
+ check($s->feedback($lateDecision)===$lateResult,'late retry returns same award');
+ pub($s,[$late]);check($s->board()['progress']['xp']===105,'scan preserves mixed awards');
+ $restarted=new DeskStore($dir,$key);check($restarted->board()['progress']['xp']===105,'mixed awards survive restart');
+ // Simulate a pre-policy encrypted record without an explicit amount.
+ $db=new PDO('sqlite:'.$dir.'/desk.sqlite');$legacy=$lateResult['card'];unset($legacy['decision_xp']);
+ $nonce=random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);$payload=base64_encode($nonce.sodium_crypto_secretbox(json_encode($legacy),$nonce,$key));
+ $q=$db->prepare('UPDATE cards SET payload=? WHERE id=?');$q->execute([$payload,$legacy['id']]);
+ check($s->board()['progress']['xp']===110,'legacy decision retains its original 10 XP');
  echo "$count storage, isolation, retry, conflict and encryption checks passed.\n";
 }finally{foreach(glob($dir.'/*')as $f)unlink($f);rmdir($dir);}

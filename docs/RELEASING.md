@@ -14,12 +14,12 @@ Normal releases should use the GitHub Actions path after the one-time setup in [
 6. Inspect the live public welcome/demo, responsive layouts, animation pause and sign-in/sign-out. Verify private state read-only. Distinguish browser/CI/live checks from unattended review, physical devices, cross-device acceptance and recovery exercises.
 7. Record the deployed commit, Actions run, release receipt, preservation results and acceptance limits in README/CHANGELOG/HANDOFF. Documentation follow-up commits use the same main/Actions path. Retain private recovery archives; never restore the database for a code-only rollback.
 
-The older owner-connection updater remains an authorized recovery path; it is not needed for routine GitHub releases. It must use the verified domain account, pinned host identity and homepage guard, with private code/database recovery copies and allowlisted manifest hashes. Never use the reviewer key for deployment. Version 0.3.0 needs no schema migration or credential change.
+The older owner-connection updater remains an authorized recovery path; it is not needed for routine GitHub releases. It must use the verified domain account, pinned host identity and homepage guard, with private code/database recovery copies and allowlisted manifest hashes. Never use the reviewer key for deployment. Version 0.3.2 uses additive encrypted payload fields and needs no schema migration or credential change.
 
 ## Rollback
 
 The updater automatically restores only files installed by a failing attempt. For a post-publication rollback, use the selected private `~/.email-desk/releases/arcade-*` backup and its manifest to restore prior code with correct permissions (public files 0644, private server code 0600); remove only newly introduced release files that had no predecessor. Verify the root homepage guard and live acceptance again.
 
-Do not restore the database snapshot for a code rollback: doing so could erase decisions made since publication. The additive `decision_earned_at` and `context_history` payload fields are backward-compatible with the prior server. A database recovery is a separate deliberate procedure. Never expose or copy recovery files into web root.
+Do not restore the database snapshot for a code rollback: doing so could erase decisions made since publication. The additive payload fields remain readable by earlier code. However, releases before 0.3.2 calculate every award as 10 XP and therefore misdisplay new 5-XP awards. Prefer a forward fix or rollback to a timing-aware release; never alter stored award amounts or restore the database to compensate. A database recovery is a separate deliberate procedure. Never expose or copy recovery files into web root.
 
 Unattended review, physical-device/cross-device acceptance and recovery exercises are separate from deployment checks. Do not claim them from unit tests or a desktop preview.
