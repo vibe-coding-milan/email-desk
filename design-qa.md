@@ -1,10 +1,13 @@
 # Card timing and sender follow-up — November 19, 2026
 
-final result: passed (local; production acceptance pending)
+final result: passed (local and production)
 
 Everyday-use feedback identified timing-dependent red/amber card edges shifting sender/content dividers and raw quoted mailbox headers overfilling the sender column. Removed those side rules/padding, hid the exhausted meter and used a quiet amber past-target pill. Standard single-mailbox display names now appear without outer quotes; the original remains in the hover title. Bare addresses and ambiguous lists are preserved. No real message fixtures were added.
 
 Fictional owner preview checked 1440px light/dark and 390px dark: fresh and late cards share aligned edges/dividers; late cards have no meter; sender names wrap cleanly with original hover values; no horizontal overflow or browser warnings/errors. Screenshot: ignored .local/card-polish/desktop.jpg. Shared checks and sender/timing cases passed. XP policy and stored data are unchanged. Physical devices and screen-reader acceptance remain separate.
+
+
+Published through [PR #7](https://github.com/vibe-coding-milan/email-desk/pull/7), commit `125393a2f9ee5162a08f4840eb6a640357be2dde`, release `arcade-20261119T195734457313Z`. [Deploy Email Desk](https://github.com/vibe-coding-milan/email-desk/actions/runs/44603489054) passed, including public verification. Independent acceptance verified all 27 public hashes, the unchanged homepage, all 23 live access checks and exact preservation of all 32 saved cards, comments, decisions, checkpoints and XP. Live browser verified the 0.4.1 version link, owner sign-in, friendly sender/original hover value, aligned fresh/late dividers, no exhausted meters, light/dark desktop and 390px wrapping without horizontal overflow or browser warnings/errors. Owner inspection was read-only; private screenshots remain ignored. Physical-device, cross-device and screen-reader acceptance remain separate.
 
 ---
 

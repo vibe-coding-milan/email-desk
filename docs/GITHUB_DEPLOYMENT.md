@@ -57,3 +57,8 @@ The subsequent documentation-only deployment https://github.com/vibe-coding-mila
 ## 0.4.0 acceptance — November 19, 2026
 
 [PR #6](https://github.com/vibe-coding-milan/email-desk/pull/6) merged as 9a21d30d3555dc2a9308aca1892adcb0cfa5d0fb. [Deploy Email Desk](https://github.com/vibe-coding-milan/email-desk/actions/runs/44598409634) passed including public verification, publishing arcade-20261119T192807422976Z. Receipt and 27 served public hashes matched; all 23 independent live access checks and exact 32-card/checkpoint/progress preservation passed. No trust/bootstrap, key, owner-login or backend changes. Documentation-only follow-ups may have newer receipts with identical runtime files.
+
+
+## 0.4.1 acceptance — November 19, 2026
+
+Published through [PR #7](https://github.com/vibe-coding-milan/email-desk/pull/7), commit `125393a2f9ee5162a08f4840eb6a640357be2dde`, release `arcade-20261119T195734457313Z`. [Deploy Email Desk](https://github.com/vibe-coding-milan/email-desk/actions/runs/44603489054) passed, including public verification. Independent acceptance verified all 27 public hashes, the unchanged homepage, all 23 live access checks and exact preservation of all 32 saved cards, comments, decisions, checkpoints and XP. Live browser verified the 0.4.1 version link, owner sign-in, friendly sender/original hover value, aligned fresh/late dividers, no exhausted meters, light/dark desktop and 390px wrapping without horizontal overflow or browser warnings/errors. Owner inspection was read-only; private screenshots remain ignored. No bootstrap, credential, backend, schedule or master-playbook changes. Documentation-only follow-ups may have newer receipts with identical runtime files.
