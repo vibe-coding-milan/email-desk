@@ -47,15 +47,36 @@ function reviewStatus(now, runs = []) {
   return {slots, next, fraction, phase, finalDue};
 }
 // End schedule helpers.
+// Card timing uses elapsed hours, independent of timezone and daylight saving.
+function cardTiming(c, now) {
+  const received = Date.parse(c.date), start = Date.parse(c.attention_started_at || c.reopened_at || c.date);
+  const duration = ms => {
+    const hours = Math.floor(Math.max(0, ms) / 3600000), days = Math.floor(hours / 24);
+    return days ? days + (days === 1 ? ' day' : ' days') : hours ? hours + (hours === 1 ? ' hour' : ' hours') : 'less than an hour';
+  };
+  if (!Number.isFinite(start) || !Number.isFinite(received)) return {tone:'unknown', text:'Message age unavailable', late:false};
+  const age = Math.max(0, now - start), late = age > 48 * 3600000;
+  const receivedText = received > now ? 'Received date is in the future' : 'Received ' + duration(now - received) + ' ago';
+  if (c.state !== 'open') {
+    const decided = Date.parse(c.decision_earned_at);
+    return {tone:'resolved', late:false, text:Number.isFinite(decided) ? 'First decision after ' + duration(decided - Date.parse(c.decision_started_at || c.date)) + ' · ' + (c.decision_xp ?? 10) + ' XP earned' : receivedText};
+  }
+  const remaining = Math.max(0, Math.ceil((48 * 3600000 - age) / 3600000));
+  const clock = c.reopened_at ? 'New request open for ' + duration(age) : start !== received ? 'Open for ' + duration(age) + ' · ' + receivedText : receivedText;
+  return {tone:late ? 'late' : age >= 24 * 3600000 ? 'soon' : 'fresh', late,
+    text:clock + ' · ' + (c.decision_earned_at ? (late ? 'Past 48h target' : remaining + 'h to 48h target') + ' · XP already earned' : late ? 'Past 48h target · 5 XP available' : '10 XP available · ' + (remaining ? remaining + 'h left' : '48h target now'))};
+}
+// End card timing helpers.
+
 // Guest day engine: fictional state only; no network, storage or real clock reads.
 const guestTimes = ['2026-11-16T14:00:00Z', '2026-11-16T18:00:00Z', '2026-11-16T22:30:00Z'].map(Date.parse);
 function createGuestDay(batches) {
-  return {stage:0, now:guestTimes[0], cards:batches[0].map(c => ({...c, state:'open', note:'', earned:false})), xp:0, travelling:false, travel:0};
+  return {stage:0, now:guestTimes[0], cards:batches[0].map(c => ({...c, date:new Date(guestTimes[0]).toISOString(), state:'open', note:'', earned:false})), xp:0, travelling:false, travel:0};
 }
 function resolveGuestCard(state, id, outcome) {
   const card = state.cards.find(c => c.id === id);
   if (!card || card.state !== 'open' || !['handled', 'dismissed'].includes(outcome)) return 0;
-  card.state = outcome;
+  card.state = outcome; card.decision_earned_at = new Date(state.now).toISOString(); card.decision_xp = 10;
   const earned = card.earned ? 0 : 10; card.earned = true; state.xp += earned;
   if (!state.cards.some(c => c.state === 'open') && state.stage < 2) { state.travelling = true; state.travel = 0; }
   return earned;
@@ -66,7 +87,7 @@ function advanceGuestDay(state, elapsed, batches) {
   state.now = guestTimes[state.stage] + (guestTimes[state.stage + 1] - guestTimes[state.stage]) * state.travel;
   if (state.travel < 1) return false;
   state.stage++; state.travelling = false;
-  state.cards.push(...batches[state.stage].map(c => ({...c, state:'open', note:'', earned:false})));
+  state.cards.push(...batches[state.stage].map(c => ({...c, date:new Date(guestTimes[state.stage]).toISOString(), state:'open', note:'', earned:false})));
   return true;
 }
 // End guest day engine.
@@ -140,14 +161,14 @@ function celebrate(earned, levelUp) {
 $('closeToast').onclick = () => { clearTimeout(toastTimer); $('toast').hidden = true; };
 function progress() {
   // Derive from durable server-authored awards, never from browser clicks or current status.
-  const decisions = data.cards.filter(c => c.decision_earned_at).length, xp = decisions * 10;
+  const awarded = data.cards.filter(c => c.decision_earned_at), decisions = awarded.length, xp = awarded.reduce((sum, c) => sum + (c.decision_xp ?? 10), 0);
   return {xp, decisions, level: Math.floor(xp / 100) + 1, levelXP: xp % 100};
 }
 function renderProgress() {
   const p = progress(); $('level').textContent = 'Level ' + String(p.level).padStart(2, '0'); $('levelXP').textContent = p.levelXP + ' / 100 XP';
   $('xpMeter').setAttribute('aria-valuenow', p.levelXP); $('xpMeter').setAttribute('aria-valuetext', p.levelXP + ' of 100 XP toward level ' + (p.level + 1));
-  $('xpMeter').replaceChildren(...Array.from({length: 10}, (_, i) => { const segment = node('span', 'xp-segment' + (i < p.levelXP / 10 ? ' filled' : '')); segment.setAttribute('aria-hidden', 'true'); return segment; }));
-  $('progressDetails').textContent = p.decisions + (p.decisions === 1 ? ' decision' : ' decisions') + ' · ' + p.xp + ' total XP. 10 XP per card handled or dismissed, once per card. Level up every 100 XP.';
+  $('xpMeter').replaceChildren(...Array.from({length: 10}, (_, i) => { const segment = node('span', 'xp-segment' + (i < Math.floor(p.levelXP / 10) ? ' filled' : i < p.levelXP / 10 ? ' half' : '')); segment.setAttribute('aria-hidden', 'true'); return segment; }));
+  $('progressDetails').textContent = p.decisions + (p.decisions === 1 ? ' decision' : ' decisions') + ' · ' + p.xp + ' total XP. 10 XP within 48 hours of receipt; 5 XP afterward. Once per card, handled or dismissed. Past awards stay earned. Level up every 100 XP.';
 }
 function renderReviewDay() {
   const meter = $('reviewMeter');
@@ -220,7 +241,18 @@ function render() {
   $('empty').querySelector('h2').textContent = boardReadFailed || (data.run && data.run.status !== 'success') ? 'No active saved cards. Coverage needs attention.' : history.length ? 'Board cleared. Nicely done.' : !data.run ? 'Your board is getting started.' : data.run.status === 'success' ? 'You’re up to date.' : 'No saved cards yet.';
   $('empty').querySelector('p').textContent = boardReadFailed || (data.run && data.run.status !== 'success') ? 'An empty board is not a confirmed all-clear. Check the review notice for coverage details.' : history.length ? 'Decisions saved in history. New cards appear automatically.' : !data.run ? 'Waiting for the first review. Planned times are above.' : data.run.status === 'success' ? 'The latest review found no cards to add.' : 'The latest review could not cover everything. See the review notice for details.';
   if (!data.run && !data.cards.length) $('deskGuide').open = true;
-  renderProgress(); scanStatus(); renderReviewDay();
+  renderProgress(); scanStatus(); renderReviewDay(); renderCardTiming();
+}
+function renderCardTiming() {
+  const now = Date.now();
+  for (const c of data.cards) {
+    const element = document.getElementById('card-' + c.id)?.querySelector('.card-timing');
+    if (!element) continue;
+    const timing = cardTiming(c, now); element.textContent = timing.text; element.className = 'card-timing ' + timing.tone;
+  }
+  const late = data.cards.filter(c => c.state === 'open' && cardTiming(c, now).late).length;
+  $('attentionNote').hidden = !late;
+  $('attentionNote').textContent = late + (late === 1 ? ' card has' : ' cards have') + ' been waiting more than 48 hours. Start with one.';
 }
 function selectField(form, labelText, values, current, name) {
   const label = node('label', 'field', labelText), select = node('select'); select.name = name;
@@ -233,7 +265,7 @@ function card(c) {
   summary.append(meta, node('h3', '', c.subject), node('p', 'description', c.description));
   const tags = node('div', 'tags'); for (const l of labels(c)) tags.append(node('span', 'tag', l));
   if (c.state !== 'open') tags.append(node('span', 'tag', c.state === 'handled' ? 'Handled' : 'Dismissed'));
-  summary.append(tags); details.append(summary);
+  const timing = node('p', 'card-timing'); timing.dataset.cardTiming = c.id; summary.append(timing, tags); details.append(summary);
   const body = node('div', 'card-body'); body.id = 'details-' + c.id; body.hidden = !opened.has(c.id); wrapper.classList.toggle('expanded', !body.hidden);
   if (c.reason) body.append(node('p', 'reason', c.reason)); if (c.deadline) body.append(node('p', 'deadline', c.deadline)); if (c.question) body.append(node('p', 'question', c.question));
   if (c.context_history?.length) {
@@ -323,8 +355,8 @@ async function refresh(automatic = false) {
 $('loginForm').onsubmit = async e => { e.preventDefault(); const button = e.submitter; button.disabled = true; $('error').hidden = true; try { const r = await api('login', {password: $('password').value}); csrf = r.csrf; $('password').value = ''; signedIn(true); await refresh(); } catch (e) { error(e.message); } finally { button.disabled = false; } };
 // Read saved data only. Never starts a reviewer or mutates Gmail.
 setInterval(() => { if (!document.hidden && !$('workspace').hidden) refresh(true); }, 60000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden && !$('workspace').hidden) { renderReviewDay(); refresh(true); } });
-setInterval(() => { if (!$('workspace').hidden) renderReviewDay(); }, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && !$('workspace').hidden) { renderReviewDay(); renderCardTiming(); refresh(true); } });
+setInterval(() => { if (!$('workspace').hidden) { renderReviewDay(); renderCardTiming(); } }, 60000);
 $('logout').onclick = async () => {
   if (saving.size || (drafts.size && !confirm('Sign out with unsaved feedback?'))) return;
   try { await api('logout', {}); data = {cards: [], labels: [], run: null}; boardLoaded = false; boardReadFailed = false; renderReviewDay(); drafts.clear(); attempts.clear(); opened.clear(); $('toast').hidden = true; clearTimeout(toastTimer); clearTimeout(rewardTimer); $('reward').hidden = true; signedIn(false); const s = await api('session'); csrf = s.csrf; } catch (e) { error(e.message); }
@@ -394,7 +426,7 @@ today(); setInterval(today, 60000);
     $('demoMeter').setAttribute('aria-valuenow', xp);
     $('demoMeter').setAttribute('aria-valuetext', xp + ' of 100 XP toward level ' + (level + 1));
     $('demoMeter').replaceChildren(...Array.from({length:10}, (_,i) => node('span','xp-segment' + (i < xp / 10 ? ' filled' : ''))));
-    $('demoProgressDetails').textContent = state.xp + ' demo XP. 10 XP per decision. Level up every 100 XP.';
+    $('demoProgressDetails').textContent = state.xp + ' demo XP. 10 XP within 48 hours; 5 XP afterward. This demo stays within one day.';
   }
   function renderDemo() {
     $('demoBoard').classList.remove('demo-arrival');
@@ -434,7 +466,7 @@ today(); setInterval(today, 60000);
     summary.append(meta, node('h3','',c.subject), node('p','description',c.description));
     const tags = node('div','tags'); for (const label of c.labels ?? [c.label]) tags.append(node('span','tag',label));
     if (c.state !== 'open') tags.append(node('span','tag',c.state === 'handled' ? 'Handled' : 'Dismissed'));
-    summary.append(tags); article.append(summary);
+    const timing = cardTiming(c, state.now); summary.append(node('p','card-timing ' + timing.tone,timing.text), tags); article.append(summary);
     const body = node('div','card-body'); body.id = 'demo-details-' + c.id; body.hidden = !c.expanded;
     article.classList.toggle('expanded', !!c.expanded);
     body.append(node('p','reason',c.reason), node('p','',c.next), node('span','account','Sample account · No original email'));

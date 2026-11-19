@@ -1242,3 +1242,11 @@ textarea::placeholder,input::placeholder { color:var(--muted); opacity:1; }
   .cover-art { min-height:360px; }
   .process-section>h2,.guest-about h2 { font-size:1.5rem; }
 }
+
+/* Quiet, text-labelled urgency; no pulsing or color-only status. */
+.card-timing {font-size:.875rem; line-height:1.5; color:var(--muted); margin:.7rem 0; overflow-wrap:anywhere;}
+.card-timing.soon {color:var(--notice);}
+.card-timing.late {color:var(--error); border-inline-start:3px solid currentColor; padding-inline-start:.65rem;}
+.attention-note {font-size:.9375rem; color:var(--notice); margin:1rem 0;}
+
+.xp-segment.half {background:linear-gradient(to right,var(--blue) 50%,transparent 50%);}

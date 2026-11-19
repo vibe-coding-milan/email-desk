@@ -14,11 +14,12 @@ See [the board implementation](../public/app.js) and [the storage model](../serv
 
 ## Refine behavior through use
 
-Three iterations illustrate how I work:
+Four iterations illustrate how I work:
 
 | Observation | Change | Evidence |
 | --- | --- | --- |
 | A countdown and extra review controls made the daily rhythm harder to understand. | Replaced them with a connected time track, actual publication marks, and explicit Due/Missed states. Elapsed time never implies a successful review. | [Timing tests](../tests/review-timing.mjs), [schedule tests](../tests/review_schedule.py), [0.2.1–0.2.3 release notes](../CHANGELOG.md) |
+| Cards could remain unhandled for days without a visible cost to postponing. | Show receipt age and a gentle 48-hour target; award 10 XP within the window and 5 afterward, preserving past awards. | [Card timing tests](../tests/card-timing.mjs), [storage checks](../tests/store.php), [0.3.2 release notes](../CHANGELOG.md) |
 | A new machine summary could otherwise overwrite useful context or obscure an unfinished request. | Preserve notes, corrections, decisions, and earlier machine context; require an explicit reason to reopen handled work. | [Store](../server/Store.php), [storage checks](../tests/store.php), [reviewer contract](REVIEWER.md) |
 | Moving a still image did not deliver the intended character animation. | Replaced the treatment with four drawn idle poses beside stationary props, plus pause, offscreen pausing, and a reduced-motion still. | [Sprite design notes and prompt](COMPANION-IDLE.md), [styles](../public/styles.css) |
 
