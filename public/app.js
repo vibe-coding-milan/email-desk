@@ -52,7 +52,7 @@ function cardTiming(c, now) {
   const received = Date.parse(c.date), start = Date.parse(c.attention_started_at || c.reopened_at || c.date);
   const duration = ms => {
     const hours = Math.floor(Math.max(0, ms) / 3600000), days = Math.floor(hours / 24);
-    return days ? days + (days === 1 ? ' day' : ' days') : hours ? hours + (hours === 1 ? ' hour' : ' hours') : 'less than an hour';
+    return days ? days + (days === 1 ? ' day' : ' days') : hours ? hours + (hours === 1 ? ' hour' : ' hours') : 'under 1 hour';
   };
   if (!Number.isFinite(start) || !Number.isFinite(received)) return {tone:'unknown', text:'Message age unavailable', late:false};
   const age = Math.max(0, now - start), late = age > 48 * 3600000;
@@ -64,7 +64,7 @@ function cardTiming(c, now) {
   const remaining = Math.max(0, Math.ceil((48 * 3600000 - age) / 3600000));
   const clock = c.reopened_at ? 'New request open for ' + duration(age) : start !== received ? 'Open for ' + duration(age) + ' · ' + receivedText : receivedText;
   return {tone:late ? 'late' : age >= 24 * 3600000 ? 'soon' : 'fresh', late,
-    text:clock + ' · ' + (c.decision_earned_at ? (late ? 'Past 48h target' : remaining + 'h to 48h target') + ' · XP already earned' : late ? 'Past 48h target · 5 XP available' : '10 XP available · ' + (remaining ? remaining + 'h left' : '48h target now'))};
+    text:clock + ' · ' + (c.decision_earned_at ? (late ? 'Past 48h target' : remaining + 'h left') + ' · XP already earned' : late ? 'Past 48h target · 5 XP available' : '10 XP available · ' + (remaining ? remaining + 'h left' : '48h target now'))};
 }
 // End card timing helpers.
 
@@ -108,14 +108,7 @@ function watchCompanion(art) {
 }
 for (const art of document.querySelectorAll('.agent-idle')) watchCompanion(art);
 const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
-let motionPaused = false;
-function syncMotion() {
-  document.documentElement.classList.toggle('motion-paused', motionPaused || motionPreference.matches);
-  $('toggleMotion').disabled = motionPreference.matches;
-  $('toggleMotion').textContent = motionPreference.matches ? 'Animation off' : motionPaused ? 'Resume animation' : 'Pause animation';
-  $('toggleMotion').setAttribute('aria-pressed', String(motionPaused || motionPreference.matches));
-}
-$('toggleMotion').onclick = () => { motionPaused = !motionPaused; syncMotion(); };
+function syncMotion() { document.documentElement.classList.toggle('motion-paused', motionPreference.matches); }
 motionPreference.addEventListener('change', syncMotion); syncMotion();
 const errors = {sign_in: 'Please sign in again. Your unsaved feedback is kept on this page.', invalid_login: 'That password did not work.', try_later: 'Too many sign-in attempts. Please wait 15 minutes.', conflict: 'This card changed. Your edits are preserved. Reload the latest card before saving.', not_configured: 'Email Desk is not configured yet.', origin: 'This request was blocked. Reload the page and try again.', csrf: 'Your session changed. Reload the page before trying again.', temporary: 'The server is unavailable. Displayed cards may be out of date.'};
 function error(message) { $('error').textContent = message; $('error').hidden = false; }
@@ -130,16 +123,40 @@ async function api(action, body) {
 function signedIn(value) {
   if (value) { guestActive = false; stopGuest(); }
   $('login').hidden = value || guestActive; $('welcome').hidden = value || guestActive;
-  $('ownerLink').hidden = value; $('demoBack').hidden = value || !guestActive;
+  $('ownerLink').hidden = value || guestActive; $('demoBack').hidden = value || !guestActive;
   $('guestDemo').hidden = value || !guestActive;
   $('workspace').hidden = !value; $('logout').hidden = !value;
   $('skipLink').href = value ? '#workspace' : guestActive ? '#guestDemo' : '#welcome';
   if (!value) $('ownerLogin').open = false;
+  document.querySelector('.appearance').open = false;
+  $('navBoard').setAttribute('aria-current','page'); $('navHistory').removeAttribute('aria-current');
+  document.body.dataset.view = value ? 'workspace' : guestActive ? 'demo' : 'welcome';
+  document.querySelector('.desk-nav').hidden = !(value || guestActive);
+  const previousProgress = $('railProgress').firstElementChild;
+  if (previousProgress) $(previousProgress.id === 'progressInfo' ? 'workspace' : 'guestDemo').querySelector('.status-strip').prepend(previousProgress);
+  const progress = value ? $('progressInfo') : document.querySelector('#guestDemo .progress-info');
+  if (value || guestActive) $('railProgress').replaceChildren(progress);
+  $('railProgress').hidden = !(value || guestActive);
+  $('navHistoryCount').textContent = value ? data.cards.filter(c => c.state !== 'open').length || '' : '';
+
 }
+function goToDesk(historyView = false) {
+  if ($('workspace').hidden && !guestActive) return;
+  const target = $(guestActive ? (historyView ? 'demoHistory' : 'guestDemo') : (historyView ? 'history' : 'workspace'));
+  if (target.hidden) { notify('No handled or dismissed cards yet.'); return; }
+  if (historyView) target.open = true;
+  target.tabIndex = -1; target.focus({preventScroll:true}); target.scrollIntoView({block:'start'});
+  $('navBoard').toggleAttribute('aria-current', !historyView); $('navHistory').toggleAttribute('aria-current', historyView);
+  if (historyView) $('navHistory').setAttribute('aria-current','location'); else $('navBoard').setAttribute('aria-current','page');
+}
+$('navBoard').onclick = () => goToDesk();
+$('navHistory').onclick = () => goToDesk(true);
+$('brandHome').onclick = e => { if (!$('workspace').hidden || guestActive) { e.preventDefault(); goToDesk(); } };
 function interactionLock() {
   const locked = refreshing || saving.size > 0;
   $('board').inert = locked; $('history').inert = locked;
   $('logout').disabled = locked;
+  $('navBoard').disabled = locked; $('navHistory').disabled = locked;
 }
 function dateLabel(date) { const d = new Date(date); return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString([], {month: 'short', day: 'numeric'}); }
 const category = c => c.user_category || c.category;
@@ -151,9 +168,10 @@ function celebrate(earned, levelUp) {
   if (!earned && !levelUp) return;
   clearTimeout(rewardTimer);
   $('rewardArt').hidden = !levelUp;
-  $('rewardTitle').textContent = levelUp ? 'LEVEL UP!' : 'DECISION COMPLETE';
+  $('rewardTitle').hidden = !levelUp; $('rewardDetail').hidden = true;
+  $('rewardTitle').textContent = levelUp ? 'LEVEL UP' : '';
   $('rewardValue').textContent = levelUp ? 'LEVEL ' + progress().level : '+' + earned + ' XP';
-  $('rewardDetail').textContent = levelUp ? 'Another level of clarity.' : 'One less thing on your mind.';
+  $('rewardDetail').textContent = levelUp ? '' : '';
   $('reward').hidden = false;
   $('reward').classList.remove('reward-enter'); void $('reward').offsetWidth; $('reward').classList.add('reward-enter');
   rewardTimer = setTimeout(() => { $('reward').hidden = true; }, levelUp ? 4500 : 2200);
@@ -174,20 +192,18 @@ function renderReviewDay() {
   const meter = $('reviewMeter');
   if (!boardLoaded) {
     $('reviewHeading').textContent = boardReadFailed ? 'Updates unavailable' : 'Loading updates…';
+    $('reviewNote').hidden = false;
     $('reviewNote').textContent = boardReadFailed ? 'Could not load the board. It will retry automatically.' : 'Checking saved review results.';
     meter.removeAttribute('value'); $('reviewSlots').replaceChildren(); return;
   }
   const now = Date.now(), runs = data.runs || (data.run ? [data.run] : []), timing = reviewStatus(now, runs);
   const clock = new Intl.DateTimeFormat('en-US', {timeZone: reviewZone, hour:'numeric', minute:'2-digit'});
-  const timeLabel = value => clock.format(value).replace(':00', '');
+  const timeLabel = value => clock.format(value).replace(':00', '').replace(' ', '\u00a0');
   const captions = {updated:'Updated', partial:'Partial', failed:'Failed', due:'Due', missed:'Missed', next:'Next', later:'Later'};
-  $('reviewHeading').textContent = 'Today’s updates';
+  $('reviewHeading').textContent = 'Today’s reviews · New York';
   meter.value = timing.fraction; meter.setAttribute('aria-valuetext', Math.round(timing.fraction * 100) + '% of today’s route from ' + timeLabel(timing.slots[0].time) + ' to ' + timeLabel(timing.slots.at(-1).time) + ' New York time. Checkpoints show actual publication results; the route measures time.');
-  const latest = runs.filter(r => Number.isFinite(Date.parse(r.finished_at)) && Date.parse(r.finished_at) <= now).sort((a,b) => Date.parse(b.finished_at) - Date.parse(a.finished_at))[0];
-  const dateKey = value => new Intl.DateTimeFormat('en-CA', {timeZone: reviewZone}).format(value);
-  const nextText = timing.finalDue ? 'Next tomorrow ' + timeLabel(timing.next) + ' · New York' : 'New York time';
-  const lastText = latest ? 'Last update ' + (dateKey(new Date(latest.finished_at)) === dateKey(new Date(now)) ? '' : new Intl.DateTimeFormat('en-US', {timeZone: reviewZone, month:'short', day:'numeric'}).format(new Date(latest.finished_at)) + ' ') + timeLabel(new Date(latest.finished_at)) : 'First review not published yet';
-  $('reviewNote').textContent = boardReadFailed ? 'Connection lost · showing saved results' : nextText + ' · ' + lastText;
+  $('reviewNote').hidden = !boardReadFailed;
+  $('reviewNote').textContent = boardReadFailed ? 'Connection lost · showing saved results' : '';
   $('reviewSlots').replaceChildren(...timing.slots.map(slot => {
     const item = node('li', 'review-slot ' + slot.state), mark = node('span', 'slot-mark'); mark.setAttribute('aria-hidden', 'true');
     if (slot.state === 'updated') mark.append(icon('check'));
@@ -234,40 +250,61 @@ function render() {
     for (const c of group) $(cat + 'Cards').append(card(c));
     if (!group.length) $(cat + 'Cards').append(emptyColumn(cat, boardReadFailed || (data.run && data.run.status !== 'success') ? 'unconfirmed' : !data.run ? 'waiting' : 'clear'));
   }
-  const history = data.cards.filter(c => c.state !== 'open'); $('history').hidden = !history.length;
+  const history = data.cards.filter(c => c.state !== 'open'); $('navHistoryCount').textContent = history.length || ''; if (!history.length) { $('navBoard').setAttribute('aria-current','page'); $('navHistory').removeAttribute('aria-current'); } $('history').hidden = !history.length;
   $('historyTitle').textContent = 'Handled & dismissed · ' + history.length;
   for (const c of history) $('historyCards').append(card(c));
   $('history').open = historyOpen; $('empty').hidden = !!active.length;
-  $('empty').querySelector('h2').textContent = boardReadFailed || (data.run && data.run.status !== 'success') ? 'No active saved cards. Coverage needs attention.' : history.length ? 'Board cleared. Nicely done.' : !data.run ? 'Your board is getting started.' : data.run.status === 'success' ? 'You’re up to date.' : 'No saved cards yet.';
+  $('empty').querySelector('h2').textContent = boardReadFailed || (data.run && data.run.status !== 'success') ? 'No active saved cards. Coverage needs attention.' : history.length ? 'No active cards' : !data.run ? 'Your board is getting started.' : data.run.status === 'success' ? 'You’re up to date.' : 'No saved cards yet.';
   $('empty').querySelector('p').textContent = boardReadFailed || (data.run && data.run.status !== 'success') ? 'An empty board is not a confirmed all-clear. Check the review notice for coverage details.' : history.length ? 'Decisions saved in history. New cards appear automatically.' : !data.run ? 'Waiting for the first review. Planned times are above.' : data.run.status === 'success' ? 'The latest review found no cards to add.' : 'The latest review could not cover everything. See the review notice for details.';
-  if (!data.run && !data.cards.length) $('deskGuide').open = true;
   renderProgress(); scanStatus(); renderReviewDay(); renderCardTiming();
+}
+// Compact visual timing keeps the full policy/date explanation available to assistive tech and focus.
+function timingBadge(c, now) {
+  const badge = node('div','card-timing'); updateTimingBadge(badge,c,now); return badge;
+}
+function updateTimingBadge(badge,c,now) {
+  const timing = cardTiming(c,now), hours = Math.max(0,Math.floor((now-Date.parse(c.date))/3600000));
+  badge.className = 'card-timing ' + timing.tone; badge.replaceChildren();
+  badge.tabIndex = 0; badge.setAttribute('role','group'); badge.setAttribute('aria-label',timing.text); badge.title = timing.text;
+  const visual = node('span','timing-visual'); visual.setAttribute('aria-hidden','true');
+  const age = Date.parse(c.date) > now ? 'Date ahead' : Number.isFinite(hours) ? hours >= 24 ? Math.floor(hours/24) + 'd old' : hours ? hours + 'h old' : '<1h old' : 'Age unknown';
+  visual.append(node('span','age-chip',age));
+  if (c.state === 'open' && !c.decision_earned_at) {
+    const start = Date.parse(c.attention_started_at || c.reopened_at || c.date);
+    if (Number.isFinite(start)) { const meter = node('meter','age-meter'); meter.min=0; meter.max=48; meter.value=Math.max(0,Math.min(48,48-(now-start)/3600000)); visual.append(meter); }
+    if (timing.late) visual.append(node('span','age-target','Past 48h'));
+  }
+  visual.append(node('span','xp-chip',c.decision_earned_at ? (c.decision_xp ?? 10) + ' XP earned' : timing.tone === 'unknown' ? 'XP on decision' : (timing.late ? '5' : '10') + ' XP'));
+  const explanation=node('span','timing-detail',timing.text + (c.state === 'open' && !c.decision_earned_at ? ' Meter: time left for 10 XP; 5 XP afterward. This is not a sender deadline.' : '')); explanation.setAttribute('aria-hidden','true'); badge.append(visual,explanation);
 }
 function renderCardTiming() {
   const now = Date.now();
-  for (const c of data.cards) {
-    const element = document.getElementById('card-' + c.id)?.querySelector('.card-timing');
-    if (!element) continue;
-    const timing = cardTiming(c, now); element.textContent = timing.text; element.className = 'card-timing ' + timing.tone;
-  }
-  const late = data.cards.filter(c => c.state === 'open' && cardTiming(c, now).late).length;
-  $('attentionNote').hidden = !late;
-  $('attentionNote').textContent = late + (late === 1 ? ' card has' : ' cards have') + ' been waiting more than 48 hours. Start with one.';
+  for (const c of data.cards) { const element = document.getElementById('card-' + c.id)?.querySelector('.card-timing'); if (element) updateTimingBadge(element,c,now); }
 }
-function selectField(form, labelText, values, current, name) {
-  const label = node('label', 'field', labelText), select = node('select'); select.name = name;
-  for (const [v, t] of values) select.append(new Option(t, v)); select.value = current; label.append(select); form.append(label); return select;
+function bucketField(form,current) {
+  const group = node('fieldset','bucket-picker'), options=node('div','bucket-options'); group.append(node('legend','','Bucket'));
+  for (const [value,caption] of [['action','Needs action'],['awareness','Worth knowing']]) {
+    const label=node('label'), input=node('input'); input.type='radio'; input.name='category'; input.value=value; input.checked=current===value;
+    label.append(input,node('span','',caption)); options.append(label);
+  }
+  group.append(options);
+  Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked').value}); form.append(group); return group;
+}
+function labelSearch(picker,boxes) {
+  const label=node('label','label-search','Find a label'), input=node('input'); input.type='search'; input.placeholder='Search labels'; label.append(input); picker.append(label);
+  input.oninput=()=>{ const query=input.value.trim().toLocaleLowerCase(); for(const option of boxes.children) option.hidden=!option.textContent.toLocaleLowerCase().includes(query); };
 }
 function card(c) {
   const draft = drafts.get(c.id), wrapper = node('article', 'card'), details = node('div', 'card-details'); wrapper.id = 'card-' + c.id;
   const summary = node('div', 'card-summary'), meta = node('div', 'meta'), time = node('time', '', dateLabel(c.date)); time.dateTime = c.date;
   meta.append(node('span', '', c.sender), time);
   summary.append(meta, node('h3', '', c.subject), node('p', 'description', c.description));
+  if (c.deadline) summary.append(node('p', 'deadline', c.deadline));
   const tags = node('div', 'tags'); for (const l of labels(c)) tags.append(node('span', 'tag', l));
   if (c.state !== 'open') tags.append(node('span', 'tag', c.state === 'handled' ? 'Handled' : 'Dismissed'));
-  const timing = node('p', 'card-timing'); timing.dataset.cardTiming = c.id; summary.append(timing, tags); details.append(summary);
+  const timing = timingBadge(c,Date.now()), context = node('div', 'card-context'); timing.dataset.cardTiming = c.id; context.append(timing, tags); summary.append(context); details.append(summary);
   const body = node('div', 'card-body'); body.id = 'details-' + c.id; body.hidden = !opened.has(c.id); wrapper.classList.toggle('expanded', !body.hidden);
-  if (c.reason) body.append(node('p', 'reason', c.reason)); if (c.deadline) body.append(node('p', 'deadline', c.deadline)); if (c.question) body.append(node('p', 'question', c.question));
+  if (c.reason) body.append(node('p', 'reason', c.reason)); if (c.question) body.append(node('p', 'question', c.question));
   if (c.context_history?.length) {
     const history = node('details', 'earlier-context'); history.append(node('summary', '', 'Earlier context · ' + c.context_history.length));
     for (const previous of [...c.context_history].reverse()) {
@@ -277,34 +314,35 @@ function card(c) {
     }
     body.append(history);
   }
-  const link = node('a', 'email-link', 'Open email'); link.append(icon('right')); link.href = 'https://mail.google.com/mail/u/?authuser=' + encodeURIComponent(c.account) + '#all/' + encodeURIComponent(c.thread_id); link.target = '_blank'; link.rel = 'noopener noreferrer'; body.append(link, node('span', 'account', c.account));
+  const link = node('a', 'email-link primary', 'Open email'); link.append(icon('right')); link.href = 'https://mail.google.com/mail/u/?authuser=' + encodeURIComponent(c.account) + '#all/' + encodeURIComponent(c.thread_id); link.target = '_blank'; link.rel = 'noopener noreferrer'; body.append(node('span', 'account', c.account));
   const form = node('form', 'feedback-form'); form.setAttribute('aria-label', 'Feedback for ' + c.subject);
   const fields = node('fieldset', 'feedback-fields'), row = node('div', 'fields');
-  const cat = selectField(row, 'Category', [['action', 'Needs action'], ['awareness', 'Worth knowing']], draft?.category ?? category(c), 'category');
-  const state = selectField(row, 'Status', [['open', 'Active'], ['handled', 'Handled'], ['dismissed', 'Dismissed']], draft?.state ?? c.state, 'state'); fields.append(row);
+  const cat = bucketField(row,draft?.category ?? category(c)); let decision = c.state; fields.append(row);
   const picker = node('details', 'label-picker'), pickerSummary = node('summary', '', 'Labels'), boxes = node('div', 'label-options'), chosen = draft?.labels ?? labels(c); picker.append(pickerSummary);
   for (const l of data.labels) { const label = node('label'), box = node('input'); box.type = 'checkbox'; box.name = 'labels'; box.value = l; box.checked = chosen.includes(l); label.append(box, node('span', '', l)); boxes.append(label); }
-  picker.append(boxes); fields.append(picker);
+  labelSearch(picker,boxes); picker.append(boxes); fields.append(picker);
   const noteLabel = node('label', 'field', 'Note'), note = node('textarea'); note.name = 'note'; note.rows = 3; note.maxLength = 8000; note.placeholder = 'Add context for the next review.'; note.value = draft?.note ?? c.note ?? ''; noteLabel.append(note); fields.append(noteLabel); form.append(fields);
   const result = node('p', 'save-result', draft ? 'Unsaved changes' : c.feedback_status ? feedbackLabel[c.feedback_status] || c.feedback_status : ''); result.setAttribute('role', 'status'); if (c.feedback_explanation) result.title = c.feedback_explanation;
-  const actions = node('div', 'save-row'), save = node('button', 'primary', 'Save'); save.type = 'submit'; save.disabled = !draft; actions.append(save, result); form.append(actions); body.append(form); wrapper.append(details);
-  const quick = node('div', 'quick-actions'), quickButtons = [];
-  if (c.state === 'open') {
-    for (const [value, caption] of [['handled', 'Handled'], ['dismissed', 'Dismiss']]) {
-      const button = node('button', value === 'handled' ? 'primary' : 'dismiss'); button.type = 'button'; button.setAttribute('aria-label', (value === 'handled' ? 'Mark handled: ' : 'Dismiss: ') + c.subject);
-      if (value === 'handled') button.append(icon('check')); button.append(document.createTextNode(caption));
-      button.onclick = () => { state.value = value; changed(); form.requestSubmit(); }; quick.append(button); quickButtons.push(button);
-    }
+  const actions = node('div', 'save-row'), save = node('button', 'context-save', 'Save context'); save.type = 'submit'; save.disabled = !draft; save.hidden = !draft; actions.append(save, result); form.append(actions); body.append(form); wrapper.append(details);
+  const quick = node('div', 'quick-actions'), quickButtons = []; quick.append(link);
+  for (const [value, caption] of c.state === 'open' ? [['handled','Handled'],['dismissed','Dismiss']] : [['open','Reopen']]) {
+    const button = node('button',value === 'handled' ? 'handled' : value === 'open' ? 'reopen' : 'dismiss'); button.type='button'; button.dataset.outcome=value;
+    const text=node('span','decision-caption',caption); if(value === 'handled') button.append(icon('check')); button.append(text);
+    button.setAttribute('aria-label',caption + ': ' + c.subject);
+    button.onclick=()=>{ decision=value; changed(); form.requestSubmit(); }; quick.append(button); quickButtons.push(button);
   }
   const toggle = node('button', 'detail-toggle', 'Details'); toggle.type = 'button'; toggle.append(icon('right')); toggle.setAttribute('aria-label', 'Details: ' + c.subject); toggle.setAttribute('aria-controls', body.id); toggle.setAttribute('aria-expanded', String(!body.hidden));
   function setExpanded(value) { body.hidden = !value; wrapper.classList.toggle('expanded', value); toggle.setAttribute('aria-expanded', String(value)); if (value) opened.add(c.id); else opened.delete(c.id); }
-  toggle.onclick = () => setExpanded(body.hidden); quick.append(toggle); wrapper.append(quick, body);
-  const read = () => ({category: cat.value, state: state.value, labels: [...boxes.querySelectorAll('input:checked')].map(x => x.value), note: note.value, revision: draft?.revision ?? c.revision});
+  toggle.onclick = () => setExpanded(body.hidden); quick.insertBefore(toggle, quick.querySelector('.dismiss')); wrapper.append(quick, body);
+  const read = () => ({category: cat.value, state: decision, labels: [...boxes.querySelectorAll('input:checked')].map(x => x.value), note: note.value, revision: draft?.revision ?? c.revision});
   function changed() {
     const v = read(); pickerSummary.textContent = 'Labels' + (v.labels.length ? ' · ' + v.labels.length : '');
     const dirty = v.category !== category(c) || v.state !== c.state || v.note !== (c.note || '') || !same(v.labels, labels(c));
-    save.disabled = !dirty; if (dirty) drafts.set(c.id, v); else drafts.delete(c.id);
-    result.classList.remove('save-error'); result.textContent = dirty ? 'Unsaved changes' : c.feedback_status ? feedbackLabel[c.feedback_status] || c.feedback_status : '';
+    save.disabled = !dirty; save.hidden = !dirty;
+    const contextDirty = v.category !== category(c) || v.note !== (c.note || '') || !same(v.labels,labels(c));
+    for(const button of quickButtons) { const outcome=button.dataset.outcome, caption=outcome==='handled'?'Handled':outcome==='open'?'Reopen':'Dismiss', visible=contextDirty ? outcome==='handled'?'Save & handle':outcome==='open'?'Save & reopen':'Save & dismiss' : caption; button.querySelector('.decision-caption').textContent=visible; button.setAttribute('aria-label',visible + ': ' + c.subject); }
+    if (dirty) drafts.set(c.id, v); else drafts.delete(c.id);
+    result.classList.remove('save-error'); result.textContent = dirty ? 'Unsaved context' : c.feedback_status ? feedbackLabel[c.feedback_status] || c.feedback_status : '';
   }
   function busy(value) {
     if (value) saving.add(c.id); else saving.delete(c.id);
@@ -312,10 +350,11 @@ function card(c) {
     for (const button of quickButtons) button.disabled = value;
     interactionLock();
   }
-  pickerSummary.textContent = 'Labels' + (chosen.length ? ' · ' + chosen.length : ''); form.addEventListener('input', changed); form.addEventListener('change', changed);
+  pickerSummary.textContent = 'Labels' + (chosen.length ? ' · ' + chosen.length : ''); form.addEventListener('input', changed); form.addEventListener('change', changed); if (draft) changed();
   if (saving.has(c.id)) busy(true);
   form.addEventListener('submit', async e => {
     e.preventDefault(); if (saving.size || refreshing) return;
+    if (e.submitter === save) decision = c.state;
     const v = read(), hadFocus = wrapper.contains(document.activeElement), previousLevel = progress().level;
     const payload = {operation_id: crypto.randomUUID(), card_id: c.id, revision: v.revision, state: v.state, category: v.category, note: v.note, labels: same(v.labels, c.labels) ? null : v.labels};
     const signature = JSON.stringify({...payload, operation_id: ''}), old = attempts.get(c.id);
@@ -328,7 +367,7 @@ function card(c) {
       data.cards = data.cards.map(x => x.id === c.id ? r.result.card : x); drafts.delete(c.id); attempts.delete(c.id);
       if (r.result.card.state !== 'open') opened.delete(c.id); busy(false); render();
       const earned = r.result.xp_earned || 0, levelUp = progress().level > previousLevel;
-      notify((levelUp ? 'Level ' + progress().level + '! ' : '') + (r.result.card.state === 'handled' ? 'Handled' : r.result.card.state === 'dismissed' ? 'Dismissed' : 'Changes saved') + (earned ? ' · +' + earned + ' XP' : ''));
+      notify((levelUp ? 'Level ' + progress().level + '! ' : '') + (r.result.card.state === c.state ? 'Context saved' : r.result.card.state === 'handled' ? 'Handled' : r.result.card.state === 'dismissed' ? 'Dismissed' : 'Changes saved') + (earned ? ' · +' + earned + ' XP' : ''));
       celebrate(earned, levelUp);
       if (levelUp) { $('level').classList.remove('level-up'); void $('level').offsetWidth; $('level').classList.add('level-up'); }
       if (hadFocus) { const target = r.result.card.state === 'open' ? $('card-' + c.id)?.querySelector('.detail-toggle') : $(category(c) + 'Cards').querySelector('.quick-actions button'); if (target) target.focus({preventScroll: true}); else { const heading = $(category(c) + 'Title'); heading.tabIndex = -1; heading.focus({preventScroll: true}); } }
@@ -371,7 +410,7 @@ today(); setInterval(today, 60000);
     {id: 'garden', sender: 'Maple Street volunteers', subject: 'Confirm your garden volunteer shift', description: 'The garden crew needs your yes or no for the morning planting shift.', category: 'action', label: 'Neighborhood', reason: 'The later supply update leaves the attendance question unanswered.', next: 'Decide whether to take the morning shift, then reply in your email app.'},
     {id: 'shelf', sender: 'Rowan at Corner Workshop', subject: 'The shelf plan needs your pick', description: 'Choose a finish so the workshop can start your bookshelf.', category: 'action', label: 'Home / Projects', reason: 'Work is on hold until you choose a finish.', next: 'Add your preferred finish in a note for the next review.'},
     {id: 'library', sender: 'Lantern Library', subject: 'The repair café is coming back', description: 'The library’s monthly repair café returns with volunteers offering household repairs.', category: 'awareness', label: 'Around town', reason: 'A local event that requires no RSVP.', next: 'Keep it on your radar, or dismiss it if it is not for you.'},
-    {id: 'tools', sender: 'Small Tools Dispatch', subject: 'A tiny tool for a calmer desktop', description: 'This week’s digest features a window organizer and an essay on personal software.', category: 'awareness', label: 'Technology', reason: 'Relevant to your interests; no request or deadline.', next: 'Read when you have space. Dismiss when you have the gist.'}
+    {id: 'tools', sender: 'Small Tools Dispatch', subject: 'Window organizer', description: 'A window organizer with custom keyboard shortcuts.', category: 'awareness', label: 'Technology', reason: 'Software update. No reply needed.', next: 'Read when you have space. Dismiss when you have the gist.'}
   ];
   const example = (id, sender, subject, description, category, label, reason, next) => ({id, sender, subject, description, category, label, reason, next});
   const batches = [examples, [
@@ -385,7 +424,7 @@ today(); setInterval(today, 60000);
     example('dispatch', 'Small Tools Dispatch', 'Window organizer: release notes', 'The organizer from the morning digest has a new release with keyboard shortcut improvements.', 'awareness', 'Technology', 'A product update tied to an earlier interest. It does not require a response.', 'Read if useful, or dismiss the update.'),
     example('receipt', 'Paper & Thread', 'Your supplies receipt', 'Your notebook and binding supplies receipt is ready.', 'awareness', 'Records', 'Payment is complete; keep the receipt for reference.', 'Dismiss when you’re done; the email stays in place.')
   ]];
-  let state, paused = false, timer = null, lastTick = 0, generation = 0, levelRewardUntil = 0;
+  let state, timer = null, lastTick = 0, generation = 0, levelRewardUntil = 0;
   const pending = new Set();
   const timeLabel = time => new Intl.DateTimeFormat('en-US', {timeZone:reviewZone, hour:'numeric', minute:'2-digit'}).format(time).replace(':00', '');
   const focusHeading = id => { const heading = $(id); heading.tabIndex = -1; heading.focus({preventScroll:true}); };
@@ -395,7 +434,7 @@ today(); setInterval(today, 60000);
     stop(); lastTick = performance.now();
     timer = setInterval(() => {
       const tick = performance.now(), elapsed = Math.min(250, tick - lastTick); lastTick = tick;
-      if (!guestActive || document.hidden || paused || !state.travelling) return;
+      if (!guestActive || document.hidden || !state.travelling) return;
       const arrived = advanceGuestDay(state, elapsed, batches); renderTime();
       if (arrived) arrive();
     }, 100);
@@ -405,7 +444,7 @@ today(); setInterval(today, 60000);
     const timing = reviewStatus(state.now, runs);
     $('demoReviewMeter').value = timing.fraction;
     $('demoReviewMeter').setAttribute('aria-valuetext', timeLabel(state.now) + ' simulated time. Checkpoints show published fictional reviews.');
-    $('demoReviewNote').textContent = 'Demo time ' + timeLabel(state.now) + ' · Last update ' + timeLabel(guestTimes[state.stage]);
+    $('demoReviewNote').textContent = 'Demo time ' + timeLabel(state.now);
     $('demoSlots').replaceChildren(...timing.slots.map(slot => {
       const item = node('li', 'review-slot ' + slot.state), mark = node('span', 'slot-mark'); mark.setAttribute('aria-hidden','true');
       if (slot.state === 'updated') mark.append(icon('check'));
@@ -415,10 +454,7 @@ today(); setInterval(today, 60000);
     }));
     $('skipDemo').hidden = !state.travelling;
     $('skipDemo').textContent = state.stage < 2 ? 'Skip to ' + timeLabel(guestTimes[state.stage + 1]) : 'Skip ahead';
-    $('pauseDemo').textContent = paused ? 'Resume timeline' : 'Pause timeline';
-    $('pauseDemo').setAttribute('aria-pressed', String(paused));
-    $('pauseDemo').hidden = state.stage === 2 && !state.travelling;
-    if (state.travelling) $('demoEmptyText').textContent = paused ? 'Timeline paused. Resume or skip ahead to the next review.' : 'Fast-forwarding to ' + timeLabel(guestTimes[state.stage + 1]) + '. The next review will add new cards.';
+    if (state.travelling) $('demoEmptyText').textContent = 'Moving to ' + timeLabel(guestTimes[state.stage + 1]) + '…';
   }
   function renderXP() {
     const xp = state.xp % 100, level = Math.floor(state.xp / 100) + 1;
@@ -439,23 +475,25 @@ today(); setInterval(today, 60000);
       if (!group.length) $(prefix + 'Cards').append(emptyColumn(cat));
     }
     const history = state.cards.filter(c => c.state !== 'open'), clear = !state.cards.some(c => c.state === 'open');
+    if (guestActive) $('navHistoryCount').textContent = history.length || '';
     $('demoHistory').hidden = !history.length; $('demoHistoryTitle').textContent = 'Handled & dismissed · ' + history.length;
     $('demoHistoryCards').replaceChildren(...history.map(demoCard));
-    $('demoEmpty').hidden = !clear;
-    if (clear && state.stage === 2) $('demoEmptyText').textContent = 'Day complete · ' + state.xp + ' XP · Level ' + (Math.floor(state.xp / 100) + 1) + '. Decisions saved in history.';
+    $('demoEmpty').hidden = !clear; $('demoBoard').hidden = clear;
+    if (clear && state.stage === 2) $('demoEmptyText').textContent = 'Day complete · ' + state.xp + ' XP · Level ' + (Math.floor(state.xp / 100) + 1) + '.';
   }
   function arrive() {
     renderDemo(); $('demoBoard').classList.remove('demo-arrival'); void $('demoBoard').offsetWidth; $('demoBoard').classList.add('demo-arrival');
-    $('demoAnnouncement').textContent = timeLabel(guestTimes[state.stage]) + ' review ready. Four new cards; earlier decisions saved in history.';
+    $('demoAnnouncement').textContent = '4 new cards.';
   }
   function reward(earned, levelUp) {
     if (!levelUp && performance.now() < levelRewardUntil) return;
     if (levelUp) levelRewardUntil = performance.now() + 4500;
     clearTimeout(rewardTimer);
     $('rewardArt').hidden = !levelUp;
-  $('rewardTitle').textContent = levelUp ? 'LEVEL UP!' : 'DECISION COMPLETE';
+  $('rewardTitle').hidden = !levelUp; $('rewardDetail').hidden = true;
+  $('rewardTitle').textContent = levelUp ? 'LEVEL UP' : '';
     $('rewardValue').textContent = levelUp ? 'LEVEL ' + (Math.floor(state.xp / 100) + 1) : '+' + earned + ' XP';
-    $('rewardDetail').textContent = levelUp ? '100 demo XP earned.' : 'Demo decision saved.';
+    $('rewardDetail').textContent = levelUp ? '' : '';
     $('reward').hidden = false; $('reward').classList.remove('reward-enter'); void $('reward').offsetWidth; $('reward').classList.add('reward-enter');
     rewardTimer = setTimeout(() => { $('reward').hidden = true; }, levelUp ? 4500 : 1800);
     if (levelUp) { $('demoLevel').classList.remove('level-up'); void $('demoLevel').offsetWidth; $('demoLevel').classList.add('level-up'); }
@@ -466,15 +504,13 @@ today(); setInterval(today, 60000);
     summary.append(meta, node('h3','',c.subject), node('p','description',c.description));
     const tags = node('div','tags'); for (const label of c.labels ?? [c.label]) tags.append(node('span','tag',label));
     if (c.state !== 'open') tags.append(node('span','tag',c.state === 'handled' ? 'Handled' : 'Dismissed'));
-    const timing = cardTiming(c, state.now); summary.append(node('p','card-timing ' + timing.tone,timing.text), tags); article.append(summary);
+    const context = node('div','card-context'); context.append(timingBadge(c,state.now), tags); summary.append(context); article.append(summary);
     const body = node('div','card-body'); body.id = 'demo-details-' + c.id; body.hidden = !c.expanded;
     article.classList.toggle('expanded', !!c.expanded);
-    body.append(node('p','reason',c.reason), node('p','',c.next), node('span','account','Sample account · No original email'));
+    body.append(node('p','reason',c.reason), node('span','account','Fictional email'));
     const form = node('form','feedback-form'); form.setAttribute('aria-label','Demo feedback for ' + c.subject);
     const fields = node('div','fields');
-    const categoryInput = selectField(fields,'Category', [['action','Needs action'],['awareness','Worth knowing']],c.draftCategory || c.category,'category');
-    const stateInput = selectField(fields,'Status', [['open','Active'],['handled','Handled'],['dismissed','Dismissed']],c.state,'state');
-    stateInput.disabled = c.state !== 'open';
+    const categoryInput = bucketField(fields,c.draftCategory || c.category);
     form.append(fields);
     const picker = node('details','label-picker'), pickerTitle = node('summary','','Labels'), boxes = node('div','label-options');
     const chosenLabels = c.draftLabels ?? c.labels ?? [c.label];
@@ -483,24 +519,24 @@ today(); setInterval(today, 60000);
       box.onchange = () => { c.draftLabels = [...boxes.querySelectorAll('input:checked')].map(input => input.value); };
       label.append(box,node('span','',value)); boxes.append(label);
     }
-    picker.append(pickerTitle,boxes); form.append(picker);
+    picker.append(pickerTitle); labelSearch(picker,boxes); picker.append(boxes); form.append(picker);
     const readLabels = () => [...boxes.querySelectorAll('input:checked')].map(input => input.value);
     const label = node('label','field','Note'), note = node('textarea');
     note.rows = 3; note.maxLength = 500; note.value = c.draftNote ?? c.note; note.placeholder = 'Add context for the next review.'; label.append(note); form.append(label);
     note.oninput = () => { c.draftNote = note.value; }; categoryInput.onchange = () => { c.draftCategory = categoryInput.value; };
-    const result = node('p','save-result'), saveRow = node('div','save-row'), save = node('button','primary','Save'); save.type = 'submit';
+    const result = node('p','save-result'), saveRow = node('div','save-row'), save = node('button','context-save','Save context'); save.type = 'submit'; save.hidden=true; save.disabled=true;
     result.setAttribute('role','status'); saveRow.append(save,result); form.append(saveRow); body.append(form);
     async function decide(outcome) {
       if (pending.has(c.id)) return;
       pending.add(c.id); const currentGeneration = generation;
-      const controls = article.querySelectorAll('button,select,textarea'); controls.forEach(control => { control.disabled = true; });
+      const controls = article.querySelectorAll('button,input,textarea'); controls.forEach(control => { control.disabled = true; });
       if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { article.classList.add('departing'); await new Promise(resolve => setTimeout(resolve,180)); }
       if (generation !== currentGeneration) return;
       if (!guestActive) { pending.delete(c.id); return; }
       c.note = note.value; c.category = categoryInput.value; c.labels = readLabels(); delete c.draftNote; delete c.draftCategory; delete c.draftLabels; c.expanded = false;
       const oldLevel = Math.floor(state.xp / 100), earned = resolveGuestCard(state,c.id,outcome);
       pending.delete(c.id); const levelUp = Math.floor(state.xp / 100) > oldLevel; renderDemo(); reward(earned,levelUp);
-      $('demoAnnouncement').textContent = state.travelling ? 'Board cleared. Advancing to ' + timeLabel(guestTimes[state.stage + 1]) + ' for the next review.' : state.stage === 2 && !state.cards.some(x => x.state === 'open') ? 'Day complete. All three reviews handled. Restart to explore again.' : (outcome === 'handled' ? 'Handled' : 'Dismissed') + ' · +10 demo XP.';
+      $('demoAnnouncement').textContent = state.travelling ? 'Next review: ' + timeLabel(guestTimes[state.stage + 1]) : state.stage === 2 && !state.cards.some(x => x.state === 'open') ? 'Demo complete.' : (outcome === 'handled' ? 'Handled' : 'Dismissed') + ' · +10 XP';
       if (levelUp) $('demoAnnouncement').textContent = 'Level ' + (Math.floor(state.xp / 100) + 1) + '! ' + $('demoAnnouncement').textContent;
       if (!state.cards.some(x => x.state === 'open')) {
         (state.travelling ? $('skipDemo') : $('resetDemo')).focus({preventScroll:true});
@@ -509,32 +545,41 @@ today(); setInterval(today, 60000);
     }
     form.onsubmit = e => {
       e.preventDefault();
-      if (c.state === 'open' && stateInput.value !== 'open') { decide(stateInput.value); return; }
       c.note = note.value; c.category = categoryInput.value; c.labels = readLabels(); delete c.draftNote; delete c.draftCategory; delete c.draftLabels;
+      contextChanged();
       tags.replaceChildren(...c.labels.map(value => node('span','tag',value)));
       if (c.state !== 'open') tags.append(node('span','tag',c.state === 'handled' ? 'Handled' : 'Dismissed'));
       result.textContent = 'Saved for this demo.';
       // Keep history read-only for outcomes; editing context never awards XP.
-      if (c.state !== 'open') stateInput.value = c.state;
+      save.hidden=true; save.disabled=true;
       if (categoryInput.value !== article.dataset.category) { renderDemo(); focusHeading(c.category === 'action' ? 'demoActionTitle' : 'demoAwarenessTitle'); }
     };
+    form.addEventListener('input',contextChanged); form.addEventListener('change',contextChanged);
+    function contextChanged() {
+      const dirty=note.value !== c.note || categoryInput.value !== c.category || !same(readLabels(),c.labels ?? [c.label]);
+      save.hidden=!dirty; save.disabled=!dirty; result.textContent=dirty?'Unsaved context':'';
+      for (const button of article.querySelectorAll('[data-outcome]')) {
+        const caption=dirty ? button.dataset.outcome==='handled'?'Save & handle':'Save & dismiss' : button.dataset.outcome==='handled'?'Handled':'Dismiss';
+        button.querySelector('.decision-caption').textContent=caption; button.setAttribute('aria-label',caption + ': ' + c.subject);
+      }
+    }
     article.dataset.category = c.category;
     const actions = node('div','quick-actions');
     if (c.state === 'open') for (const [outcome,caption] of [['handled','Handled'],['dismissed','Dismiss']]) {
       const button = node('button',outcome === 'handled' ? 'primary' : 'dismiss'); button.type = 'button';
-      if (outcome === 'handled') button.append(icon('check')); button.append(document.createTextNode(caption));
+      if (outcome === 'handled') button.append(icon('check')); button.append(node('span','decision-caption',caption)); button.dataset.outcome=outcome;
       button.setAttribute('aria-label',caption + ': ' + c.subject); button.onclick = () => decide(outcome); actions.append(button);
     }
     const toggle = node('button','detail-toggle','Details'); toggle.type = 'button'; toggle.append(icon('right'));
     toggle.setAttribute('aria-label','Details: ' + c.subject); toggle.setAttribute('aria-controls',body.id); toggle.setAttribute('aria-expanded',String(!body.hidden));
     toggle.onclick = () => { c.expanded = !c.expanded; body.hidden = !c.expanded; article.classList.toggle('expanded',c.expanded); toggle.setAttribute('aria-expanded',String(c.expanded)); };
-    actions.append(toggle); article.append(actions,body);
+    actions.insertBefore(toggle, actions.querySelector('.dismiss')); article.append(actions,body);
     return article;
   }
   function reset() {
-    generation++; pending.clear(); state = createGuestDay(batches); paused = false; levelRewardUntil = 0;
+    generation++; pending.clear(); state = createGuestDay(batches); levelRewardUntil = 0;
     clearTimeout(rewardTimer); $('reward').hidden = true; $('demoHistory').open = false;
-    renderDemo(); $('demoAnnouncement').textContent = '9 AM review ready. Handle or dismiss the cards to advance to 1 PM.';
+    renderDemo(); $('demoAnnouncement').textContent = 'Handle or dismiss each card to continue.';
     if (guestActive) runClock();
   }
   function enter() {
@@ -550,7 +595,6 @@ today(); setInterval(today, 60000);
   $('processDemo').onclick = e => { e.preventDefault(); enter(); };
   $('demoBack').onclick = e => { e.preventDefault(); leave(); };
   $('resetDemo').onclick = reset;
-  $('pauseDemo').onclick = () => { paused = !paused; lastTick = performance.now(); renderTime(); };
   $('skipDemo').onclick = () => { if (state.travelling) { advanceGuestDay(state,6000,batches); arrive(); focusHeading('demoActionTitle'); } };
   $('ownerLink').onclick = e => { e.preventDefault(); if (guestActive) leave(); $('ownerLogin').open = true; $('password').focus(); };
   reset();

@@ -1,5 +1,41 @@
 # Email Desk handoff
 
+## Version 0.4.0 release preparation — November 19, 2026
+
+Milan explicitly authorized publication of the completed design refactor and documentation updates for everyday usability testing. Release is based on current remote main d949d84f25a8d269bcf27fb31fb31573a01c4aaf. Only reviewed UI, fictional preview, local assets and related documentation are included; backend and deployment trust code match main. Earlier local-only notes below are historical. Production acceptance remains pending. The master Google Doc tool is currently unavailable; the dated organization reference was read, remains a reference only, and no organization-rule change is included.
+
+## Control and copy polish — local, November 19, 2026
+
+Latest user feedback supersedes the stepped buttons/label tiles and demo Pause timeline described below. Retained stepped section frames; buttons/nav now use quiet rectangular edges with consistent outlined secondary actions. Bucket is a two-part segmented control retaining native radio keyboard semantics. Labels use compact checkbox tiles. Removed Pause timeline, redundant outer dividers, repeated demo heading and routine reward slogans; shortened public/demo/owner copy. Demo advances after each batch clears and displays only one transition empty state.
+
+The age meter now decreases through the 48-hour 10-XP window, with a precise accessible explanation and the existing 5-XP late award. Already-awarded cards show their earned value without another countdown. No XP policy or backend change. A full fictional demo reached 120 XP/Level 2, retained a saved note in History, and advanced through all three batches. Native segmented keyboard selection, 320/390/1440px light/dark views, owner countdown read-back and empty browser logs checked. Final npm run check and git diff --check passed. Evidence is ignored under .local/polish/; latest design-qa.md section passed.
+
+Preview remains http://127.0.0.1:8000/. Nothing published; live version remains 0.3.2. No real card, Gmail, credential, schedule or master-playbook changes. Unrelated working-tree edits remain preserved.
+
+
+## Browser-compatible preview port — November 19, 2026
+
+Firefox rejected the previous 4190 preview address as a restricted network port. The fictional preview now defaults to port 8000; README instructions match. Historical 4180/4190 evidence below is retained. The previous in-memory preview processes were not stopped, so their fictional decisions/notes remain available there. Native Firefox was opened to http://127.0.0.1:8000/ and its rendered landing page verified successfully. This port change does not affect production, credentials or browser security settings.
+
+
+## Context and decision controls — local refinement, November 19, 2026
+
+Milan requested streamlining the new design's competing CTAs, repetitive status/help copy and plain expanded controls. Replaced History's reload icon with a local Pixelarticons archive icon; both rail buttons now use stepped frames. Removed decorative Pause animation and How reviews work. Robot animation settles after one short cycle and still honors reduced motion. The actual review timeline is visible; routine last/next/coverage-summary prose and global overdue count are removed. Scan failure/partial/stale/offline exceptions and all timeline outcome states remain visible.
+
+Context editor now uses two radio tiles for the bucket, searchable stepped checkbox label tiles and a note. No Status dropdown. Save context appears for dirty edits and preserves card status; Handled/Dismiss close a card and include current edits, explicitly labelled Save & handle / Save & dismiss when needed. History has a dedicated Reopen action. Compact age/meter/XP indicators replace long timing sentences while retaining full accessible/focus/hover explanations and the existing 48-hour/one-award policy. No backend, taxonomy or reviewer changes.
+
+Fictional browser checks verified context-only saves, selected labels retained through search, saved note + 5-XP late handling, retained History context and reopening without extra XP. An isolated 4191 demo verified context save vs decision and 10 demo XP; normal preview remains 4190. 320/390/1440px geometry and light/dark editor checks passed, browser logs empty, npm run check and git diff --check passed. Screenshots/comparisons are ignored under .local/interaction-refinement/ and latest acceptance is at the top of design-qa.md. Nothing published, no private/Gmail/credential/schedule/master-playbook changes. Earlier release claims below remain historical.
+
+
+## Pocket Console design refactor — local, unreleased, November 19, 2026
+
+Milan selected Product Design's third concept and approved a more pronounced 16-bit container revision. Implemented that direction in the existing app: compact desktop rail and mobile navigation, two stacked stepped-frame buckets, exposed Open email links, inline decision/detail controls, compact expandable review checkpoints, visible coverage exceptions and secondary XP. Notes, labels, status, revisions, history and server-authored rewards keep their existing behavior. Both accounts stay on one board; no taxonomy, reviewer or backend change.
+
+Landing content and IA are included: concise promise, prominent fictional demo, two-bucket preview, three short workflow steps, and build/changelog/source links in the footer. Added one decorative transparent desk vignette matching the selected mock. Existing robot animation, local fonts and library icons are reused. Appearance groups themes, motion and owner sign-out. Help sits below the work; deadlines are visible on cards when supplied.
+
+Local preview: http://127.0.0.1:4190/ via tests/preview.py, fictional login preview-only. The existing 4180 preview/state was left intact. npm run check, git diff --check and unique-ID validation pass. Browser checked owner/demo navigation, themes, review disclosure, saved note/decision/history, reopening without duplicate XP, 320/390/900/1440px wrapping and no horizontal overflow. Full/focused source comparisons and iteration evidence are ignored under .local/design-refactor/; the latest section of design-qa.md records acceptance and limits. No deployment, real inbox/card changes, credentials, schedule, access expansion or Google Doc edits. Existing unrelated working-tree edits were preserved. Package/live version remains 0.3.2 until release preparation.
+
+
 ## Version 0.3.2 live and verified — November 19, 2026
 
 The documentation-only follow-up 8d6e41d34ec8e91759bc9206ddbf095237d8b520 deployed successfully through https://github.com/vibe-coding-milan/email-desk/actions/runs/44571631736, release arcade-20261119T165707703718Z. Both CI and deployment including public verification passed. Its receipt, all 25 public-file hashes and exact preservation of all 29 cards/checkpoints/progress were verified independently. Runtime files are identical to the functional release below. The earlier runner timeout is historical; the latest completed follow-up passed.

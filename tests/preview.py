@@ -19,7 +19,7 @@ for i,(account,subject,desc,reason,category,topics)in enumerate([
 if os.environ.get('EMAIL_DESK_LEVEL_DEMO')=='1':
  for i in range(9):
   sample=dict(cards[0]);sample.update(id='demo-'+str(i),subject='Fictional completed example '+str(i+1),state='handled',decision_earned_at=now);cards.append(sample)
-port=int(os.environ.get('EMAIL_DESK_PREVIEW_PORT','4180'))
+port=int(os.environ.get('EMAIL_DESK_PREVIEW_PORT','8000'))
 class Handler(SimpleHTTPRequestHandler):
  def __init__(self,*a,**kw):super().__init__(*a,directory=str(root/'public'),**kw)
  def log_message(self,*a):pass

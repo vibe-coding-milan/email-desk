@@ -25,3 +25,13 @@ Full generation prompts: `docs/COMPANION-ARTWORK.md`. Motion comes from short CS
 `agent-idle-sheet.png` is the current animated companion: four drawn poses in a transparent 2×2 sprite sheet (1254×1254; 627×627 cells). Head turn, forearm movement and blink are part of the artwork. CSS switches whole cells using discrete positions; it does not translate, rotate, scale, jitter or brighten the illustration. The same sprite stands beside the original static mailbox, telescope and desk props.
 
 The earlier composite companion PNGs remain available as still artwork. The previous whole-image nod/pulse effects were removed after Milan’s feedback. Pause animation freezes playback for the page; reduced motion shows the first neutral frame. Offscreen sprites pause. Prompt and frame layout: `docs/COMPANION-IDLE.md`.
+
+
+## Pocket Console desk vignette — November 19, 2026
+
+`desk-vignette.png`: transparent RGBA PNG, 2092×751, generated with the built-in Image Gen tool using the selected stepped-frame mock as reference. Prompt: standalone crisp 16-bit header vignette with blue desk lamp, stacked books, cream mug, potted plant, thin wooden desktop and framed sunrise/city window; wide composition for a 460×165 slot; transparent background; no UI, text, robot or icons. Used decoratively on the public welcome and workspace headers. Real alpha was verified and the saved asset inspected. The original mock remains outside source; no private message imagery is included.
+
+
+## Interaction refinement — November 19, 2026
+
+`icons/archive.svg` is the unmodified Pixelarticons archive icon from the same official MIT-licensed library, used for History instead of reload. The idle character now plays one 4.8-second greeting cycle and settles; reduced-motion still freezes it. This supersedes earlier references to continuous idle playback and an explicit decorative pause button. The demo timeline also advances automatically; its Pause timeline control was removed in the subsequent polish pass.

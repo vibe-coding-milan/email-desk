@@ -27,9 +27,9 @@ The [build notes](docs/BUILDING.md) connect these choices to source files, tests
 
 ## What the app does
 
-Cards explain the conversation and why it was surfaced. They expand inline for category, label, status, and context edits. Handling a card records a decision; it does not send, archive, delete, or mark email read.
+Cards explain the conversation and why it was surfaced. They expand inline for bucket, label, and context edits. Handling a card records a decision; it does not send, archive, delete, or mark email read.
 
-The interface pairs readable Inter text and pixel branding with light, dark, and system themes, illustrated empty states, and a four-frame robot companion. Animation can be paused and respects reduced-motion preferences. XP rewards confirmed decisions once per card: 10 XP within 48 hours of receipt and 5 XP afterward. Existing awards stay earned.
+The interface pairs readable Inter text and pixel branding with light, dark, and system themes, illustrated empty states, and a four-frame robot companion. The companion plays one short greeting and settles; reduced-motion preferences keep it still. XP rewards confirmed decisions once per card: 10 XP within 48 hours of receipt and 5 XP afterward. Existing awards stay earned.
 
 ## How it works
 
@@ -66,7 +66,7 @@ Requires Python 3. From a clone of this repository:
 python3 tests/preview.py
 ```
 
-Open http://127.0.0.1:4180/. The public demo is available without signing in; the mocked owner workspace uses the password `preview-only`. This server binds to localhost, uses fictional data, and keeps changes in memory. It is a UI preview, not the production PHP backend.
+Open http://127.0.0.1:8000/. The public demo is available without signing in; the mocked owner workspace uses the password `preview-only`. This server binds to localhost, uses fictional data, and keeps changes in memory. It is a UI preview, not the production PHP backend.
 
 For checks, use Node.js and Python 3:
 
@@ -78,7 +78,7 @@ This covers JavaScript syntax, local assets, shared labels, guest-day behavior, 
 
 ## Current state
 
-**Version 0.3.2 is live.** It adds message age and a 48-hour XP window in both columns: 10 XP for a first handled/dismissed decision within 48 elapsed hours of receipt, 5 XP afterward. Earlier awards stay earned. Gentle emphasis increases after 24 and 48 hours; history records decision timing. This tracks board decisions, not verified sent replies. The production receipt, all 25 public-file hashes, all 23 live access checks and exact preservation of 29 cards/checkpoints/progress were verified. The [documentation follow-up deployment](https://github.com/vibe-coding-milan/email-desk/actions/runs/44571631736) passed, including GitHub’s public verification. It serves identical runtime files. The first release run encountered a homepage connection timeout; that historical failure and independent acceptance are recorded below. Details are in the [changelog](CHANGELOG.md) and [handoff](docs/HANDOFF.md).
+**Version 0.4.0 is prepared for publication.** The landing page and signed-in board now share stepped 16-bit section frames, quieter controls and shorter copy. Board and History navigation, a visible review timeline, segmented bucket choice and searchable labels keep the work focused. Context saves preserve status; Handled/Dismiss include current edits. Card meters count down the existing 48-hour full-XP window. The public demo advances automatically; pause controls and repeated explanations have been removed. Release acceptance will be recorded in the [changelog](CHANGELOG.md) and [handoff](docs/HANDOFF.md).
 
 This remains a personal application with an owner-specific reviewer and hosting setup. Unattended reviewer publication after a recovered failure, physical-device/cross-device acceptance, and disaster-recovery exercises remain open verification work. The demo demonstrates the interaction; it does not establish live inbox coverage.
 
