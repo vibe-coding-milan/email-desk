@@ -1,5 +1,11 @@
 # Email Desk handoff
 
+## Version 0.4.1 release preparation — November 19, 2026
+
+Removed the 24/48-hour card-side rules and added padding that shifted sender/content dividers. Past-target cards now retain the normal grid and show a quiet amber timing pill without an exhausted meter. The 10/5-XP policy is unchanged. Owner and demo cards display a single mailbox's friendly sender name, unquoting standard quoted names; the full original sender remains in the hover title. Bare addresses and ambiguous mailbox lists are preserved. Stored card data is untouched.
+
+Validation: npm run check and git diff --check passed, including sender-name cases and existing timing boundaries. Fictional owner preview checked 1440px light/dark and 390px dark, aligned card edges, no expired meter, full sender hover value, no horizontal overflow and no browser warnings/errors. Screenshot: ignored .local/card-polish/desktop.jpg. Milan authorized production publication and documentation updates. Version 0.4.1 is prepared against remote main f9d0a2a895dda338a8fe401706198b1924a3a7ba; live acceptance pending.
+
 ## Version 0.4.0 live and verified — November 19, 2026
 
 Published Milan’s approved interface/content refactor through PR #6 https://github.com/vibe-coding-milan/email-desk/pull/6, merged as 9a21d30d3555dc2a9308aca1892adcb0cfa5d0fb. Deploy Email Desk https://github.com/vibe-coding-milan/email-desk/actions/runs/44598409634 passed shared checks and publication/public verification. Restricted receipt: arcade-20261119T192807422976Z, version 0.4.0, 33 installed files. Independent acceptance verified all 27 public hashes, the unchanged root homepage and all 23 live authentication/access checks. Exact before/after result equality establishes preservation of all 32 saved cards including comments, status/corrections, review outcomes/checkpoints and XP. Private snapshots, manifest and receipt have 040 names under ignored .private/. No production decisions were fabricated.

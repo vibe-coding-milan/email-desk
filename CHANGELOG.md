@@ -2,6 +2,12 @@
 
 Changes are grouped by release. Dates use America/New_York. Email Desk is self-hosted under `/email-desk/`; release notes never contain private messages, feedback, credentials or connection settings.
 
+## 0.4.1 — 2026-11-19
+
+- Kept sender/content dividers aligned as cards cross the 24/48-hour targets by removing timing-dependent side borders and padding. Past-target cards show a quiet amber pill and no exhausted countdown meter.
+- Owner and demo cards show friendly sender names for standard single-mailbox headers, remove surrounding quotes and retain the complete original sender on hover. Bare addresses and ambiguous mailbox lists stay intact; stored sender values are unchanged.
+- Validation: sender cases, existing timing/XP boundaries, shared JavaScript/Python checks, release/rollback and deployment guards passed. Fictional desktop light/dark and narrow dark views showed aligned dividers, clean sender wrapping, no horizontal overflow and no browser warnings/errors. Publication and live acceptance pending. No backend, Gmail, taxonomy, schedule or credential changes.
+
 ## 0.4.0 — 2026-11-19
 
 - Refactored the landing page, demo and signed-in board around two stepped 16-bit sections, a compact Board/History rail and a locally served desk illustration. Smoother buttons and label tiles preserve the playful style while making actions consistent.

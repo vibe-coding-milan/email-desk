@@ -24,3 +24,16 @@ assert.match(timing(200, {...card,state:'dismissed',decision_earned_at:new Date(
 console.log('Card age, elapsed 48-hour boundary across DST, category/summary preservation, reopening and frozen history awards passed.');
 
 assert.match(timing(72, {...card,decision_earned_at:card.date}).text,/XP already earned/);
+
+const senderHelper = 'function senderName' + source.split('function senderName')[1].split('function senderElement')[0];
+vm.runInContext(senderHelper, context);
+for (const [raw, expected] of [
+  ['"Cedar Workshop Inc." <hello@cedar.example>', 'Cedar Workshop Inc.'],
+  ['Kiran, Committee', 'Kiran, Committee'],
+  ['Alex Rivera <alex@example.test>', 'Alex Rivera'],
+  ['hello@example.test', 'hello@example.test'],
+  ['<hello@example.test>', 'hello@example.test'],
+  ['"Alex \\"AJ\\" Rivera" <alex@example.test>', 'Alex "AJ" Rivera'],
+  ['"A" <a@example.test>, "B" <b@example.test>', '"A" <a@example.test>, "B" <b@example.test>'],
+]) assert.equal(context.senderName(raw), expected);
+console.log('Sender display names, escaped quotes, bare addresses and ambiguous lists passed.');

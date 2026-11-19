@@ -1568,15 +1568,14 @@ body:not([data-view=welcome]) .appearance-options .theme-picker { flex-wrap:wrap
 .timing-visual { display:inline-flex; flex-wrap:wrap; align-items:center; gap:7px; }
 .age-chip { color:var(--muted); font-size:13px; }
 .xp-chip { display:inline-block; border:1px solid var(--subtle-line); background:var(--lavender); color:var(--ink); padding:2px 7px; font-size:12px; line-height:1.4; }
-.age-target { font-size:12px; color:var(--error); }
+.age-target { font-size:12px; font-weight:600; line-height:1.4; color:var(--notice); background:color-mix(in srgb,var(--notice) 10%,var(--panel)); border:1px solid color-mix(in srgb,var(--notice) 30%,var(--panel)); border-radius:4px; padding:2px 7px; }
 .age-meter { appearance:none; display:inline-block; width:54px; height:10px; border:1px solid var(--muted); background:var(--bg); }
 .age-meter::-webkit-meter-bar { background:var(--bg); border:0; border-radius:0; height:8px; }
 .age-meter::-webkit-meter-optimum-value { background:var(--blue); border-radius:0; }
 .age-meter::-moz-meter-bar { background:var(--blue); }
 .soon .age-meter::-webkit-meter-optimum-value { background:var(--notice); }
 .late .age-meter::-webkit-meter-optimum-value { background:var(--error); }
-.card:has(.card-timing.late) { border-inline-start:3px solid var(--error); padding-inline-start:12px; }
-.card:has(.card-timing.soon) { border-inline-start:3px solid var(--notice); padding-inline-start:12px; }
+.card .card-timing.late { color:var(--notice); }
 .timing-detail { display:none; position:absolute; left:0; top:calc(100% + 7px); width:min(360px,calc(100vw - 72px)); padding:12px; font-size:14px; line-height:1.5; color:var(--ink); background:var(--panel); border:2px solid var(--frame); box-shadow:3px 3px 0 var(--frame-shadow); z-index:5; pointer-events:none; }
 .card-timing:hover .timing-detail,.card-timing:focus-visible .timing-detail { display:block; }
 .bucket-picker { border:0; padding:0; margin:0; grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:10px; min-width:0; }

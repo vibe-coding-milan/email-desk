@@ -25,6 +25,8 @@ Four iterations illustrate how I work:
 
 The 0.4.0 refinement carries the same design through the landing page, demo and private workspace: stepped section frames, a compact Board/History rail, simpler rectangular actions and less explanatory copy. Bucket is one segmented choice; searchable labels and notes are context, while Handled/Dismiss are decisions. The visible timeline carries routine review status, and exceptions remain explicit. The card meter counts down the existing full-credit window without changing the server's XP policy.
 
+The 0.4.1 follow-up comes from everyday use: timing-dependent side rules shifted the card grid, while raw mailbox headers overwhelmed the sender column. Removing the layout shift, replacing an exhausted meter with an amber pill and formatting single-mailbox display names keep the information readable. Original senders stay stored intact and available on hover. [Sender and timing checks](../tests/card-timing.mjs) cover quoted names, bare addresses, ambiguous lists and the unchanged 48-hour boundary.
+
 The visual direction is deliberately playful: cobalt, pixel typography, a robot companion, and small rewards for clearing cards. Functional status stays explicit in text, including first use, incomplete coverage, failures, and successful empty reviews.
 
 ## Give the AI a bounded role

@@ -68,6 +68,23 @@ function cardTiming(c, now) {
 }
 // End card timing helpers.
 
+// Present a single mailbox by its display name; keep ambiguous/list values intact.
+function senderName(sender) {
+  const raw = String(sender ?? '').trim();
+  const mailbox = raw.match(/^(.*?)\s*<[^<>\s@]+@[^<>\s@]+>$/);
+  if (!mailbox) return raw;
+  let name = mailbox[1].trim();
+  if (/^"(?:[^"\\]|\\.)*"$/.test(name)) name = name.slice(1,-1).replace(/\\(["\\])/g,'$1').trim();
+  else if (/["<>@]/.test(name)) return raw;
+  return name || raw.slice(1,-1);
+}
+function senderElement(sender) {
+  const element = node('span','sender-name',senderName(sender));
+  element.title = String(sender ?? '');
+  return element;
+}
+// End sender presentation helpers.
+
 // Guest day engine: fictional state only; no network, storage or real clock reads.
 const guestTimes = ['2026-11-16T14:00:00Z', '2026-11-16T18:00:00Z', '2026-11-16T22:30:00Z'].map(Date.parse);
 function createGuestDay(batches) {
@@ -271,11 +288,11 @@ function updateTimingBadge(badge,c,now) {
   visual.append(node('span','age-chip',age));
   if (c.state === 'open' && !c.decision_earned_at) {
     const start = Date.parse(c.attention_started_at || c.reopened_at || c.date);
-    if (Number.isFinite(start)) { const meter = node('meter','age-meter'); meter.min=0; meter.max=48; meter.value=Math.max(0,Math.min(48,48-(now-start)/3600000)); visual.append(meter); }
+    if (Number.isFinite(start) && !timing.late) { const meter = node('meter','age-meter'); meter.min=0; meter.max=48; meter.value=Math.max(0,Math.min(48,48-(now-start)/3600000)); visual.append(meter); }
     if (timing.late) visual.append(node('span','age-target','Past 48h'));
   }
   visual.append(node('span','xp-chip',c.decision_earned_at ? (c.decision_xp ?? 10) + ' XP earned' : timing.tone === 'unknown' ? 'XP on decision' : (timing.late ? '5' : '10') + ' XP'));
-  const explanation=node('span','timing-detail',timing.text + (c.state === 'open' && !c.decision_earned_at ? ' Meter: time left for 10 XP; 5 XP afterward. This is not a sender deadline.' : '')); explanation.setAttribute('aria-hidden','true'); badge.append(visual,explanation);
+  const explanation=node('span','timing-detail',timing.text + (c.state === 'open' && !c.decision_earned_at ? ' 10 XP within the 48-hour target; 5 XP afterward. This is not a sender deadline.' : '')); explanation.setAttribute('aria-hidden','true'); badge.append(visual,explanation);
 }
 function renderCardTiming() {
   const now = Date.now();
@@ -297,7 +314,7 @@ function labelSearch(picker,boxes) {
 function card(c) {
   const draft = drafts.get(c.id), wrapper = node('article', 'card'), details = node('div', 'card-details'); wrapper.id = 'card-' + c.id;
   const summary = node('div', 'card-summary'), meta = node('div', 'meta'), time = node('time', '', dateLabel(c.date)); time.dateTime = c.date;
-  meta.append(node('span', '', c.sender), time);
+  meta.append(senderElement(c.sender), time);
   summary.append(meta, node('h3', '', c.subject), node('p', 'description', c.description));
   if (c.deadline) summary.append(node('p', 'deadline', c.deadline));
   const tags = node('div', 'tags'); for (const l of labels(c)) tags.append(node('span', 'tag', l));
@@ -500,7 +517,7 @@ today(); setInterval(today, 60000);
   }
   function demoCard(c) {
     const article = node('article','card demo-card'), summary = node('div','card-summary'), meta = node('div','meta');
-    meta.append(node('span','',c.sender));
+    meta.append(senderElement(c.sender));
     summary.append(meta, node('h3','',c.subject), node('p','description',c.description));
     const tags = node('div','tags'); for (const label of c.labels ?? [c.label]) tags.append(node('span','tag',label));
     if (c.state !== 'open') tags.append(node('span','tag',c.state === 'handled' ? 'Handled' : 'Dismissed'));
