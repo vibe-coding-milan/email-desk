@@ -26,6 +26,31 @@ builder = module('builder', 'scripts/prepare-hosted-reviewer.py')
 
 
 class Provisioning(unittest.TestCase):
+    def test_inactive_upgrade_preserves_private_state_and_rejects_changed_base(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            archive, manifest = builder.build(ROOT, 'a' * 40)
+            files, unused = installer.unpack(archive)
+            (root / 'code').mkdir(mode=0o700)
+            (root / 'code/reviewer').mkdir(mode=0o700)
+            for name, content in files.items(): installer.write(root / 'code' / name, content)
+            installer.write(root / 'installed.json', json.dumps(manifest).encode())
+            installer.write(root / 'journal.encrypted', b'fictional-encrypted-marker')
+            archive, unused = builder.build(ROOT, 'b' * 40)
+            bundle = root / 'bundle.tar.gz'
+            installer.write(bundle, archive)
+            digest = hashlib.sha256(archive).hexdigest()
+            with self.assertRaisesRegex(ValueError, 'upgrade_base_changed'):
+                installer.upgrade_code(root, bundle, digest, 'c' * 40)
+            result = installer.upgrade_code(root, bundle, digest, 'a' * 40)
+            self.assertTrue(result['private_state_preserved'])
+            self.assertEqual(installer.verify_code(root)['source_commit'], 'b' * 40)
+            self.assertEqual((root / 'journal.encrypted').read_bytes(), b'fictional-encrypted-marker')
+            self.assertEqual((root / result['backup'] / 'reviewer/model.py').read_bytes(), files['reviewer/model.py'])
+            installer.write(root / 'activation.json', b'{}')
+            with self.assertRaisesRegex(ValueError, 'active_upgrade_requires_review'):
+                installer.upgrade_code(root, bundle, digest, 'b' * 40)
+
     def test_changed_installed_code_blocks_activation_and_active_reinstall_does_not_run_pip(self):
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)

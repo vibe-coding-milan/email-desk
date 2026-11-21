@@ -1,5 +1,20 @@
 # Email Desk handoff
 
+## Hosted validation — November 21, 2026
+
+Version 0.4.3 is live (PR #8, merge aee34fb6a7ccf6f29c3f14b7ede4e312a5e87432). Independent receipt arcade-20261121T153335637529Z, 28 public hashes, 23 access checks and exact private-state preservation passed. Deployment run 44919759279 reported failure; independent acceptance is recorded separately and does not erase that workflow result.
+
+Milan approved private DreamHost installation and recurring bounded API reviews. The correct domain-owner/homepage guard passed. Private code, isolated dependencies, renewed encrypted Google grants, API/encryption keys and the encrypted journal are installed outside web root. The seed contains 263 previously verified IDs and retains incomplete historical coverage. No SSH key privileges were expanded. Protected transfer copies remain private.
+
+Read-only host validation processed 18 targets with zero errors and no Gmail/board writes. The first live validation processed 27 targets, verified 14 custom-label changes and published with one mailbox issue; the failed account checkpoint stayed unchanged. The retry identified decision_targets: a long-conversation response omitted required targets. Saved cards, owner decisions, comments and XP were preserved. Cron remains OFF pending successful validation. Existing partial updates must remain visible; historical catch-up is separate from recent mailbox freshness.
+
+The repair requires exact thread/message keys through Structured Outputs, retains semantic validation and records safe per-slot issue codes/results. Routine interest matches alone should not become board cards. A pre-activation upgrade verifies the old manifest/base, new archive, unchanged dependencies and Python compilation under the reviewer lock; it retains an old-code backup and all private state. It refuses activated installations. These changes need CI, guarded host upgrade and live validation before cron activation. No successful unattended or Mac-offline review is claimed.
+
+The agreed schedule is weekdays 09:00, 13:00, 17:30; weekends 09:00, 17:30, America/New_York including DST. Usage is measured before calibrating a spending ceiling. The desktop heartbeat switches to monitoring only after a verified local activation receipt exists. Retire it only after real scheduled and Mac-offline acceptance. Perform the requested UI/UX review after activation, with particular attention to partial coverage, mailbox freshness and recovery wording.
+
+Earlier dated setup sections below are historical evidence; this section supersedes their current-state claims.
+
+
 
 ## Production renewal and install preparation — November 21, 2026
 

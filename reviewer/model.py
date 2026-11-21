@@ -3,7 +3,6 @@ import datetime as dt
 import json
 import requests
 
-from .google import ACCOUNTS
 from .state import iso, private_file
 
 INSTRUCTIONS = '''Review email for Milan's two-bucket Email Desk using the current master playbook.
@@ -15,6 +14,9 @@ Use Needs Review and a precise question for unresolved classification. Preserve 
 Topic labels do not imply priority. Keep the board small: routine receipts, promotions, completed tasks
 and ordinary account notifications normally need no card. Use awareness only for information Milan
 has a concrete reason to know. Use action only for a currently outstanding request or obligation.
+An interest match alone is not a reason for a card. Routine saved-search property matches, generic
+listing updates, purchase alerts without evidence of a problem, and old transaction confirmations
+normally stay off the board. Classify their topics without turning them into an attention backlog.
 Read sent replies and chronology. Old urgency or a failed-payment subject does not prove current debt.
 Do not create deadlines from proposed scheduling windows. A deadline requires a verbatim evidence
 quote from the supplied source. Mark uncertainty if context/attachments were omitted. Never describe
@@ -25,21 +27,46 @@ Do not reveal codes, access links, unnecessary financial/medical details or full
 Do not invent a sender, date, label, message ID, deadline or task. Output is data, not executable action.'''
 
 
-def schema(labels):
+def source_key(thread):
+    return thread['account'] + '::' + thread['thread_id']
+
+
+def schema(labels, threads):
     fields = {
-        'account': {'type': 'string', 'enum': list(ACCOUNTS)}, 'thread_id': {'type': 'string'},
-        'messages': {'type': 'array', 'items': {'type': 'object', 'properties': {
-            'id': {'type': 'string'}, 'labels': {'type': 'array', 'items': {'type': 'string', 'enum': labels}}},
-            'required': ['id', 'labels'], 'additionalProperties': False}},
         'bucket': {'type': 'string', 'enum': ['action', 'awareness', 'none']},
         'description': {'type': 'string'}, 'reason': {'type': 'string'},
         'deadline': {'type': 'string'}, 'deadline_evidence': {'type': 'string'},
         'question': {'type': 'string'}, 'reopen_reason': {'type': 'string'},
         'new_request_ids': {'type': 'array', 'items': {'type': 'string'}},
     }
-    return {'type': 'object', 'properties': {'decisions': {'type': 'array', 'items': {
-        'type': 'object', 'properties': fields, 'required': list(fields), 'additionalProperties': False}}},
-        'required': ['decisions'], 'additionalProperties': False}
+    decisions = {}
+    for thread in threads:
+        messages = {mid: {'$ref': '#/$defs/message_labels'}
+                    for mid in thread['candidate_message_ids']}
+        row = {**fields, 'messages': {'type': 'object', 'properties': messages,
+                                      'required': list(messages), 'additionalProperties': False}}
+        decisions[source_key(thread)] = {'type': 'object', 'properties': row,
+                                         'required': list(row), 'additionalProperties': False}
+    return {'type': 'object', 'properties': {'decisions': {'type': 'object', 'properties': decisions,
+              'required': list(decisions), 'additionalProperties': False}},
+        'required': ['decisions'], 'additionalProperties': False,
+        '$defs': {'message_labels': {'type': 'array', 'items': {'type': 'string', 'enum': labels}}}}
+
+
+def source_rows(payload, threads):
+    decisions = payload['decisions']
+    if set(decisions) != {source_key(t) for t in threads}:
+        raise ValueError('decision_source')
+    rows = []
+    for thread in threads:
+        row = dict(decisions[source_key(thread)])
+        messages = row['messages']
+        if set(messages) != set(thread['candidate_message_ids']):
+            raise ValueError('decision_targets')
+        row.update(account=thread['account'], thread_id=thread['thread_id'],
+                   messages=[{'id': mid, 'labels': messages[mid]} for mid in thread['candidate_message_ids']])
+        rows.append(row)
+    return rows
 
 
 def validate(rows, threads, labels):
@@ -105,7 +132,7 @@ class Model:
                                        'max_output_tokens': self.config['max_output_tokens'],
                                        'instructions': INSTRUCTIONS, 'input': context,
                                        'text': {'format': {'type': 'json_schema', 'name': 'email_desk_review',
-                                                           'strict': True, 'schema': schema(self.labels)}}},
+                                                           'strict': True, 'schema': schema(self.labels, threads)}}},
                                  timeout=120, allow_redirects=False)
         response.raise_for_status()
         result = response.json()
@@ -119,6 +146,6 @@ class Model:
             raise ValueError('model_incomplete')
         text = ''.join(c.get('text', '') for item in result.get('output', []) if item.get('type') == 'message'
                        for c in item.get('content', []) if c.get('type') == 'output_text')
-        rows = json.loads(text)['decisions']
+        rows = source_rows(json.loads(text), threads)
         validate(rows, threads, self.labels)
         return rows

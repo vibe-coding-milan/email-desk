@@ -345,6 +345,9 @@ class Engine:
             except Exception as error:
                 errors += 1
                 complete[account] = False
+                code = str(error) if isinstance(error, ValueError) and str(error).replace('_', '').isalnum() and len(str(error)) < 80 else 'review_failed'
+                self.journal.data['slots'][self.slot].setdefault('issues', []).append({'account': account, 'code': code})
+                self.journal.save()
                 self.abandon_conflict(error)
                 if self.journal.data.get('pending_batch') or self.journal.data.get('pending_publication'):
                     break  # Preserve exact uncertain work before any new batch.
@@ -367,6 +370,7 @@ class Engine:
             self.finish_state(final)
         self.journal.save()
         return {'status': status, 'processed': processed, 'errors': errors,
+                'recent_mailboxes_complete': len(checkpoints),
                 'verified_messages': sum(getattr(g, 'verified_count', 0) for g in self.clients.values()),
                 'modified_messages': sum(getattr(g, 'write_count', 0) for g in self.clients.values()),
                 'mailboxes_verified': sum(getattr(g, 'verified_count', 0) > 0 for g in self.clients.values()),

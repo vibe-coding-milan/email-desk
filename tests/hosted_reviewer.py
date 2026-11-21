@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from cryptography.fernet import Fernet
 from reviewer.engine import Engine, card_from, check_revisions, scan, load_thread, routine_labels
 from reviewer.google import Gmail, bounded_json
-from reviewer.model import validate
+from reviewer.model import validate, schema, source_key, source_rows
 from reviewer.state import Journal, UTC, iso, scheduled_slot
 
 
@@ -196,6 +196,30 @@ class ProposalAndCoverage(unittest.TestCase):
             if kind == 'deadline': row.update(deadline='Tomorrow', deadline_evidence='Invented evidence')
             with self.assertRaises(ValueError): validate([row], [self.thread], ['Home'])
 
+    def test_schema_requires_every_target_and_normalizes_trusted_source(self):
+        self.thread['candidate_message_ids'].append('second-target')
+        shaped = schema(['Home'], [self.thread])
+        decisions = shaped['properties']['decisions']
+        key = source_key(self.thread)
+        self.assertEqual(decisions['required'], [key])
+        messages = decisions['properties'][key]['properties']['messages']
+        self.assertEqual(messages['required'], self.thread['candidate_message_ids'])
+        self.assertFalse(messages['additionalProperties'])
+        proposal = {k: v for k, v in self.row.items() if k not in {'account', 'thread_id', 'messages'}}
+        proposal['messages'] = {mid: ['Home'] for mid in self.thread['candidate_message_ids']}
+        payload = {'decisions': {key: proposal}}
+        rows = source_rows(payload, [self.thread])
+        validate(rows, [self.thread], ['Home'])
+        self.assertEqual(rows[0]['account'], self.thread['account'])
+        self.assertEqual([m['id'] for m in rows[0]['messages']], self.thread['candidate_message_ids'])
+        proposal['messages']['context-only'] = ['Home']
+        with self.assertRaisesRegex(ValueError, 'decision_targets'):
+            source_rows(payload, [self.thread])
+        del proposal['messages']['context-only']
+        del proposal['messages']['second-target']
+        with self.assertRaisesRegex(ValueError, 'decision_targets'):
+            source_rows(payload, [self.thread])
+
     def test_closed_card_not_resurfaced_without_materially_new_source(self):
         self.thread['existing_card'] = {'state': 'handled', 'message_ids': ['abcdef1234567890'], 'updated_at': '2026-11-20T00:00:00+00:00'}
         self.assertIsNone(card_from(self.row, self.thread))
@@ -348,6 +372,7 @@ class EngineIntegration(unittest.TestCase):
             self.assertEqual(len(bridge.cards), 1)
             self.assertIn('cursor', journal.data['accounts']['mijatovic@gmail.com'])
             self.assertNotIn('cursor', journal.data['accounts']['milan@mijatovic.com'])
+            self.assertEqual(journal.data['slots'][self.slot]['issues'][0]['code'], 'review_failed')
 
     def test_uncertain_final_ack_replays_exact_publication_before_cursor_commit(self):
         bridge = FakeBridge(fail_final_ack=True)
