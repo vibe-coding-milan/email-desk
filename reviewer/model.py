@@ -157,7 +157,9 @@ class Model:
         # Retain usage even when a response is incomplete or fails semantic checks.
         self.journal.data['usage'].append({'at': iso(), 'slot': self.slot, 'model': result.get('model'),
                                           'usage': result.get('usage'), 'status': result.get('status'),
-                                          'threads': len(threads), 'request_id': response.headers.get('x-request-id')})
+                                          'threads': len(threads), 'request_id': response.headers.get('x-request-id'),
+                                          'purpose': state.get('purpose', 'legacy'), 'attempt': state.get('attempts', 1),
+                                          'rate_date': '2026-11-21', 'verification_failed': True})
         state['model_uncertain'] = False
         self.journal.save()
         if result.get('status') != 'completed':
@@ -170,4 +172,6 @@ class Model:
             state['deadline_warnings'] = state.get('deadline_warnings', 0) + warnings
             self.journal.save()
         validate(rows, threads, self.labels)
+        self.journal.data['usage'][-1]['verification_failed'] = False
+        self.journal.save()
         return rows

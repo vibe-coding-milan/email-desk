@@ -11,7 +11,7 @@ import sys
 
 from .engine import Engine
 from .google import ACCOUNTS, Gmail
-from .state import Journal, UTC, iso, operation, private_file, scheduled_slot
+from .state import Journal, UTC, iso, operation, private_file, scheduled_slot, reporting_snapshot
 
 
 class BridgeError(RuntimeError):
@@ -57,6 +57,7 @@ def main():
     parser.add_argument('--run-now', action='store_true')
     parser.add_argument('--local-validation', action='store_true')
     parser.add_argument('--health', action='store_true')
+    parser.add_argument('--report', action='store_true', help='Publish aggregate metadata only; no mailbox or model calls')
     args = parser.parse_args()
     logging.disable(logging.CRITICAL)
     os.umask(0o077)
@@ -84,12 +85,22 @@ def main():
         if args.health:
             print(json.dumps(journal.data.get('last_result', {'status': 'not_reviewed'})))
             return 0
+        config['schedule_active'] = (directory / 'activation.json').is_file()
+        if args.report:
+            if args.dry_run or args.run_now or args.local_validation:
+                raise ValueError('report_mode')
+            report = reporting_snapshot(journal.data, config)
+            result = bridge.call({'action': 'publish', 'operation_id': operation('report', json.dumps(report, sort_keys=True)),
+                                  'cards': [], 'report_only': True, 'report': report})
+            print(json.dumps({'report_published': result.get('report_saved') is True, 'mailbox_reads': 0, 'model_requests': 0}))
+            return 0
         now = dt.datetime.now(UTC)
         slot = ('manual-' + now.strftime('%Y%m%dT%H%M%S%fZ')) if args.run_now or args.dry_run else scheduled_slot(now, config['activated_at'], journal.data['slots'])
         if slot is None:
             print(json.dumps({'due': False}))
             return 0
         entry = journal.data['slots'].setdefault(slot, {'attempts': 0})
+        entry.setdefault('started_at', iso(now))
         entry.update(attempts=entry['attempts'] + 1, last_attempt=iso(now))
         journal.save()
         clients = {}
@@ -110,7 +121,12 @@ def main():
             if not args.dry_run and not journal.data.get('pending_publication'):
                 try:
                     bridge.call({'action': 'publish', 'operation_id': operation('error', slot + str(entry['attempts'])),
-                                 'cards': [], 'run': {'status': 'error', 'summary': 'Hosted review failed verification; saved cards and account checkpoints are retained.'}})
+                                 'cards': [], 'report': reporting_snapshot(journal.data, config),
+                                 'run': {'status': 'error', 'summary': 'Hosted review failed verification; saved cards and account checkpoints are retained.',
+                                 'coverage': {a: 'error' for a in ACCOUNTS},
+                                 'details': {'trigger': 'manual' if slot.startswith('manual') else 'scheduled',
+                                     'scheduled_at': None if slot.startswith('manual') else slot, 'started_at': entry['started_at'],
+                                     'completed_at': iso(), 'phase': 'final', 'attempt': entry['attempts']}}})
                 except Exception:
                     pass
             print(json.dumps({'status': 'error', 'code': code, 'saved_state_retained': True}))

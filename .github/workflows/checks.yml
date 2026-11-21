@@ -34,6 +34,7 @@ jobs:
           .private/hosted-reviewer/venv/bin/python tests/reviewer_authorization.py
           .private/hosted-reviewer/venv/bin/python tests/reviewer_pilot.py
           .private/hosted-reviewer/venv/bin/python tests/hosted_reviewer.py
+          .private/hosted-reviewer/venv/bin/python tests/reporting.py
           python3 tests/hosted_reviewer_provision.py
       - name: Verify storage and HTTP API
         run: |

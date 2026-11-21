@@ -5,7 +5,7 @@ const source = readFileSync(new URL('../public/app.js', import.meta.url), 'utf8'
 const context = vm.createContext({Intl, Date});
 vm.runInContext(source, context);
 const day = (now, runs=[]) => JSON.parse(JSON.stringify(context.reviewDay(Date.parse(now), runs)));
-const run = (finished_at,status='success') => ({finished_at,status});
+const run = (finished_at,status='success') => ({finished_at,status,details:{trigger:'scheduled',phase:'final',scheduled_at: !Number.isFinite(Date.parse(finished_at)) ? null : new Date(Math.max(...context.reviewSlots(new Date(finished_at)).filter(t=>t<=Date.parse(finished_at)))).toISOString()}});
 const states = slots => slots.map(s=>s.state);
 let slots = day('2026-11-16T20:00:00Z', [run('2026-11-16T14:10:00Z'), run('2026-11-16T18:15:00Z','partial')]);
 assert.deepEqual(states(slots), ['updated','partial','next']);
@@ -49,3 +49,20 @@ assert.equal(status('2026-11-16T22:30:00Z').fraction,1);
 assert.equal(status('2026-11-16T18:00:00Z').fraction,0.5);
 assert.deepEqual(states(day('2026-11-17T02:30:00Z',[run('2026-11-16T17:32:46Z'),run('2026-11-17T02:20:44Z')])),['updated','missed','updated']);
 console.log('Daily route endpoints, midpoint and recovered evening publication passed.');
+
+const manual={finished_at:'2026-11-16T18:15:00Z',status:'success',details:{trigger:'manual',phase:'final',scheduled_at:null}};
+assert.deepEqual(states(day('2026-11-16T20:00:00Z',[manual])),['missed','missed','next']);
+assert.deepEqual(states(day('2026-11-16T20:00:00Z',[{finished_at:'2026-11-16T18:15:00Z',status:'success'}])),['missed','unknown','next']);
+const recovered={...run('2026-11-16T18:15:00Z'),details:{trigger:'scheduled',phase:'final',scheduled_at:'2026-11-16T14:00:00Z'}};
+assert.deepEqual(states(day('2026-11-16T20:00:00Z',[recovered])),['updated','missed','next']);
+assert.deepEqual(states(day('2026-11-16T20:00:00Z',[{...recovered,details:{...recovered.details,phase:'batch'}}])),['missed','missed','next']);
+const health=(r,p)=>JSON.parse(JSON.stringify(context.reviewHealth(r,p,Date.parse('2026-11-21T17:00:00Z'))));
+const report={accounts:[{recent_through:'2026-11-21T16:00:00Z',historical_complete:false},{recent_through:'2026-11-21T16:00:00Z',historical_complete:false}]};
+assert.equal(health({status:'partial'},report).tone,'current');
+assert.equal(health({status:'error'},report).tone,'error');
+assert.equal(health(null,null).tone,'unknown');
+assert.equal(health({coverage:{personal:'partial'}},report).tone,'unknown');
+assert.equal(health(null,{accounts:[{recent_through:'2026-11-18T00:00:00Z'},{}]}).tone,'unknown');
+console.log('Explicit slot identity, manual/legacy exclusion, delayed recovery and typed health states passed.');
+
+assert.equal(context.reviewDay(Date.parse('2026-11-21T17:00:00Z'), [], '2026-11-21T16:24:53Z')[0].state,'inactive');

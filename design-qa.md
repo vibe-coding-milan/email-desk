@@ -1,3 +1,13 @@
+# Version 0.5.0 product update — November 21, 2026
+
+final result: passed for the fictional local UI; production acceptance is recorded separately.
+
+Preserved the existing pixel identity, artwork, two buckets and card hierarchy. Inspected focused login, board/status, standalone History and System in the in-app browser. Verified note saves without closing, handling, note search, no-match status filtering, reopening with unchanged XP, feedback-to-card navigation, selected labels through search, optional demo skip and independent run identity. At 390px light/dark and 320px, System and card editing reflow without horizontal overflow. Corrected the mobile three-control navigation and desktop History filter specificity during QA. Fictional failed-review and unavailable-board fixtures retain visible warnings and never claim an all-clear. No private email screenshots were captured.
+
+Accepted screenshots are ignored under `.local/product-update-050/`. Existing audit evidence contains public/fictional data only and is published with the product review. Full-page capture may render the offscreen skip link; a DOM/geometry check confirmed it sits above the viewport unless focused. Browser error/warning logs were empty on the tested flows. Physical-device, screen-reader, cross-device, and scheduled/Mac-offline reliability remain separate acceptance work.
+
+Earlier records below remain historical.
+
 # Card timing and sender follow-up — November 19, 2026
 
 final result: passed (local and production)

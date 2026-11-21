@@ -14,7 +14,7 @@
   <a class="skip-link" id="skipLink" href="#welcome">Skip to content</a>
   <header class="masthead">
     <a class="brand" href="#welcome" id="brandHome" aria-label="Email Desk home"><h1>Email Desk</h1><span class="companion-scene rail-companion" aria-hidden="true"><span class="agent-idle"></span><img class="companion-prop" src="assets/mailbox.png" width="110" height="110" alt=""></span></a>
-    <nav class="desk-nav" aria-label="Workspace navigation" hidden><button id="navBoard" type="button" aria-current="page"><span class="icon icon-trend" aria-hidden="true"></span>Board</button><button id="navHistory" type="button"><span class="icon icon-history" aria-hidden="true"></span>History <span id="navHistoryCount"></span></button></nav>
+    <nav class="desk-nav" aria-label="Workspace navigation" hidden><button id="navBoard" type="button" aria-current="page"><span class="icon icon-trend" aria-hidden="true"></span>Board</button><button id="navHistory" type="button"><span class="icon icon-history" aria-hidden="true"></span>History <span id="navHistoryCount"></span></button><button id="navSystem" type="button" hidden>System</button></nav>
     <div id="railProgress" class="rail-progress"></div>
     <nav class="utility-nav" aria-label="Board controls">
       <details class="appearance"><summary>Appearance <span class="icon icon-down" aria-hidden="true"></span></summary><div class="appearance-options">
@@ -23,7 +23,8 @@
         <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
         <button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
       </div>
-      <button id="logout" hidden>Sign out</button></div></details>
+      </div></details>
+      <button id="logout" class="sign-out" hidden>Sign out</button>
       <a id="ownerLink" href="#login">Milan sign in</a>
       <a id="demoBack" href="#welcome" hidden>Exit demo</a>
     </nav>
@@ -34,8 +35,8 @@
         <div class="cover-copy"><p class="pixel-eyebrow">Personal email board</p><h2 id="welcomeTitle">What needs<br><em>your attention.</em></h2><p class="cover-description">An AI reviewer finds requests and useful updates in your email.</p><div class="cover-actions"><a class="primary" href="#guestDemo" id="startDemo">Play the demo <span class="icon icon-right" aria-hidden="true"></span></a><span class="pixel-caption">A fictional day. No sign-in needed.</span></div><p class="cover-credit">Built by <a href="https://github.com/vibe-coding-milan" rel="noopener noreferrer" target="_blank">Milan Mijatovic</a>.</p></div>
         <div class="welcome-preview" aria-label="Preview with fictional conversations"><img class="welcome-desk" src="assets/desk-vignette.png" width="460" height="165" alt=""/><section class="pixel-panel"><div class="column-heading"><h3>Needs action</h3><span>1</span></div><div class="sample-message"><span class="sample-meta">Riley Parker · Fictional example</span><h4>Confirm committee attendance</h4><p>A quick yes so the team can finalize the agenda.</p></div></section><section class="pixel-panel"><div class="column-heading"><h3>Worth knowing</h3><span>1</span></div><div class="sample-message"><span class="sample-meta">Casey Ellis · Fictional example</span><h4>Your stylist has a new booking page</h4><p>Useful for next time. Nothing to do right now.</p></div></section></div>
       </div>
-      <section class="process-section" aria-labelledby="processTitle"><h2 id="processTitle">How it works</h2><ol class="guest-how" aria-label="The review and feedback process"><li><h3>Review</h3><p>The agent checks messages and replies using your rules.</p></li><li><h3>Decide</h3><p>Open the email, handle the card, or dismiss it.</p></li><li><h3>Add context</h3><p>Notes and label corrections inform the next review.</p></li></ol><p class="public-boundary">Handling a card records a decision. It never sends, archives, deletes, or marks email read.</p><a class="process-cta" href="#guestDemo" id="processDemo">Open demo <span class="icon icon-right" aria-hidden="true"></span></a></section>
-      <footer class="project-footer"><span>Built with Codex.</span><a href="assets/privacy.txt">Privacy</a><a href="https://github.com/vibe-coding-milan/email-desk/blob/main/docs/BUILDING.md" target="_blank" rel="noopener noreferrer">How it’s built</a><a href="https://github.com/vibe-coding-milan/email-desk/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Release notes · v0.4.4</a><a href="https://github.com/vibe-coding-milan/email-desk" target="_blank" rel="noopener noreferrer">Source</a></footer>
+      <section class="process-section" aria-labelledby="processTitle"><h2 id="processTitle">How it works</h2><ol class="guest-how" aria-label="The review and feedback process"><li><h3>Review</h3><p>At scheduled times, the agent reviews messages and replies using your priorities and rules.</p></li><li><h3>Decide</h3><p>Open the email, handle the card, or dismiss it.</p></li><li><h3>Add context</h3><p>Notes and label corrections inform the next review.</p></li></ol><p class="public-boundary">Handling a card records a decision. It never sends, archives, deletes, or marks email read.</p><a class="process-cta" href="#guestDemo" id="processDemo">Open demo <span class="icon icon-right" aria-hidden="true"></span></a></section>
+      <footer class="project-footer"><span>Built with Codex.</span><a href="assets/privacy.txt">Privacy</a><a href="https://github.com/vibe-coding-milan/email-desk/blob/main/docs/BUILDING.md" target="_blank" rel="noopener noreferrer">How it’s built</a><a href="https://github.com/vibe-coding-milan/email-desk/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Release notes · v0.5.0</a><a href="https://github.com/vibe-coding-milan/email-desk" target="_blank" rel="noopener noreferrer">Source</a></footer>
     </section>
     <section id="guestDemo" class="guest-demo" tabindex="-1" aria-labelledby="demoTitle" hidden>
       <div class="workspace-cover"><div><p class="pixel-eyebrow">Demo</p><h2 id="demoTitle">Try Email Desk</h2></div><img src="assets/desk-vignette.png" width="460" height="165" alt=""></div>
@@ -51,7 +52,7 @@
           <p id="demoReviewNote" class="review-note">Demo time 9 AM</p>
         </div></section>
       </div>
-      <div class="demo-guide"><p id="demoAnnouncement" role="status" aria-live="polite">Handle or dismiss each card to continue.</p><button id="skipDemo" type="button" hidden>Skip ahead</button></div>
+      <div class="demo-guide"><p id="demoAnnouncement" role="status" aria-live="polite">Try Details, add context, then handle a card and find it in History. You can skip to the next review.</p><button id="skipDemo" type="button" hidden>Skip ahead</button></div>
       <div id="demoEmpty" class="empty" hidden><h2>No cards left.</h2><p id="demoEmptyText">Moving to the next review…</p></div>
       <div class="board" id="demoBoard" aria-label="Fictional demo board">
         <section class="pixel-panel" aria-labelledby="demoActionTitle"><div class="column-heading"><span class="icon icon-trend" aria-hidden="true"></span><h2 id="demoActionTitle">Needs action</h2><span id="demoActionCount">2</span><span class="heading-rule" aria-hidden="true"></span></div><div id="demoActionCards"></div></section>
@@ -61,7 +62,7 @@
       <p class="demo-boundary">Demo only. No email is changed.</p>
     </section>
     <section id="login" hidden>
-      <details id="ownerLogin"><summary>Milan’s workspace / Sign in</summary>
+      <a href="#welcome" id="loginBack">Back to Email Desk</a>
 
       <form id="loginForm" class="login-box">
         <h2>Sign in, Milan.</h2>
@@ -69,11 +70,11 @@
         <input id="password" type="password" autocomplete="current-password" required maxlength="500">
         <button type="submit" class="primary">Sign in<span class="icon icon-right" aria-hidden="true"></span></button>
       </form>
-      </details>
     </section>
     <div id="error" role="alert" hidden></div>
     <section id="workspace" tabindex="-1" hidden>
-      <div class="workspace-cover"><div><p class="pixel-eyebrow">Your attention board</p><h2>Your board</h2><time id="today"></time></div><img src="assets/desk-vignette.png" width="460" height="165" alt=""></div>
+      <div class="workspace-cover"><div><p class="pixel-eyebrow">Your attention board</p><h2 id="deskTitle">Your board</h2><time id="today"></time></div><img src="assets/desk-vignette.png" width="460" height="165" alt=""></div>
+      <div id="boardOverview">
       <div class="status-strip">
       <details class="progress-info" id="progressInfo">
         <summary aria-label="Your progress and how XP works">
@@ -92,14 +93,24 @@
         <p id="reviewNote" class="review-note">Checking saved review results.</p>
       </div></section>
       </div>
-      <div class="board-status"><details id="scan" class="scan" hidden><summary id="scanTitle"></summary><p id="scanDetails"></p></details></div>
+      <div class="board-status"><details id="scan" class="scan" hidden><summary id="scanTitle"></summary><div id="scanDetails"></div></details></div>
 
+      <nav class="bucket-jumps" aria-label="Board sections"><a href="#actionTitle">Needs action</a><a href="#awarenessTitle">Worth knowing</a></nav>
       <div id="empty" class="empty" hidden><h2>No active cards</h2><p>Decisions saved in history. New cards appear automatically.</p></div>
       <section id="board" class="board" aria-label="Email attention board">
         <section class="pixel-panel" aria-labelledby="actionTitle"><div class="column-heading"><span class="icon icon-trend" aria-hidden="true"></span><h2 id="actionTitle">Needs action</h2><span id="actionCount">0</span><span class="heading-rule" aria-hidden="true"></span></div><div id="actionCards"></div></section>
         <section class="pixel-panel" aria-labelledby="awarenessTitle"><div class="column-heading"><span class="icon icon-trend" aria-hidden="true"></span><h2 id="awarenessTitle">Worth knowing</h2><span id="awarenessCount">0</span><span class="heading-rule" aria-hidden="true"></span></div><div id="awarenessCards"></div></section>
       </section>
-      <details id="history" class="history" hidden><summary id="historyTitle">Handled &amp; dismissed</summary><div id="historyCards"></div></details>
+      </div>
+      <section id="history" class="history history-view" aria-labelledby="historyTitle" hidden>
+        <h3 id="historyTitle">Handled &amp; dismissed</h3>
+        <div class="history-tools"><label>Find a decision<input id="historySearch" type="search" placeholder="Search subjects, senders, labels or notes"></label><label>Status<select id="historyState"><option value="all">All decisions</option><option value="handled">Handled</option><option value="dismissed">Dismissed</option></select></label><label>First decision since<input id="historySince" type="date"></label></div>
+        <p id="historyResult" role="status"></p><div id="historyCards"></div>
+      </section>
+      <section id="system" aria-labelledby="systemTitle" hidden>
+        <h3 id="systemTitle">Review health and usage</h3><p>Read-only reporting. Opening this view never starts an inbox review.</p>
+        <p id="systemState" role="status">Loading system information…</p><div id="systemContent"></div>
+      </section>
 
     </section>
   </main>

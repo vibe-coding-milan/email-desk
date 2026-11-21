@@ -1,4 +1,4 @@
-# Using and refining 0.4.1
+# Using and refining 0.5.0
 
 Use [Email Desk](https://mijatovic.com/email-desk/) during your normal day. Choose **Milan sign in** for the real board. The public **Play the demo** uses fictional messages; its notes, decisions and XP reset on reload.
 
@@ -6,7 +6,11 @@ Start with ordinary work rather than trying every control. Notice whether you ca
 
 The small card meter shows time left in the 48-hour 10-XP window. After that target, an amber “Past 48h” pill replaces the meter; later first decisions earn 5 XP. This is a board target, not a sender deadline. Friendly sender names appear when available; hover over a name for the full original sender. The review timeline reports saved publication results. A code release does not start an inbox review. Handling a card never sends, archives, deletes or marks email read.
 
-The proposed offline reviewer is not activated. Its first read-only pilot changed no cards, labels or review checkpoints, so it should not create a new update marker on the live timeline. See [hosted reviewer readiness](HOSTED_REVIEWER.md) for measured usage and the remaining schedule checks. Report missing or partial real reviews as observed; a successful prototype or code deployment does not make those gaps successful.
+The hosted reviewer schedule is active on DreamHost. Recent coverage, historical catch-up and actual scheduled publication are distinct. The board shows recent health; expand it for account coverage. Open **System** for saved review outcomes, usage, pending feedback and the master source. Reading System never starts a review. Historical records without trigger/slot metadata remain unverified for scheduled checkpoints; slots before activation are labelled separately. A manual publication can update freshness without satisfying a scheduled slot.
+
+Use **History** to find decisions by subject, sender, label or note, filter handled/dismissed, or select a first-decision date. Reopen returns the card to Board without another XP award. **Sign out** sits outside Appearance. The focused owner sign-in is separate from the public landing page.
+
+Usage is a private token ledger with 7/30/90-day and work-type filters. Costs use dated model rates and include returned paid usage even on incomplete/unverified responses. Unknown requests/rates are labelled; old work is legacy/unclassified. Neither the initial funding amount nor a monthly forecast is shown as a balance. First scheduled/Mac-offline acceptance remains separate from this UI release.
 
 For useful feedback, a short note is enough:
 
@@ -21,4 +25,4 @@ Desktop responsive browser QA is recorded in [design-qa.md](../design-qa.md). Ph
 
 ## Hosted-reviewer follow-up
 
-After the replacement reviewer passes hosted acceptance, review whether the board makes both-mailbox freshness, the latest verified result, the next New York review slot and partial/missed/error states understandable on desktop and mobile. Distinguish unfinished historical catch-up from a failed current scan. Check whether any necessary recovery step is clear. Preserve the two buckets and verify 0.4.1's friendly sender names and quiet amber past-target treatment with real hosted summaries. Record observed issues before choosing UI changes; this follow-up is planned, not completed.
+During ordinary use, review whether the board makes both-mailbox freshness, the latest verified result, the next New York review slot and partial/missed/error states understandable on desktop and mobile. Distinguish unfinished historical catch-up from a failed current scan. Check whether any necessary recovery step is clear. Preserve the two buckets and verify 0.4.1's friendly sender names and quiet amber past-target treatment with real hosted summaries. Record observed issues before choosing UI changes; this follow-up is planned, not completed.

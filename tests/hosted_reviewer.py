@@ -18,6 +18,24 @@ from reviewer.model import validate, schema, source_key, source_rows, ground_dea
 from reviewer.state import Journal, UTC, iso, scheduled_slot
 
 
+class PublicationCompatibility(unittest.TestCase):
+    def test_legacy_uncertain_payload_replays_without_new_metadata(self):
+        engine=Engine.__new__(Engine)
+        engine.journal=FakeJournal()
+        payload={'action':'publish','operation_id':'legacy_operation_123456','cards':[], 'run':{'status':'partial','summary':'Fictional old operation'}}
+        original=copy.deepcopy(payload)
+        class Bridge:
+            def call(self,value):
+                if value.get('action')=='publish':
+                    self.payload=copy.deepcopy(value)
+                    return {'run':{}}
+                return {'cards':[]}
+        engine.bridge=Bridge()
+        engine.publish(payload)
+        self.assertEqual(engine.bridge.payload,original)
+        self.assertEqual(payload,original)
+
+
 class ReaderBoundaries(unittest.TestCase):
     def test_streaming_json_limit_stops_consuming_response(self):
         class Response:

@@ -19,10 +19,18 @@ for i,(account,subject,desc,reason,category,topics)in enumerate([
 if os.environ.get('EMAIL_DESK_LEVEL_DEMO')=='1':
  for i in range(9):
   sample=dict(cards[0]);sample.update(id='demo-'+str(i),subject='Fictional completed example '+str(i+1),state='handled',decision_earned_at=now);cards.append(sample)
+# Operational fixtures are invented and kept in process memory.
+scenario=os.environ.get('EMAIL_DESK_PREVIEW_SCENARIO','partial')
+def report():
+ return dict(generated_at=now,schedule_active=True,activated_at=now,accounts=[dict(account=a,recent_through=now,historical_through=now,historical_complete=False) for a in ['mijatovic@gmail.com','milan@mijatovic.com']],playbook=dict(fetched_at=now,revision='fictional-revision'),usage=dict(since=now[:10],unknown_requests=1,rows=[dict(day=now[:10],purpose='manual',model='gpt-6-luna',rate_date='2026-11-21',requests=2,retries=1,incomplete=1,input_tokens=12000,output_tokens=1200,cached_tokens=3000,cache_write_tokens=2000,calculated_usd='0.00158')]))
+def run():
+ return dict(status='error' if scenario=='error' else 'partial',summary='Fictional preview: recent mail checked; historical catch-up remains incomplete.',finished_at=now,last_success_at=None,coverage={a:('error' if scenario=='error' else 'complete') for a in ['mijatovic@gmail.com','milan@mijatovic.com']},details=dict(trigger='manual',scheduled_at=None,phase='final',started_at=now,completed_at=now,attempt=1))
 port=int(os.environ.get('EMAIL_DESK_PREVIEW_PORT','8000'))
 class Handler(SimpleHTTPRequestHandler):
  def __init__(self,*a,**kw):super().__init__(*a,directory=str(root/'public'),**kw)
  def log_message(self,*a):pass
+ def end_headers(self):
+  self.send_header('Cache-Control','no-store');super().end_headers()
  def respond(self,p,status=200):
   b=json.dumps(p).encode();self.send_response(status);self.send_header('Content-Type','application/json');self.send_header('Cache-Control','no-store');self.end_headers();self.wfile.write(b)
  def do_GET(self):
@@ -30,7 +38,10 @@ class Handler(SimpleHTTPRequestHandler):
   action=urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query).get('action',['board'])[0]
   if action=='session':return self.respond(dict(ok=True,authenticated=logged_in,csrf='preview'))
   if not logged_in:return self.respond(dict(ok=False,error='sign_in'),401)
-  if action=='board':return self.respond(dict(ok=True,result=dict(cards=cards,labels=labels,progress=progress(),run=dict(status='success',demo=True,summary='Fictional localhost preview only — not your inbox.',finished_at=now,last_success_at=now))))
+  if action=='board':
+   if scenario=='offline':return self.respond(dict(ok=False,error='temporary'),503)
+   return self.respond(dict(ok=True,result=dict(cards=cards,labels=labels,progress=progress(),run=run(),runs=[run()],report=None if scenario=='legacy' else report())))
+  if action=='system':return self.respond(dict(ok=True,result=dict(report=None if scenario=='legacy' else report(),runs=[run()],feedback=[dict(card_id=c['id'],subject=c['subject'],status=c['feedback_status'],created_at=now) for c in cards if c.get('feedback_status') in ['pending','error']],remaining=0)))
   if action=='playbook':return self.respond(dict(ok=True,result=dict(content='Fictional preview. Real playbook reference is loaded only after private server setup.')))
   return self.respond(dict(ok=False,error='not_found'),404)
  def do_POST(self):

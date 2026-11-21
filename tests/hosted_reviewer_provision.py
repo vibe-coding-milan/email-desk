@@ -51,6 +51,24 @@ class Provisioning(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'active_upgrade_requires_review'):
                 installer.upgrade_code(root, bundle, digest, 'b' * 40)
 
+    def test_reviewed_active_upgrade_preserves_activation_cron_and_credentials(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root=Path(raw)
+            archive, manifest=builder.build(ROOT,'a'*40)
+            files, unused=installer.unpack(archive)
+            (root/'code').mkdir(mode=0o700);(root/'code/reviewer').mkdir(mode=0o700)
+            for name, content in files.items():installer.write(root/'code'/name,content)
+            installer.write(root/'installed.json',json.dumps(manifest).encode())
+            for name in ['activation.json','journal.encrypted','reviewer.json','token-encryption.key']:
+                installer.write(root/name,b'fictional-private-marker')
+            bundle=root/'bundle.tar.gz';archive,unused=builder.build(ROOT,'b'*40);installer.write(bundle,archive)
+            with patch.object(installer,'command') as command:
+                result=installer.upgrade_code(root,bundle,hashlib.sha256(archive).hexdigest(),'a'*40,True)
+                command.assert_not_called()
+            self.assertTrue(result['cron_enabled'])
+            for name in ['activation.json','journal.encrypted','reviewer.json','token-encryption.key']:
+                self.assertEqual((root/name).read_bytes(),b'fictional-private-marker')
+
     def test_changed_installed_code_blocks_activation_and_active_reinstall_does_not_run_pip(self):
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)
