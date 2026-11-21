@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.4 — 2026-11-21
+
+- Updated the privacy notice’s factual activation status and the footer version. Data destinations, retention and approved access scope are unchanged.
+- Updated current architecture, reviewer operations, measured usage and acceptance documentation for the active DreamHost schedule. The private worker is deployed separately; this code release does not copy credentials or change Gmail/board state.
+
 ## Hosted operations — 2026-11-21
 
 - Activated the private DreamHost reviewer after controlled live acceptance: 24 targets, zero errors, both recent mailbox scans complete, exact label verification and preserved owner state. Historical catch-up remains partial.

@@ -79,7 +79,7 @@ This covers JavaScript syntax, local assets, shared labels, guest-day behavior, 
 
 ## Current state
 
-**Version 0.4.3 is live, and the DreamHost reviewer schedule is active.** Weekdays: 9 AM, 1 PM and 5:30 PM. Weekends: 9 AM and 5:30 PM. All times follow America/New_York, including DST. The five-minute dispatcher runs independently of the Mac. This schedule belongs to DreamHost and does not appear in ChatGPT Scheduled Tasks.
+**The DreamHost reviewer schedule is active.** Version 0.4.4 updates the public notice to reflect activation; the board behavior is unchanged. Weekdays: 9 AM, 1 PM and 5:30 PM. Weekends: 9 AM and 5:30 PM. All times follow America/New_York, including DST. The five-minute dispatcher runs independently of the Mac. This schedule belongs to DreamHost and does not appear in ChatGPT Scheduled Tasks.
 
 Controlled host acceptance processed 24 targets with zero errors, both recent mailbox scans complete, exact custom-label verification and independently preserved owner comments, decisions and XP. Historical catch-up remains partial. The first real scheduled publication and a Mac-offline run still need observation; the desktop task now monitors only. Google authorization is In production with both grants renewed. See the [handoff](docs/HANDOFF.md), [reviewer contract](docs/REVIEWER.md) and [hosted ledger](docs/HOSTED_REVIEWER.md) for bounds, usage, evidence and remaining checks.
 
