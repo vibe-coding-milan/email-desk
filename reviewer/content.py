@@ -59,6 +59,23 @@ class VisibleHTML(HTMLParser):
             self.output.append(text)
 
 
+def decoded_body(payload):
+    data = payload.get('body', {}).get('data', '')
+    if not data:
+        return ''
+    raw = base64.urlsafe_b64decode(data + '=' * (-len(data) % 4))
+    headers = {h['name'].lower(): h['value'] for h in payload.get('headers', [])}
+    charset = re.search(r'charset\s*=\s*["\']?([^\s;"\']+)', headers.get('content-type', ''), re.I)
+    try:
+        return raw.decode(charset.group(1) if charset else 'utf-8', 'replace')
+    except LookupError:
+        return raw.decode('utf-8', 'replace')
+
+
+def html_document(text):
+    return bool(re.match(r'^\s*(?:<!doctype\s+html\b|<html\b)', text, re.I))
+
+
 def body_text(payload):
     headers = {h['name'].lower(): h['value'] for h in payload.get('headers', [])}
     if payload.get('filename') or headers.get('content-disposition', '').lower().startswith('attachment'):
@@ -66,6 +83,16 @@ def body_text(payload):
     mime = payload.get('mimeType', '').lower()
     parts = payload.get('parts', [])
     if mime == 'multipart/alternative':
+        # Some senders put a stale HTML template in the plain alternative.
+        # Prefer the declared HTML body in that case instead of a bogus fallback.
+        malformed_plain = any(p.get('mimeType', '').lower() == 'text/plain'
+                              and html_document(decoded_body(p)) for p in parts if not p.get('filename'))
+        if malformed_plain:
+            for part in parts:
+                if part.get('mimeType', '').lower() == 'text/html':
+                    text = body_text(part)
+                    if text.strip():
+                        return text
         for preferred in ['text/plain', 'text/html']:
             for part in parts:
                 if part.get('mimeType', '').lower() == preferred:
@@ -74,15 +101,9 @@ def body_text(payload):
                         return text
         return next((text for text in map(body_text, parts) if text.strip()), '')
     if mime in {'text/plain', 'text/html'}:
-        data = payload.get('body', {}).get('data', '')
-        if data:
-            raw = base64.urlsafe_b64decode(data + '=' * (-len(data) % 4))
-            charset = re.search(r'charset\s*=\s*["\']?([^\s;"\']+)', headers.get('content-type', ''), re.I)
-            try:
-                text = raw.decode(charset.group(1) if charset else 'utf-8', 'replace')
-            except LookupError:
-                text = raw.decode('utf-8', 'replace')
-            if mime == 'text/html':
+        text = decoded_body(payload)
+        if text:
+            if mime == 'text/html' or html_document(text):
                 parser = VisibleHTML()
                 parser.feed(text)
                 parser.close()

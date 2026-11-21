@@ -74,6 +74,17 @@ class ProposalSafety(unittest.TestCase):
         self.assertEqual(pilot.body_text({'mimeType': 'multipart/alternative', 'parts': [
             self.part('text/plain', ' '), self.part('text/html', '<p>Full request.</p>')]}), 'Full request.')
 
+    def test_html_disguised_as_plain_does_not_hide_the_real_alternative(self):
+        alternative = {'mimeType': 'multipart/alternative', 'parts': [
+            self.part('text/plain', '<!DOCTYPE html><html><body>Stale generic template.</body></html>'),
+            self.part('text/html', '<p>Please arrange access for the inspection.</p>')]}
+        self.assertEqual(pilot.body_text(alternative), 'Please arrange access for the inspection.')
+
+    def test_standalone_html_disguised_as_plain_is_never_rendered_or_sent_as_markup(self):
+        part = self.part('text/plain', '<html><head><style>private-css</style></head><body>'
+                         '<script>fetch("https://example.test")</script><p>Please review the proposal.</p></body></html>')
+        self.assertEqual(pilot.body_text(part), 'Please review the proposal.')
+
 
 if __name__ == '__main__':
     unittest.main()
