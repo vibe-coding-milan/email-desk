@@ -9,6 +9,12 @@ Changes are grouped by release. Dates use America/New_York. Email Desk is self-h
 - Fixed an HTML extraction limitation discovered after the pilot. Eight fictional proposal/parser/host-boundary checks pass; the HTML fix has no live retest yet. Preserve that distinction when reporting the pilot's quality or cost.
 - Consolidated current setup, permissions, measured usage and remaining production acceptance in [the hosted reviewer guide](docs/HOSTED_REVIEWER.md). The worker and guarded installer are now prepared in draft PR #8 with 42 passing fictional tests; initial CI passed and later changes await fresh CI. Durable authorization, live label/feedback verification, host installation and a real Mac-offline run remain pending. A post-implementation UX review is planned around review status, both-mailbox freshness and recovery.
 
+## 0.4.3 — 2026-11-21 (prepared)
+
+- Added optional transactional expected-revision checks to reviewer publication, rejecting stale card updates without changing existing publishers.
+- Prepared the bounded hosted worker, private installation and verified progress import. Both Production grants are renewed; Milan explicitly approved private host credential transfer and bounded recurring OpenAI payloads. No server schedule is claimed until live validation and cron read-back pass.
+- All 42 fictional reviewer checks and existing CI storage/API checks pass. Production deployment and hosted acceptance are pending.
+
 ## 0.4.2 — 2026-11-21
 
 - Published the owner-approved privacy notice and homepage footer link for Google OAuth branding. No worker, schedule, credential or private-state change is part of the code release.
