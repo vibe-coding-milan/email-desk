@@ -2,10 +2,23 @@
 
 Changes are grouped by release. Dates use America/New_York. Email Desk is self-hosted under `/email-desk/`; release notes never contain private messages, feedback, credentials or connection settings.
 
+## Unreleased — hosted reviewer preparation, 2026-11-20
+
+- Prepared a read-only DreamHost/API reviewer prototype, official-library Google OAuth bootstrap with PKCE and encrypted private grants, bounded API connectivity check and token-usage reporter. These tools have not been installed on the host or activated as a schedule; production remains 0.4.1.
+- Verified local API access, both expected Google account grants, the live master playbook and the shared 37-label inventory. An explicitly approved four-message pilot used 9,279 tokens; calculated cost $0.001794675, not a posted charge or monthly estimate. No Gmail labels or board cards changed.
+- Fixed an HTML extraction limitation discovered after the pilot. Eight fictional proposal/parser/host-boundary checks pass; the HTML fix has no live retest yet. Preserve that distinction when reporting the pilot's quality or cost.
+- Consolidated current setup, permissions, measured usage and remaining production acceptance in [the hosted reviewer guide](docs/HOSTED_REVIEWER.md). The worker and guarded installer are now prepared in draft PR #8 with 42 passing fictional tests; initial CI passed and later changes await fresh CI. Durable authorization, live label/feedback verification, host installation and a real Mac-offline run remain pending. A post-implementation UX review is planned around review status, both-mailbox freshness and recovery.
+
+## 0.4.3 — 2026-11-21 (prepared)
+
+- Added optional transactional expected-revision checks to reviewer publication, rejecting stale card updates without changing existing publishers.
+- Prepared the bounded hosted worker, private installation and verified progress import. Both Production grants are renewed; Milan explicitly approved private host credential transfer and bounded recurring OpenAI payloads. No server schedule is claimed until live validation and cron read-back pass.
+- All 42 fictional reviewer checks and existing CI storage/API checks pass. Production deployment and hosted acceptance are pending.
+
 ## 0.4.2 — 2026-11-21
 
-- Added the owner-approved public privacy notice and linked it from the homepage, supporting the dedicated Google OAuth app’s production branding setup. The notice describes personal use, Google data, bounded model processing, private storage and owner controls.
-- No reviewer worker, server schedule, mailbox permission or board state is changed by this code release. Hosted activation remains a separate acceptance step. Local UI/source checks pass. Published through [PR #9](https://github.com/vibe-coding-milan/email-desk/pull/9), commit `752c9812ca264e25e75b8a7ad3400e30e9da7305`, release `arcade-20261121T144224251467Z`. CI passed. The [deployment run](https://github.com/vibe-coding-milan/email-desk/actions/runs/44915259854) installed the matching release but failed when its final homepage request timed out. Independent acceptance verified the restricted receipt, all 28 public hashes, all 23 live authentication/access checks and exact preservation of saved cards, feedback, checkpoints and XP. This connectivity failure was not hidden or worked around by weakening checks.
+- Published the owner-approved privacy notice and homepage footer link for Google OAuth branding. No worker, schedule, credential or private-state change is part of the code release.
+- Version 0.4.2 is live through PR #9, commit 752c9812ca264e25e75b8a7ad3400e30e9da7305, release arcade-20261121T144224251467Z. CI passed. Deployment run 44915259854 installed the matching release but timed out during its final homepage request. Independent acceptance passed: restricted receipt, 28 public hashes, all 23 authentication/access checks and exact private board/checkpoint/progress preservation. Keep the workflow failure visible; do not repeat installation or weaken checks to conceal a connectivity failure.
 
 ## 0.4.1 — 2026-11-19
 

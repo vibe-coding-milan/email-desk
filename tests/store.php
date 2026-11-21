@@ -77,5 +77,13 @@ try{
  $nonce=random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);$payload=base64_encode($nonce.sodium_crypto_secretbox(json_encode($legacy),$nonce,$key));
  $q=$db->prepare('UPDATE cards SET payload=? WHERE id=?');$q->execute([$payload,$legacy['id']]);
  check($s->board()['progress']['xp']===110,'legacy decision retains its original 10 XP');
+ // Hosted publication is revision-checked atomically and uncertain acknowledgements replay safely.
+ check($s->board()['capabilities']['publish_revisions']===true,'revision capability advertised');
+ $revisionCard=array_values(array_filter($s->board()['cards'],fn($row)=>$row['account']===$c['account']&&$row['thread_id']===$c['thread_id']))[0];
+ $revisionPayload=['operation_id'=>op(),'cards'=>[$c],'expected_revisions'=>[$revisionCard['id']=>$revisionCard['revision']],'run'=>['status'=>'partial','summary'=>'Fictional guarded review']];
+ $guarded=$s->publish($revisionPayload);check($s->publish($revisionPayload)===$guarded,'guarded retry returns original acknowledgement');
+ $revisionPayload['operation_id']=op();$before=$s->board();rejects(fn()=>$s->publish($revisionPayload),'conflict');check($s->board()===$before,'stale publication changes neither cards nor outcome');
+ $revisionPayload['expected_revisions']=[];rejects(fn()=>$s->publish($revisionPayload),'expected_revisions');
+ $revisionPayload['expected_revisions']=[$revisionCard['id']=>0];rejects(fn()=>$s->publish($revisionPayload),'conflict');
  echo "$count storage, isolation, retry, conflict and encryption checks passed.\n";
 }finally{foreach(glob($dir.'/*')as $f)unlink($f);rmdir($dir);}

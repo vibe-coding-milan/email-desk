@@ -1,5 +1,7 @@
 # Activate GitHub deployment when back at the MacBook
 
+This is the completed historical **code-deployment** checklist. The current, unactivated offline mail reviewer has a separate [setup ledger and production acceptance checklist](HOSTED_REVIEWER.md). The November 20 API/Google bootstrap and read-only pilot do not establish a server schedule; do not repeat this deployment bootstrap to enable reviews.
+
 Completed November 16, 2026 (New York time). The dedicated host receiver/key and all five Actions secrets are installed. PR #1 merged and [the first GitHub deployment](https://github.com/vibe-coding-milan/email-desk/actions/runs/44007834191) succeeded. Activation published version 0.2.3; receipt/public hashes, all saved cards/checkpoints, owner sign-in/out and all 23 live checks passed. This checklist is historical; see README and HANDOFF for the current release. The steps below are retained as a record of the one-time activation.
 
 1. **Milan: unlock the MacBook and resume this chat.** Open the Email Desk project in Codex, the saved `mijatovic.com` connection in Cyberduck, and GitHub in the browser. Complete any sign-in or two-factor prompts yourself. Keep the Mac awake and unlocked during this one-time setup.

@@ -37,6 +37,14 @@ A handled card records my decision. It grants no permission to send, archive, de
 
 The [reviewer contract](REVIEWER.md) makes these boundaries concrete. Feedback informs later reviews; it is not model-weight training. The master organization playbook remains a Google Doc, with a dated Markdown reference.
 
+## Test the offline reviewer before relying on it
+
+Missed reviews exposed a separate infrastructure problem: a desktop task registration does not establish that the board will update while the Mac is offline. The selected replacement is a DreamHost cron worker using the OpenAI API and its own Google grants, alongside the existing authenticated board. It is still in preparation; the deployed website and release pipeline have not become an unattended mail reviewer.
+
+The first step was a bounded, read-only pilot using the live master playbook and both mailboxes. Four messages used 9,279 tokens, with calculated usage of about $0.0018. Source and label validation passed, and no labels or cards changed. Reviewing the evidence also caught an HTML extraction gap: those messages had used short snippets. The local fix reads visible HTML without executing it or fetching resources; eight fictional checks pass, but a live retest and action/feedback cases are still needed.
+
+This is evidence that the connections work and a small sample is inexpensive, not proof of classification accuracy, monthly cost or schedule reliability. The [setup ledger and remaining acceptance](HOSTED_REVIEWER.md) keep those claims separate and record encrypted private storage, explicit access approvals and the eventual Mac-offline publication requirement.
+
 ## Protect the state that matters
 
 I wanted a small app that could retain corrections across scans and code releases. The implementation uses:

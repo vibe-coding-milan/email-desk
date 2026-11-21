@@ -2,6 +2,8 @@
 
 The production destination remains https://mijatovic.com/email-desk/ on the verified existing DreamHost domain account. GitHub Actions builds and sends code directly to that host; the Mac and Cyberduck are not part of normal releases.
 
+This pipeline deploys application code. It does not provision the hosted reviewer, transfer model/Google credentials, create cron jobs or establish offline inbox coverage. The November 20 read-only reviewer pilot and its eight fictional checks are recorded separately in [HOSTED_REVIEWER.md](HOSTED_REVIEWER.md); production remains 0.4.1 and the replacement schedule is not activated. Keep OAuth grants, API keys, encryption keys and real pilot evidence out of Actions secrets/artifacts and release bundles; reviewer provisioning needs its own reviewed path.
+
 ## Release flow
 
 A push to `main`, or a manual **Deploy Email Desk** run on `main`, calls the shared Project checks workflow before the deployment job receives secrets. Pull requests run checks without deploying. Jobs have read-only GitHub contents permission, do not persist checkout credentials, and serialize releases without interrupting a running installation. A queued commit is skipped if it is no longer the current `main` head.

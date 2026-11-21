@@ -1,6 +1,12 @@
 # Reviewer integration contract
 
-The planned scheduled reviewer reads Gmail using the assistant's connected tools, not browser credentials on the website. There is no direct website-to-Gmail OAuth integration.
+## Hosted replacement in preparation
+
+On November 20 Milan selected a standalone DreamHost/API reviewer, funded $25 of API credit and approved a dedicated Google project. Local API access and both encrypted Google grants are verified. One explicitly approved read-only pilot classified four messages against the live master v1.1 and 37 existing labels: 9,279 tokens, calculated $0.001794675, with no Gmail or board writes. Source/label validation passed; the sample had no action-request or feedback cases. Its HTML messages used snippets; full visible-HTML extraction is now fixed locally and eight fictional checks pass, but no live retest has run.
+
+The replacement is **not activated**. [Offline reviewer readiness](HOSTED_REVIEWER.md) is the current setup ledger and acceptance checklist. A draft worker and guarded installer now have passing fictional label/read-back, feedback-boundary, coverage/replay and provisioning checks. Google publishing status is now In production. Both Testing-issued grants were explicitly renewed after personal consent, with encrypted backups and exact-account/scope verification. Live action/feedback validation, specific host credential transfer/installation, cron and a Mac-offline publication remain pending. Routine worker classifications add topics without implicitly removing existing custom labels; explicit saved owner corrections use the exact replacement/read-back path. See the setup ledger for the latest source and CI state. Further model requests must stay within explicit data-transmission authorization; the completed pilot approval covered one bounded request. Measure complete reviews before choosing an ongoing spend limit; the pilot does not establish monthly cost.
+
+A DreamHost cron schedule will be separate from ChatGPT Scheduled. The deployed website still has no direct Gmail OAuth or embedded model API. The existing connected-tool/SSH contract below remains applicable until the replacement passes acceptance; local grants have not been transferred to the host. Preserve the same taxonomy, two-bucket board, feedback, history and source chronology.
 
 ## Restricted bridge
 
@@ -30,9 +36,11 @@ November 17, 2026 authorization: every scheduled run also classifies new/unproce
 6. Publish idempotently and verify the result. Report failures as failures rather than an empty successful scan. The process may update the board; it must not silently send, unsubscribe, cancel, report spam, archive or delete.
 7. Record recurring feedback as scoped playbook proposals with representative evidence and exceptions. A one-off correction is not a blanket sender rule or permission for historical bulk changes. Keep the existing Google Doc master until a deliberate cutover, and verify any authorized update.
 
-## Scheduling
+## Existing desktop schedule and replacement target
 
-The active Codex `review-and-label-email-desk` cadence is 9:00 a.m. and 5:30 p.m. daily, plus 1:00 p.m. on weekdays, America/New_York. On November 17 Milan requested a fresh task: `review-email-desk` was deleted and replaced with this single ACTIVE heartbeat on the current maintenance chat. The heartbeat uses explicit UTC equivalents because the original wall-time recurrence executed five hours early. After each review, run scripts/review-schedule.py and update the same heartbeat only when its next-slot UTC hours differ, preserving its full prompt, status and target. Do not add another reviewer automation. The earlier ChatGPT inbox task was permanently deleted on November 17 after Milan confirmed the final deletion; browser read-back verified its removal.
+The last recorded Codex `review-and-label-email-desk` registration targets 9:00 a.m. and 5:30 p.m. daily, plus 1:00 p.m. on weekdays, America/New_York. This is a desktop heartbeat, not a verified cloud task or proof of reliable publication; later missed slots prompted the hosted replacement. On November 17 `review-email-desk` was deleted and replaced with this single ACTIVE registration on the maintenance chat. It uses explicit UTC equivalents because the original wall-time recurrence executed five hours early. While maintaining that desktop path, run scripts/review-schedule.py after reviews and update the same heartbeat only when its next-slot UTC hours differ, preserving its prompt, status and target. Do not create duplicate reviewers. The earlier ChatGPT inbox task was permanently deleted after Milan confirmed it; browser read-back verified removal.
+
+The intended hosted cadence remains weekdays 09:00, 13:00 and 17:30; weekends 09:00 and 17:30, America/New_York, including DST. It is not installed. Verify a real hosted publication with the Mac offline before retiring the desktop registration. Code deployment and the pilot do not establish that acceptance.
 
 The corrected evening execution was observed on November 16, but its publication required later recovery. The replacement heartbeat's November 17 9 a.m. run published unattended at 9:05:59 a.m. New York and verified read-back, with recent coverage complete in both accounts and partial status for unfinished historical catch-up. This establishes that run's publication, not future reliability. A code/UI release is not evidence of a new inbox scan or unattended review. Keep scan failures visible and never advance failed-account checkpoints.
 

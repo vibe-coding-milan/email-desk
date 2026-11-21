@@ -17,6 +17,10 @@ jobs:
           node-version: '24'
       - name: Install PHP test runtime
         run: sudo apt-get update && sudo apt-get install -y php-cli php-sqlite3
+      - name: Install isolated reviewer test dependencies
+        run: |
+          python3 -m venv .private/hosted-reviewer/venv
+          .private/hosted-reviewer/venv/bin/python -m pip install --disable-pip-version-check -r scripts/hosted-reviewer-requirements.txt
       - name: Check source
         run: |
           npm run check
@@ -25,6 +29,12 @@ jobs:
           python3 tests/github_deploy_checks.py
           find server public tests -name '*.php' -exec php -l {} \;
           python3 -m py_compile scripts/*.py tests/*.py
+          python3 -m py_compile reviewer/*.py
+          .private/hosted-reviewer/venv/bin/python tests/reviewer_state_seed.py
+          .private/hosted-reviewer/venv/bin/python tests/reviewer_authorization.py
+          .private/hosted-reviewer/venv/bin/python tests/reviewer_pilot.py
+          .private/hosted-reviewer/venv/bin/python tests/hosted_reviewer.py
+          python3 tests/hosted_reviewer_provision.py
       - name: Verify storage and HTTP API
         run: |
           php tests/store.php
