@@ -108,6 +108,24 @@ def validate(rows, threads, labels):
                 raise ValueError('reopen_evidence')
 
 
+def ground_deadlines(rows, threads):
+    """Unsupported presentation claims become explicit uncertainty, never a due date."""
+    source = {(t['account'], t['thread_id']): t for t in threads}
+    warnings = 0
+    for row in rows:
+        thread = source[(row['account'], row['thread_id'])]
+        text = '\n'.join(m['text'] for m in thread['messages'])
+        if row['deadline'] and (not row['deadline_evidence'].strip() or row['deadline_evidence'] not in text):
+            row['deadline'] = row['deadline_evidence'] = ''
+            notice = 'A proposed deadline could not be verified from the supplied source; check the original conversation.'
+            # Do not leave the rejected date in generated prose either.
+            row['description'] = 'Review the original conversation; the proposed timing needs verification.'
+            row['reason'] = notice
+            row['question'] = notice
+            warnings += 1
+    return warnings
+
+
 class Model:
     def __init__(self, journal, slot, labels, config):
         self.journal, self.slot, self.labels, self.config = journal, slot, labels, config
@@ -147,5 +165,9 @@ class Model:
         text = ''.join(c.get('text', '') for item in result.get('output', []) if item.get('type') == 'message'
                        for c in item.get('content', []) if c.get('type') == 'output_text')
         rows = source_rows(json.loads(text), threads)
+        warnings = ground_deadlines(rows, threads)
+        if warnings:
+            state['deadline_warnings'] = state.get('deadline_warnings', 0) + warnings
+            self.journal.save()
         validate(rows, threads, self.labels)
         return rows
