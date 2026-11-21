@@ -12,10 +12,46 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from cryptography.fernet import Fernet
-from reviewer.engine import Engine, card_from, check_revisions, scan
-from reviewer.google import Gmail
+from reviewer.engine import Engine, card_from, check_revisions, scan, load_thread
+from reviewer.google import Gmail, bounded_json
 from reviewer.model import validate
 from reviewer.state import Journal, UTC, iso, scheduled_slot
+
+
+class ReaderBoundaries(unittest.TestCase):
+    def test_streaming_json_limit_stops_consuming_response(self):
+        class Response:
+            consumed = 0
+            def raise_for_status(self): pass
+            def iter_content(self, size):
+                for unused in range(100):
+                    self.consumed += 1
+                    yield b' ' * 65536
+        response = Response()
+        with self.assertRaisesRegex(ValueError, 'google_response_limit'):
+            bounded_json(response)
+        self.assertEqual(response.consumed, 81)
+
+    def test_metadata_first_auth_omission_retains_substantive_security_context(self):
+        thread = 'abcdef1234567891'
+        subjects = ['Your verification code', 'Security alert: suspicious verification code', 'Project photos']
+        metadata = {'id': thread, 'messages': [
+            {'id': 'abcdef123456789' + str(i + 2), 'threadId': thread, 'internalDate': str(i + 1),
+             'payload': {'headers': [{'name': 'Subject', 'value': subject}]}}
+            for i, subject in enumerate(subjects)]}
+        calls = []
+        class Mail:
+            def get(self, path, params):
+                calls.append((path, params))
+                if path.startswith('threads/'): return copy.deepcopy(metadata)
+                return copy.deepcopy(next(m for m in metadata['messages'] if path.endswith(m['id'])))
+        raw = load_thread(Mail(), thread, [metadata['messages'][0]['id']])
+        self.assertEqual(calls[0][1]['format'], 'metadata')
+        self.assertEqual([path for path, unused in calls[1:]],
+                         ['messages/' + m['id'] for m in metadata['messages'][1:]])
+        self.assertEqual(raw['latest_id'], metadata['messages'][-1]['id'])
+        with self.assertRaisesRegex(ValueError, 'thread_context_limit'):
+            load_thread(Mail(), thread, ['missing-target'])
 
 
 class Schedule(unittest.TestCase):
@@ -230,10 +266,12 @@ class FakeGmail:
         if path == 'messages': return {'messages': [{'id': self.id, 'threadId': self.thread}]}
         if path.startswith('threads/'):
             import base64
-            return {'id': self.thread, 'messages': [{'id': self.id, 'internalDate': '1795200000000', 'labelIds': ['INBOX'],
+            return {'id': self.thread, 'messages': [{'id': self.id, 'threadId': self.thread, 'internalDate': '1795200000000', 'labelIds': ['INBOX'],
                 'payload': {'mimeType': 'text/plain', 'headers': [{'name': 'Subject', 'value': 'Fictional photo request'},
                             {'name': 'From', 'value': 'Example <a@example.test>'}],
                             'body': {'data': base64.urlsafe_b64encode(b'Please send project photos.').decode()}}}]}
+        if path.startswith('messages/'):
+            return self.get('threads/' + self.thread)['messages'][0]
         raise AssertionError(path)
 
     def custom(self, ids): return ['Needs Review']
@@ -283,7 +321,9 @@ class EngineIntegration(unittest.TestCase):
         with Journal(self.directory) as journal:
             self.prepare(journal)
             result = Engine(journal, bridge, self.clients, ['Home', 'Needs Review'], self.config, self.slot).run()
-            self.assertEqual(result, {'status': 'success', 'processed': 2, 'errors': 0})
+            self.assertEqual({key: result[key] for key in ['status', 'processed', 'errors']},
+                             {'status': 'success', 'processed': 2, 'errors': 0})
+            self.assertTrue(result['publication_verified'])
             self.assertEqual(len(bridge.cards), 2)
             for account, client in self.clients.items():
                 self.assertEqual(client.writes, [(client.id, ['Home'])])

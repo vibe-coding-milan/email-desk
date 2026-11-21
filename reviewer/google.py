@@ -13,11 +13,22 @@ MASTER = '1ztPK3AzpgE8cgl3CAjiCFQVEw4LjlksIitJmg9T1BJc'
 IDENTIFIER = re.compile(r'^[0-9a-f]{10,64}$')
 
 
+def bounded_json(response):
+    response.raise_for_status()
+    raw = bytearray()
+    for block in response.iter_content(65536):
+        raw.extend(block)
+        if len(raw) > 5 * 1024 * 1024:
+            raise ValueError('google_response_limit')
+    return json.loads(raw)
+
+
 class Gmail:
     def __init__(self, account, journal, labels):
         if account not in ACCOUNTS:
             raise ValueError('account')
         self.account, self.journal, self.labels = account, journal, labels
+        self.write_count, self.verified_count = 0, 0
         self.path = journal.directory / ('google-' + ACCOUNTS[account] + '.encrypted')
         info = journal.open(self.path)
         if info.get('token_uri') != 'https://oauth2.googleapis.com/token':
@@ -28,7 +39,7 @@ class Gmail:
         if not info.get('refresh_token') or not required.issubset(set(info.get('scopes', []))):
             raise ValueError('google_scopes')
         self.credentials = Credentials.from_authorized_user_info(info)
-        self.session = AuthorizedSession(self.credentials)
+        self.session = AuthorizedSession(self.credentials, refresh_timeout=30)
         if self.get('profile')['emailAddress'].lower() != account:
             raise ValueError('account_mismatch')
         inventory = self.get('labels')['labels']
@@ -53,23 +64,23 @@ class Gmail:
         if not re.fullmatch(r'(profile|labels|messages|(?:messages|threads)/[0-9a-f]{10,64})', path):
             raise ValueError('gmail_path')
         try:
-            response = self.session.get('https://gmail.googleapis.com/gmail/v1/users/me/' + path,
-                                        params=params, timeout=45, allow_redirects=False)
+            with self.session.get('https://gmail.googleapis.com/gmail/v1/users/me/' + path,
+                                  params=params, timeout=45, allow_redirects=False, stream=True) as response:
+                value = bounded_json(response)
         finally:
             self.persist()
-        response.raise_for_status()
-        return response.json()
+        return value
 
     def master(self):
         if self.account != 'milan@mijatovic.com':
             raise ValueError('master_account')
         try:
-            response = self.session.get('https://docs.googleapis.com/v1/documents/' + MASTER,
-                                        params={'includeTabsContent': 'true'}, timeout=45, allow_redirects=False)
+            with self.session.get('https://docs.googleapis.com/v1/documents/' + MASTER,
+                                  params={'includeTabsContent': 'true'}, timeout=45, allow_redirects=False, stream=True) as response:
+                value = bounded_json(response)
         finally:
             self.persist()
-        response.raise_for_status()
-        return response.json()
+        return value
 
     def custom(self, ids):
         return sorted(self.names[x] for x in ids if x in self.names)
@@ -110,10 +121,12 @@ class Gmail:
             finally:
                 self.persist()
             response.raise_for_status()
+            self.write_count = getattr(self, 'write_count', 0) + 1
         after = self.get('messages/' + message_id, {'format': 'minimal'})
         if (after['threadId'] != thread_id or self.custom(after.get('labelIds', [])) != sorted(desired)
                 or set(after.get('labelIds', [])) - set(self.names) != protected):
             raise ValueError('label_verification')
         self.journal.data['label_writes'][journal_key]['verified'] = True
         self.journal.save()
+        self.verified_count = getattr(self, 'verified_count', 0) + 1
         return sorted(desired)

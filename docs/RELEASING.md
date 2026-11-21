@@ -16,6 +16,19 @@ Normal releases should use the GitHub Actions path after the one-time setup in [
 
 The older owner-connection updater remains an authorized recovery path; it is not needed for routine GitHub releases. It must use the verified domain account, pinned host identity and homepage guard, with private code/database recovery copies and allowlisted manifest hashes. Never use the reviewer key for deployment. Version 0.3.2 uses additive encrypted payload fields. Versions 0.4.0 and 0.4.1 change only the interface and related assets; none requires a schema migration or credential change.
 
+## Hosted reviewer prototype checks
+
+The November 20 reviewer work is local preparation, not a released application version or installed cron job. See [HOSTED_REVIEWER.md](HOSTED_REVIEWER.md) for the current evidence and production acceptance. Documentation-only edits do not require a version bump or another live mail request.
+
+For affected prototype code, run the eight fictional checks with the isolated dependency environment:
+
+```sh
+.private/hosted-reviewer/venv/bin/python tests/reviewer_pilot.py
+git diff --check
+```
+
+The private environment is installed from `scripts/hosted-reviewer-requirements.txt`. `python3 scripts/reviewer-usage.py` reads usage metadata locally and makes no API call. Authorization and pilot scripts are live operations, not CI tests: do not run them automatically on a documentation change, copy their private files to GitHub, or treat the one-request pilot approval as permission for unrestricted future payloads. Host provisioning, durable Google grants, mutation/read-back checks and a Mac-offline publication are separate gates before schedule activation.
+
 ## Rollback
 
 The updater automatically restores only files installed by a failing attempt. For a post-publication rollback, use the selected private `~/.email-desk/releases/arcade-*` backup and its manifest to restore prior code with correct permissions (public files 0644, private server code 0600); remove only newly introduced release files that had no predecessor. Verify the root homepage guard and live acceptance again.

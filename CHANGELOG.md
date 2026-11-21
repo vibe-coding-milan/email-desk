@@ -2,6 +2,13 @@
 
 Changes are grouped by release. Dates use America/New_York. Email Desk is self-hosted under `/email-desk/`; release notes never contain private messages, feedback, credentials or connection settings.
 
+## Unreleased — hosted reviewer preparation, 2026-11-20
+
+- Prepared a read-only DreamHost/API reviewer prototype, official-library Google OAuth bootstrap with PKCE and encrypted private grants, bounded API connectivity check and token-usage reporter. These tools have not been installed on the host or activated as a schedule; production remains 0.4.1.
+- Verified local API access, both expected Google account grants, the live master playbook and the shared 37-label inventory. An explicitly approved four-message pilot used 9,279 tokens; calculated cost $0.001794675, not a posted charge or monthly estimate. No Gmail labels or board cards changed.
+- Fixed an HTML extraction limitation discovered after the pilot. Eight fictional proposal/parser/host-boundary checks pass; the HTML fix has no live retest yet. Preserve that distinction when reporting the pilot's quality or cost.
+- Consolidated current setup, permissions, measured usage and remaining production acceptance in [the hosted reviewer guide](docs/HOSTED_REVIEWER.md). The worker and guarded installer are now prepared in draft PR #8 with 32 passing fictional tests; initial CI passed and later changes await fresh CI. Durable authorization, live label/feedback verification, host installation and a real Mac-offline run remain pending. A post-implementation UX review is planned around review status, both-mailbox freshness and recovery.
+
 ## 0.4.1 — 2026-11-19
 
 - Kept sender/content dividers aligned as cards cross the 24/48-hour targets by removing timing-dependent side borders and padding. Past-target cards show a quiet amber pill and no exhausted countdown meter.

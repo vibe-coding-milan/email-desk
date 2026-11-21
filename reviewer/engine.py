@@ -12,6 +12,30 @@ from .state import UTC, iso, operation
 AUTH = re.compile(r'\bone[- ]time\b|verification code|sign.in code|passcode|magic link', re.I)
 
 
+def routine_authentication(subject):
+    return bool(AUTH.search(subject)) and not re.search(r'new login|security alert|password (changed|reset)|suspicious', subject, re.I)
+
+
+def load_thread(gmail, thread_id, target_ids, metadata=None):
+    raw = metadata or gmail.get('threads/' + thread_id, {'format': 'metadata', 'metadataHeaders': ['From', 'Subject', 'Date']})
+    if raw.get('id') != thread_id or not raw.get('messages'):
+        raise ValueError('thread_mismatch')
+    ordered = sorted(raw['messages'], key=lambda m: int(m['internalDate']))
+    wanted = set(target_ids) | {m['id'] for m in ordered[-18:]}
+    selected = [m for m in ordered if m['id'] in wanted]
+    if len(selected) > 40 or not set(target_ids).issubset({m['id'] for m in selected}):
+        raise ValueError('thread_context_limit')
+    messages = []
+    for message in selected:
+        headers = {h['name'].lower(): h['value'] for h in message.get('payload', {}).get('headers', [])}
+        # Routine code messages need only metadata; their contents are never fetched.
+        full = message if routine_authentication(headers.get('subject', '')) else gmail.get('messages/' + message['id'], {'format': 'full'})
+        if full['threadId'] != thread_id:
+            raise ValueError('thread_mismatch')
+        messages.append(full)
+    return {'id': raw['id'], 'messages': messages, 'latest_id': ordered[-1]['id']}
+
+
 def scan(gmail, query, done, limit, max_pages):
     found, token = [], None
     for unused in range(max_pages):
@@ -43,7 +67,7 @@ def context_thread(account, raw, target_ids, old, gmail):
         if message['id'] in targets and set(labels) & {'SENT', 'DRAFT', 'SPAM', 'TRASH'}:
             raise ValueError('incoming_target_changed')
         subject = headers.get('subject', '')
-        authentication = bool(AUTH.search(subject)) and not re.search(r'new login|security alert|password (changed|reset)|suspicious', subject, re.I)
+        authentication = routine_authentication(subject)
         text = body_text(message.get('payload', {})) or message.get('snippet', '')
         if authentication:
             text = '[Routine authentication details omitted]'
@@ -57,7 +81,7 @@ def context_thread(account, raw, target_ids, old, gmail):
                          'subject': subject, 'text': text, 'authentication': authentication,
                          'observed_custom': gmail.custom(labels), 'is_sent': 'SENT' in labels})
     return {'account': account, 'thread_id': raw['id'], 'candidate_message_ids': list(target_ids),
-            'messages': messages, 'existing_card': old,
+            'messages': messages, 'existing_card': old, 'thread_version': raw.get('latest_id', ordered[-1]['id']),
             'context_note': 'Targets plus latest 18 messages; maximum 40. Long message middles/URLs/authentication details and all attachments omitted.'}
 
 
@@ -98,6 +122,7 @@ class Engine:
         self.labels, self.config, self.slot, self.dry = labels, config, slot, dry
         self.model = Model(journal, slot, labels, config)
         self.board = None
+        self.feedback_failed = set()
 
     def publish(self, payload):
         self.journal.data['pending_publication'] = payload
@@ -174,6 +199,7 @@ class Engine:
                     ack.update(status='applied', explanation='Requested custom labels verified on every exact message; system labels preserved.', actual_labels=sorted(desired))
                 except Exception:
                     errors += 1
+                    self.feedback_failed.add(event['account'])
                     ack.update(status='error', explanation='Label correction could not be safely verified; it remains queued for review.')
             ack['operation_id'] = operation('ack', json.dumps(ack, sort_keys=True))
             self.bridge.call(ack)
@@ -207,6 +233,7 @@ class Engine:
             account = self.journal.data['accounts'][thread['account']]
             for message_id in thread['candidate_message_ids']:
                 account.setdefault('done', {})[message_id] = iso()
+            account.setdefault('thread_versions', {})[thread['thread_id']] = thread['thread_version']
         self.journal.data.pop('pending_batch', None)
         self.journal.save()
 
@@ -269,11 +296,27 @@ class Engine:
                 grouped = {}
                 for message in {m['id']: m for m in messages}.values():
                     grouped.setdefault(message['threadId'], []).append(message['id'])
+                refreshed = {}
+                watched = [c for c in self.board['cards'] if c['account'] == account and c['state'] == 'open'][:4]
+                if self.dry:
+                    watched += [c for c in self.board['cards'] if c['account'] == account and c['state'] != 'open'][:1]
+                for card in watched:
+                    if card['thread_id'] in grouped:
+                        continue
+                    raw = gmail.get('threads/' + card['thread_id'], {'format': 'metadata', 'metadataHeaders': ['From', 'Subject', 'Date']})
+                    latest = max(raw['messages'], key=lambda m: int(m['internalDate']))['id']
+                    if not self.dry and state.get('thread_versions', {}).get(card['thread_id']) == latest:
+                        continue
+                    ids = [m['id'] for m in raw['messages'] if m['id'] in card['message_ids']
+                           and not set(m.get('labelIds', [])) & {'SENT', 'DRAFT', 'SPAM', 'TRASH'}][-4:]
+                    if ids:
+                        grouped[card['thread_id']] = ids
+                        refreshed[card['thread_id']] = raw
                 chunk = []
                 for thread_id, ids in grouped.items():
                     if not IDENTIFIER.fullmatch(thread_id):
                         raise ValueError('thread_identifier')
-                    raw = gmail.get('threads/' + thread_id, {'format': 'full'})
+                    raw = load_thread(gmail, thread_id, ids, refreshed.get(thread_id))
                     thread = context_thread(account, raw, ids, old_cards.get((account, thread_id)), gmail)
                     size = len(json.dumps({'master': master, 'threads': chunk + [thread]}).encode())
                     if chunk and (len(chunk) >= 4 or size > self.config['max_context_bytes'] - 2000):
@@ -285,12 +328,12 @@ class Engine:
                     self.classify_batch(chunk, master)
                     processed += sum(len(t['candidate_message_ids']) for t in chunk)
                 if not self.dry:
-                    if recent_complete:
+                    if recent_complete and account not in self.feedback_failed:
                         checkpoints[account] = iso(now)
                     if backfill_lower is not None and historical_complete:
                         updates[account] = {'backfill_end': iso(backfill_lower), 'backfill_complete':
                                             backfill_lower <= dt.datetime.fromisoformat(self.config['activated_at']) - dt.timedelta(days=90)}
-                complete[account] = recent_complete and updates.get(account, {}).get('backfill_complete', state.get('backfill_complete', False))
+                complete[account] = recent_complete and account not in self.feedback_failed and updates.get(account, {}).get('backfill_complete', state.get('backfill_complete', False))
             except Exception as error:
                 errors += 1
                 complete[account] = False
@@ -302,7 +345,9 @@ class Engine:
         status = 'success' if len(complete) == 2 and all(complete.values()) and not errors else ('partial' if processed or checkpoints else 'error')
         payload = {'action': 'publish', 'operation_id': operation('finish', self.slot + str(self.journal.data['slots'][self.slot]['attempts'])),
                    'cards': [], 'run': {'status': status,
-                   'summary': f'Review processed {processed} incoming messages. ' + ('Coverage is complete.' if status == 'success' else 'Coverage is incomplete; bounded catch-up or a verification retry remains.'),
+                   'summary': f'{processed} messages processed; recent coverage complete for {len(checkpoints)} of 2 mailboxes. '
+                              + ('Historical catch-up is complete.' if len(complete) == 2 and all(complete.values()) else 'Historical catch-up or bounded coverage remains incomplete.')
+                              + (f' Verification issues: {errors}.' if errors else ''),
                    'checkpoints': checkpoints if status != 'error' else {}}}
         if not self.journal.data.get('pending_publication'):
             for account, cursor in checkpoints.items():
@@ -313,4 +358,8 @@ class Engine:
             self.publish(payload)
             self.finish_state(final)
         self.journal.save()
-        return {'status': status, 'processed': processed, 'errors': errors}
+        return {'status': status, 'processed': processed, 'errors': errors,
+                'verified_messages': sum(getattr(g, 'verified_count', 0) for g in self.clients.values()),
+                'modified_messages': sum(getattr(g, 'write_count', 0) for g in self.clients.values()),
+                'mailboxes_verified': sum(getattr(g, 'verified_count', 0) > 0 for g in self.clients.values()),
+                'publication_verified': not self.journal.data.get('pending_publication')}

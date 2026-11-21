@@ -56,6 +56,7 @@ def main():
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--run-now', action='store_true')
     parser.add_argument('--local-validation', action='store_true')
+    parser.add_argument('--health', action='store_true')
     args = parser.parse_args()
     logging.disable(logging.CRITICAL)
     os.umask(0o077)
@@ -76,10 +77,13 @@ def main():
             raise ValueError('domain_guard')
         bridge = Bridge(['/usr/local/php83/bin/php', str(home / '.email-desk/server/bridge.php')])
         labels = json.loads((home / '.email-desk/server/labels.json').read_text())
-    if not args.dry_run and (not config.get('enabled') or not config.get('api_data_authorized')
+    if not args.dry_run and not args.health and (not config.get('enabled') or not config.get('api_data_authorized')
                             or not config.get('label_writes_authorized') or not config.get('google_production_confirmed')):
         raise ValueError('not_activated')
     with Journal(directory) as journal:
+        if args.health:
+            print(json.dumps(journal.data.get('last_result', {'status': 'not_reviewed'})))
+            return 0
         now = dt.datetime.now(UTC)
         slot = ('manual-' + now.strftime('%Y%m%dT%H%M%S%fZ')) if args.run_now or args.dry_run else scheduled_slot(now, config['activated_at'], journal.data['slots'])
         if slot is None:
