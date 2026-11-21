@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """One-time Google OAuth bootstrap. No mail contents read and no mail changes."""
 import argparse
+import datetime as dt
 import html
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
@@ -9,6 +10,7 @@ import os
 from pathlib import Path
 import stat
 import threading
+import tempfile
 
 from cryptography.fernet import Fernet
 from google.auth.transport.requests import AuthorizedSession
@@ -35,9 +37,32 @@ def checked_file(path):
     return path
 
 
+def store_grant(path, encrypted, previous=None):
+    if previous is None:
+        private_write(path, encrypted)
+        return
+    if checked_file(path).read_bytes() != previous:
+        raise ValueError('Existing grant changed; renewal not stored')
+    backup = path.with_name(path.stem + '.pre-production-' + dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ') + '.encrypted')
+    private_write(backup, previous)
+    fd, temporary = tempfile.mkstemp(dir=path.parent)
+    try:
+        with os.fdopen(fd, 'wb') as output:
+            output.write(encrypted)
+            output.flush()
+            os.fsync(output.fileno())
+        if checked_file(path).read_bytes() != previous:
+            raise ValueError('Existing grant changed; renewal not stored')
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--account', required=True, choices=ACCOUNTS)
+    parser.add_argument('--renew-existing-grant', action='store_true', help='Preserve the current encrypted grant and replace it only after a fresh exact-account consent is verified')
     args = parser.parse_args()
     os.umask(0o077)
     logging.disable(logging.CRITICAL)  # No callback codes or token errors in logs.
@@ -48,8 +73,9 @@ def main():
             or client.get('token_uri') != 'https://oauth2.googleapis.com/token'):
         raise ValueError('Unexpected Google project or endpoints')
     target = PRIVATE / ('google-' + ACCOUNTS[args.account] + '.encrypted')
-    if target.exists() or target.is_symlink():
+    if target.is_symlink() or (target.exists() and not args.renew_existing_grant):
         raise ValueError('A grant already exists; explicit rotation is required')
+    previous = checked_file(target).read_bytes() if args.renew_existing_grant else None
     scopes = [GMAIL_SCOPE] + ([DOCS_SCOPE] if ACCOUNTS[args.account] == 'workspace' else [])
     ready = threading.Event()
     landing_data = {}
@@ -115,7 +141,7 @@ def main():
         if not key_path.exists():
             private_write(key_path, Fernet.generate_key())
         key = checked_file(key_path).read_bytes()
-        private_write(target, Fernet(key).encrypt(credentials.to_json().encode()))
+        store_grant(target, Fernet(key).encrypt(credentials.to_json().encode()), previous)
         print(json.dumps({'ok': True, 'account_verified': args.account,
                           'offline_grant': True, 'encrypted_local_storage': True,
                           'mail_read_or_changed': False, 'host_transfer': False}), flush=True)

@@ -1,0 +1,52 @@
+Email Desk privacy notice
+Prepared November 21, 2026
+
+Purpose and access
+
+Email Desk is Milan Mijatovic's personal email attention board. The public demo
+uses fictional conversations and does not connect to a visitor's mailbox.
+The private reviewer is limited to the owner's two approved Google accounts;
+there is no public mailbox-registration service.
+
+Google data
+
+The reviewer reads message headers, visible message text, thread context and
+labels to classify mail and surface requests or useful updates. It reads the
+owner's selected organization playbook in Google Docs. Google's authorization
+scopes permit broader Gmail operations and Docs reading, but the hosted worker
+provides only mail reads, changes to approved custom labels, and reading of the
+fixed master playbook. It does not send, archive, delete or mark email read.
+
+AI processing and hosting
+
+Existing assistant-led reviews use the owner's connected tools. The planned
+hosted reviewer sends bounded message excerpts, sender/subject information,
+relevant thread context, organization rules, and matching board notes or
+corrections to the OpenAI API to propose classifications and summaries. Requests
+use store:false. Attachments are not fetched for this review; URLs and routine
+authentication details are omitted from the model context where detected.
+
+DreamHost hosts the authenticated board and, once activated, the reviewer.
+Stored card and feedback payloads are encrypted. Hosted Google grants and
+review journals are encrypted and kept outside the public web directory.
+Authorized local maintenance copies are kept in private project storage.
+Technical usage records track review outcomes and model token use. Email Desk
+does not sell Google user data, use it for advertising, or use it to train
+general-purpose AI models.
+
+Retention and control
+
+Cards, owner notes, decisions and history persist across reviews. Handling or
+dismissing a card does not delete the underlying email or the saved history.
+Private maintenance records may be retained for verification and recovery.
+The owner can stop reviewing, revoke the app's Google access in Google Account
+settings, and request removal of stored Email Desk data. Revoking access stops
+future access through that grant; it does not itself remove saved board data.
+
+Contact
+
+Milan Mijatovic: milan@mijatovic.com
+
+Hosted activation is still in preparation as of the date above. This notice
+describes the prepared data flow; creating API credentials does not establish
+that the hosted reviewer is operational.

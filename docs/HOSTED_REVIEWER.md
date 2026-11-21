@@ -1,5 +1,11 @@
 # Offline reviewer readiness
 
+## Current continuation — November 21, 2026
+
+Version 0.4.2 is live through PR #9, commit 752c9812ca264e25e75b8a7ad3400e30e9da7305, release arcade-20261121T144224251467Z. CI passed. Deployment run 44915259854 installed the matching release but timed out during its final homepage request. Independent acceptance passed: restricted receipt, 28 public hashes, all 23 authentication/access checks and exact private board/checkpoint/progress preservation. Keep the workflow failure visible; do not repeat installation or weaken checks to conceal a connectivity failure.
+
+Google branding is saved and Audience reads In production. The approved notice is live at https://mijatovic.com/email-desk/assets/privacy.txt. This resolves app publishing status, not the lifetime of existing Testing-issued grants or hosted activation. The explicit renewal helper keeps an encrypted backup and replaces a grant only after fresh consent, scope and exact-account verification. Its two fictional storage tests pass. Starting renewal was rejected by automatic approval review because Production approval did not explicitly cover credential replacement; the separate confirmation is pending. No renewal, host transfer or cron installation has occurred.
+
 ## Setup ledger — November 20, 2026
 
 | Item | Observed state |
@@ -19,6 +25,8 @@
 | Master-document access | Live master read succeeded during the approved pilot; version 1.1, November 15, 2026; no playbook edits |
 | OpenAI reviewer project/key | Milan created the Email Desk project and key, saved it privately; format/owner-only file permissions and successful bounded Responses request verified |
 | Pilot implementation | Explicitly approved live pilot completed: four messages/threads across both accounts; one model request; proposals passed source/label validation; HTML extraction limitation found and fixed locally afterward; eight fictional tests now pass |
+| Google publishing status | In production, confirmed in Firefox November 21 after explicit approval; exact branding URLs and authorized domain saved |
+| Grant renewal | Separate approval pending; original encrypted Testing grants unchanged |
 | Worker implementation | Local worker, guarded installer and fictional tests prepared in [draft PR #8](https://github.com/vibe-coding-milan/email-desk/pull/8); not installed or activated |
 | Host credentials and cron | No host credential transfer or offline review verified; Google remains Testing |
 

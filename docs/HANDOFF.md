@@ -1,5 +1,12 @@
 # Email Desk handoff
 
+## Current continuation — November 21, 2026
+
+Version 0.4.2 is live through PR #9, commit 752c9812ca264e25e75b8a7ad3400e30e9da7305, release arcade-20261121T144224251467Z. CI passed. Deployment run 44915259854 installed the matching release but timed out during its final homepage request. Independent acceptance passed: restricted receipt, 28 public hashes, all 23 authentication/access checks and exact private board/checkpoint/progress preservation. Keep the workflow failure visible; do not repeat installation or weaken checks to conceal a connectivity failure.
+
+The approved privacy notice and homepage link are live. Firefox read-back confirmed the exact branding URLs, authorized domain mijatovic.com and Audience In production. Existing Testing grants have not been renewed. Automatic approval review rejected starting fresh consent because credential replacement needed separate approval; a request for both same-account/same-scope renewals, encrypted backups and existing private paths is pending. No credentials were transferred to DreamHost. Worker PR #8 and cron remain unactivated. The preparation sections below are dated history.
+
+
 ## Hosted reviewer preparation — current as of November 20, 2026
 
 The standalone DreamHost/API replacement is **not activated**. Production remains 0.4.1. The existing desktop heartbeat registration is not a ChatGPT cloud task or evidence that reviews run while the Mac is offline. The replacement target is weekdays 09:00, 13:00 and 17:30; weekends 09:00 and 17:30, America/New_York including DST. No host credentials were transferred, worker installed, cron created or new board review published during this preparation.
