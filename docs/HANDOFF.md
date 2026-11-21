@@ -1,5 +1,12 @@
 # Email Desk handoff
 
+## Version 0.4.4 release acceptance — November 21, 2026
+
+PR #13 merged as 95f434204c4a06cd6170572eca0c767c4afda135; release arcade-20261121T163619225596Z is installed. Source CI 44925284757 and deployment checks passed. Deployment run 44925421684 installed and acknowledged the exact code bundle, then failed when the runner timed out connecting to the root homepage during its final verification. The workflow remains failed; do not re-upload a matching installed release or weaken verification to hide that result.
+
+Independent acceptance passed: restricted deployment receipt and exact bundle hash, all 28 served public hashes, unchanged homepage, all 23 live authentication/access checks, and exact preservation of all 74 cards, run history, checkpoints, comments, decisions and XP across the code release. The notice now factually says the hosted worker is active; data destinations, scope and retention are unchanged. The private worker/journal and active cron were not replaced by this website release. First real scheduled mailbox publication and Mac-offline acceptance remain pending as recorded below. Subsequent documentation-only commits may carry the same verified runtime files; keep their workflow outcomes separate from this initial runtime receipt.
+
+
 ## Hosted schedule activated — November 21, 2026
 
 The DreamHost reviewer is active as of 11:24:53 AM New York (16:24:53 UTC). Cron installation and exact read-back passed under the verified domain owner/homepage guard; there is one managed dispatcher block. The first unattended dispatch was observed in the private cron log returning due:false, correctly avoiding a retroactive morning review. This proves dispatch execution, not a scheduled mailbox publication. It checks for due slots every five minutes, using America/New_York rather than server-local time: **weekdays 09:00, 13:00, 17:30; weekends 09:00, 17:30**. Allow dispatcher delay plus review runtime. Activation does not backdate a missed slot. The next real slot is November 21 at 17:30 New York.

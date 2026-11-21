@@ -5,6 +5,8 @@
 - Updated the privacy notice’s factual activation status and the footer version. Data destinations, retention and approved access scope are unchanged.
 - Updated current architecture, reviewer operations, measured usage and acceptance documentation for the active DreamHost schedule. The private worker is deployed separately; this code release does not copy credentials or change Gmail/board state.
 
+Version 0.4.4 is installed through PR #13, commit 95f434204c4a06cd6170572eca0c767c4afda135, receipt arcade-20261121T163619225596Z. CI passed; [deployment run 44925421684](https://github.com/vibe-coding-milan/email-desk/actions/runs/44925421684) timed out on its final root-homepage connection after installation. Independent matching receipt/bundle hash, 28 public hashes, all 23 access checks and exact 74-card/private-state preservation passed. The workflow failure remains recorded separately from verified installation.
+
 ## Hosted operations — 2026-11-21
 
 - Activated the private DreamHost reviewer after controlled live acceptance: 24 targets, zero errors, both recent mailbox scans complete, exact label verification and preserved owner state. Historical catch-up remains partial.
