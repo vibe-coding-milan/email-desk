@@ -1,5 +1,12 @@
 # Changelog
 
+## Hosted operations — 2026-11-21
+
+- Activated the private DreamHost reviewer after controlled live acceptance: 24 targets, zero errors, both recent mailbox scans complete, exact label verification and preserved owner state. Historical catch-up remains partial.
+- Verified one managed five-minute dispatcher for New York weekday 09:00/13:00/17:30 and weekend 09:00/17:30 slots. The existing desktop heartbeat now monitors only. First scheduled and Mac-offline publication acceptance remain pending.
+- PR #11 requires every model target and adds safe diagnostics and guarded pre-activation code repairs. PR #12 surfaces unsupported deadline evidence as uncertainty. Both passed CI and were installed with hash verification and private backups. No new credential scope or SSH permission was added.
+- Documented actual release/host state, usage measurement and scoped status-UX findings. No frontend redesign or implicit owner card decision was included.
+
 Changes are grouped by release. Dates use America/New_York. Email Desk is self-hosted under `/email-desk/`; release notes never contain private messages, feedback, credentials or connection settings.
 
 ## Unreleased — hosted reviewer preparation, 2026-11-20
@@ -9,11 +16,11 @@ Changes are grouped by release. Dates use America/New_York. Email Desk is self-h
 - Fixed an HTML extraction limitation discovered after the pilot. Eight fictional proposal/parser/host-boundary checks pass; the HTML fix has no live retest yet. Preserve that distinction when reporting the pilot's quality or cost.
 - Consolidated current setup, permissions, measured usage and remaining production acceptance in [the hosted reviewer guide](docs/HOSTED_REVIEWER.md). The worker and guarded installer are now prepared in draft PR #8 with 42 passing fictional tests; initial CI passed and later changes await fresh CI. Durable authorization, live label/feedback verification, host installation and a real Mac-offline run remain pending. A post-implementation UX review is planned around review status, both-mailbox freshness and recovery.
 
-## 0.4.3 — 2026-11-21 (prepared)
+## 0.4.3 — 2026-11-21
 
 - Added optional transactional expected-revision checks to reviewer publication, rejecting stale card updates without changing existing publishers.
 - Prepared the bounded hosted worker, private installation and verified progress import. Both Production grants are renewed; Milan explicitly approved private host credential transfer and bounded recurring OpenAI payloads. No server schedule is claimed until live validation and cron read-back pass.
-- All 42 fictional reviewer checks and existing CI storage/API checks pass. Production deployment and hosted acceptance are pending.
+- All 42 fictional reviewer checks and existing CI storage/API checks pass. Production is live through PR #8, merge aee34fb6a7ccf6f29c3f14b7ede4e312a5e87432, receipt arcade-20261121T153335637529Z. Independent 28 public hashes, 23 access checks and exact private-state preservation passed; deployment run 44919759279 remains failed. Private hosted installation is complete, while live reviewer acceptance and cron remain pending.
 
 ## 0.4.2 — 2026-11-21
 
