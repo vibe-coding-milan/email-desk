@@ -207,3 +207,14 @@ November 15, 2026 — Produced the Needs Review workbook covering 151 messages i
 November 15, 2026 — Created this version 1.0 playbook and its Markdown companion. No Gmail labels, associations, filters, subscriptions, or inbox states changed as part of documentation.
 
 November 15, 2026 — Version 1.1: created Misdirected and Accounts & Services/Authentication in both accounts (37 custom labels per account). Applied 150 reviewed-message corrections: 14 misdirected and 23 routine authentication messages, plus topic and receipt corrections. One suspicious calendar invitation remains in Needs Review (Workspace); Gmail has none. Verified all 151 reviewed messages against the intended labels and preserved their system labels. No spam reports, unsubscribe requests, cancellations, filters, archiving, deletion, or read-state changes were performed. Audit: categorization-corrections-2026-11-15.json and categorization-verification-2026-11-15.json.
+
+
+## 11 Hosted reviewer operating status
+
+November 21, 2026 operational addendum. The hosted Email Desk reviewer is active on the existing DreamHost account. This supersedes earlier statements in this document that a recurring classification service or review schedule had not yet been configured. The shared taxonomy and classification principles remain version 1.1.
+
+The authorized schedule is 9 AM, 1 PM and 5:30 PM on weekdays, and 9 AM and 5:30 PM on weekends, in America/New_York including daylight saving. The worker reads both approved mailboxes and the master Google Doc, applies approved custom labels with exact-message verification, reconciles saved feedback and publishes selected cards. It does not send mail or change system labels, Inbox/read state, subscriptions or filters.
+
+Controlled November 21 acceptance verified both recent mailbox scans and preserved owner comments, corrections, decisions and XP. Historical catch-up remains incomplete. Schedule activation and controlled publication do not establish the first actual scheduled publication or operation with the Mac offline; those observations remain pending.
+
+The Google Doc remains master. Markdown is a reference snapshot. Operational reporting must distinguish recent coverage, historical catch-up, publication time and scheduled-run identity. API token costs are dated calculations from measured usage, not posted billing, remaining credit or a routine monthly forecast. No spending cap, auto-reload, new taxonomy or additional Gmail action is adopted by this addendum.

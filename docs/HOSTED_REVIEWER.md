@@ -1,5 +1,14 @@
 # Offline reviewer readiness
 
+## Reporting upgrade — November 21, 2026
+
+The 0.5.0 website and private worker reporting upgrade are installed from a0462d6a66cd5eb8df4e2c4f7fda310104b57ae8. The verified domain-owner path upgraded code under the existing reviewer lock after website acceptance, retained a code backup, and independently confirmed unchanged protected files and cron. No dependency, grant, key, configuration, activation or journal replacement occurred.
+
+A metadata-only `--report` published the existing 32 request records with zero mailbox/model calls. Independent owner/API read-back reconciled all 379,721 input and 36,689 output tokens and $0.065807225 calculated cost. Legacy records stay unclassified. Structured purpose/attempt/verification metadata and explicit run identity apply to subsequent new records; uncertain old publications replay unchanged. Master provenance begins when the upgraded worker next successfully fetches the live Doc. The master has a verified operational addendum, and the reference snapshot was refreshed afterward.
+
+The active cadence and unresolved first actual scheduled/Mac-offline acceptance remain unchanged. See [PRODUCT_UPDATE_050.md](PRODUCT_UPDATE_050.md) for live access, state-preservation and deployment-timeout evidence.
+
+
 ## Hosted schedule activated — November 21, 2026
 
 The DreamHost reviewer is active as of 11:24:53 AM New York (16:24:53 UTC). Cron installation and exact read-back passed under the verified domain owner/homepage guard; there is one managed dispatcher block. The first unattended dispatch was observed in the private cron log returning due:false, correctly avoiding a retroactive morning review. This proves dispatch execution, not a scheduled mailbox publication. It checks for due slots every five minutes, using America/New_York rather than server-local time: **weekdays 09:00, 13:00, 17:30; weekends 09:00, 17:30**. Allow dispatcher delay plus review runtime. Activation does not backdate a missed slot. The next real slot is November 21 at 17:30 New York.

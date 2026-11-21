@@ -11,6 +11,8 @@
 - Preserve comments, corrections, decisions, audit history and the approved 10/5 XP policy. Exploratory snooze, grouping, spending caps and rule automation remain deferred.
 
 
+0.5.0 acceptance: PR #15 merged as a0462d6a66cd5eb8df4e2c4f7fda310104b57ae8; receipt arcade-20261121T173801463624Z. CI, 28 public hashes, 27 live access checks and exact preservation of all 74 cards/feedback/run history/checkpoints/XP passed. The deployment job failed on final public verification timeout after installation; independent acceptance is recorded separately. Private worker code upgrade preserved credentials, encrypted state and cron. Metadata initialization made zero mailbox/model calls. The master received a verified factual operational addendum; taxonomy remains unchanged.
+
 ## 0.4.4 — 2026-11-21
 
 - Updated the privacy notice’s factual activation status and the footer version. Data destinations, retention and approved access scope are unchanged.
