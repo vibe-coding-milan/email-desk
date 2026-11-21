@@ -1,5 +1,12 @@
 # Email Desk handoff
 
+
+## Version 0.4.2 live; Google Production confirmed — November 21, 2026
+
+Published through [PR #9](https://github.com/vibe-coding-milan/email-desk/pull/9), commit `752c9812ca264e25e75b8a7ad3400e30e9da7305`, release `arcade-20261121T144224251467Z`. CI passed. The [deployment run](https://github.com/vibe-coding-milan/email-desk/actions/runs/44915259854) installed the matching release but failed when its final homepage request timed out. Independent acceptance verified the restricted receipt, all 28 public hashes, all 23 live authentication/access checks and exact preservation of saved cards, feedback, checkpoints and XP. This connectivity failure was not hidden or worked around by weakening checks.
+
+The approved notice is live at https://mijatovic.com/email-desk/assets/privacy.txt and linked from the homepage. Signed-in Firefox confirmed the exact homepage/privacy URLs and authorized domain mijatovic.com were saved, then Audience changed to In production. No verification submission or broadened worker account allowlist was performed. Testing-issued grants were not replaced: automatic approval review rejected starting a fresh consent because Production approval did not explicitly authorize credential replacement. A separate confirmation for both same-account/same-scope replacements, encrypted backups and existing local destinations is pending. No grants were transferred to DreamHost and the hosted schedule is not activated. Draft worker PR #8 remains separate.
+
 ## Privacy notice release preparation — November 21, 2026
 
 Milan approved publication of the prepared privacy notice at https://mijatovic.com/email-desk/assets/privacy.txt, its homepage link, Google branding URLs/authorized domain and moving the dedicated OAuth app to Production. Version 0.4.2 contains only this public notice/link and version/docs changes, parented to main c97edb0b8923f72113f62866d1eadedd6e922c42. Worker PR #8 remains separate and unactivated. No private credentials, mailbox contents, server worker or schedule are part of this release. Local checks passed; CI, deployment and live acceptance are pending. Google remains Testing until its actual UI read-back establishes otherwise.

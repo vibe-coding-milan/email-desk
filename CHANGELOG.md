@@ -5,7 +5,7 @@ Changes are grouped by release. Dates use America/New_York. Email Desk is self-h
 ## 0.4.2 — 2026-11-21
 
 - Added the owner-approved public privacy notice and linked it from the homepage, supporting the dedicated Google OAuth app’s production branding setup. The notice describes personal use, Google data, bounded model processing, private storage and owner controls.
-- No reviewer worker, server schedule, mailbox permission or board state is changed by this code release. Hosted activation remains a separate acceptance step. Local UI/source checks pass; deployment and live verification are pending.
+- No reviewer worker, server schedule, mailbox permission or board state is changed by this code release. Hosted activation remains a separate acceptance step. Local UI/source checks pass. Published through [PR #9](https://github.com/vibe-coding-milan/email-desk/pull/9), commit `752c9812ca264e25e75b8a7ad3400e30e9da7305`, release `arcade-20261121T144224251467Z`. CI passed. The [deployment run](https://github.com/vibe-coding-milan/email-desk/actions/runs/44915259854) installed the matching release but failed when its final homepage request timed out. Independent acceptance verified the restricted receipt, all 28 public hashes, all 23 live authentication/access checks and exact preservation of saved cards, feedback, checkpoints and XP. This connectivity failure was not hidden or worked around by weakening checks.
 
 ## 0.4.1 — 2026-11-19
 
