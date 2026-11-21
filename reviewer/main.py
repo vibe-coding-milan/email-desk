@@ -98,6 +98,7 @@ def main():
                 clients[account] = Gmail(account, journal, labels)
             result = Engine(journal, bridge, clients, labels, config, slot, args.dry_run).run()
             journal.data['last_result'] = {'at': iso(), **result}
+            entry['result'] = journal.data['last_result']
             journal.save()
             print(json.dumps(result))
             return 1 if result.get('errors') else 0

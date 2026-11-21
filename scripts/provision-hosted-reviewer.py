@@ -3,6 +3,7 @@
 import argparse
 import datetime as dt
 import hashlib
+import fcntl
 import io
 import json
 import os
@@ -148,6 +149,44 @@ def configure(root, staging):
     return {'configured': True, 'cron_enabled': False, 'transfer_copies_retained': True}
 
 
+def upgrade_code(root, archive, expected, previous_commit):
+    """Reviewed pre-activation repair only; retain old code and all private state."""
+    if (root / 'activation.json').exists():
+        raise ValueError('active_upgrade_requires_review')
+    lock_path = root / 'reviewer.lock'
+    fd = os.open(lock_path, os.O_RDWR | os.O_CREAT | getattr(os, 'O_NOFOLLOW', 0), 0o600)
+    with os.fdopen(fd, 'a+') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        previous = verify_code(root)
+        if previous['source_commit'] != previous_commit:
+            raise ValueError('upgrade_base_changed')
+        raw = private(archive).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != expected:
+            raise ValueError('archive_digest')
+        files, manifest = unpack(raw)
+        if manifest['files']['requirements.txt'] != previous['files']['requirements.txt']:
+            raise ValueError('dependency_upgrade_requires_review')
+        for name, content in files.items():
+            if name.endswith('.py'): compile(content, name, 'exec')
+        staging = Path(tempfile.mkdtemp(prefix='code-upgrade-', dir=root))
+        (staging / 'reviewer').mkdir(mode=0o700)
+        for name, content in files.items(): write(staging / name, content)
+        backup = root / ('code-backup-' + dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ'))
+        write(root / (backup.name + '.json'), json.dumps(previous).encode())
+        os.rename(root / 'code', backup)
+        try:
+            os.rename(staging, root / 'code')
+            write(root / 'installed.json', json.dumps(manifest).encode())
+            verify_code(root)
+        except Exception:
+            if (root / 'code').exists(): os.rename(root / 'code', staging)
+            os.rename(backup, root / 'code')
+            write(root / 'installed.json', json.dumps(previous).encode())
+            raise
+        return {'code_upgraded': True, 'source_commit': manifest['source_commit'],
+                'private_state_preserved': True, 'cron_enabled': False, 'backup': backup.name}
+
+
 def managed_cron(existing, line):
     rows = existing.splitlines(keepends=True)
     starts = [i for i, row in enumerate(rows) if row.strip() == BEGIN]
@@ -198,8 +237,9 @@ def enable_cron(root):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--homepage-sha256', required=True)
-    parser.add_argument('--mode', choices=['code', 'configure', 'cron'], required=True)
+    parser.add_argument('--mode', choices=['code', 'upgrade-code', 'configure', 'cron'], required=True)
     parser.add_argument('--archive-sha256')
+    parser.add_argument('--expected-current-commit')
     args = parser.parse_args()
     os.umask(0o077)
     home = Path.home()
@@ -209,6 +249,7 @@ def main():
     if not root.exists(): root.mkdir(mode=0o700)
     private(root, True)
     if args.mode == 'code': result = install_code(root, home / '.email-desk/reviewer-code.tar.gz', args.archive_sha256)
+    elif args.mode == 'upgrade-code': result = upgrade_code(root, home / '.email-desk/reviewer-code.tar.gz', args.archive_sha256, args.expected_current_commit)
     elif args.mode == 'configure': result = configure(root, home / '.email-desk/reviewer-transfer')
     else: result = enable_cron(root)
     print(json.dumps({'domain_guard': True, **result}))
