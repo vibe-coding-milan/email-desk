@@ -2,6 +2,11 @@
 
 Changes are grouped by release. Dates use America/New_York. Email Desk is self-hosted under `/email-desk/`; release notes never contain private messages, feedback, credentials or connection settings.
 
+## 0.4.2 — 2026-11-21
+
+- Added the owner-approved public privacy notice and linked it from the homepage, supporting the dedicated Google OAuth app’s production branding setup. The notice describes personal use, Google data, bounded model processing, private storage and owner controls.
+- No reviewer worker, server schedule, mailbox permission or board state is changed by this code release. Hosted activation remains a separate acceptance step. Local UI/source checks pass; deployment and live verification are pending.
+
 ## 0.4.1 — 2026-11-19
 
 - Kept sender/content dividers aligned as cards cross the 24/48-hour targets by removing timing-dependent side borders and padding. Past-target cards show a quiet amber pill and no exhausted countdown meter.
