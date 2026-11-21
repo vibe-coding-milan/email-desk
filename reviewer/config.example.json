@@ -1,0 +1,13 @@
+{
+  "enabled": false,
+  "api_data_authorized": false,
+  "label_writes_authorized": false,
+  "google_production_confirmed": false,
+  "activated_at": "2026-11-20T00:00:00+00:00",
+  "homepage_sha256": "REPLACE_DURING_GUARDED_PRIVATE_INSTALLATION",
+  "messages_per_account": 12,
+  "max_model_requests": 8,
+  "max_context_bytes": 240000,
+  "max_output_tokens": 8192,
+  "max_pages": 20
+}
