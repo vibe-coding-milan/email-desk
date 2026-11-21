@@ -84,3 +84,8 @@ For 0.3.0, recorded acceptance verified 25 served public-file hashes, 23 live ac
 The project is tailored to one owner's workflow and hosting setup. Its public demo is reusable as an example; production setup still needs owner-specific configuration and an authorized reviewer.
 
 A corrected scheduled review executed, but publication needed recovery. Unattended publication after recovery still needs observation, as do physical-device/cross-device acceptance and disaster recovery. Unit checks, a successful deployment, and a convincing demo answer different questions; I keep those claims separate.
+
+
+## Making hosted reviews understandable in 0.5.0
+
+Hosting the reviewer independently made operational clarity part of the product. The board now separates recent freshness from older catch-up, while explicit slot/trigger metadata keeps manual validation and recovered publication from masquerading as an on-time scheduled review. A secondary authenticated System view exposes safe token/cost aggregates, run history, feedback and the master source without exposing the encrypted journal or introducing another inbox action. Dedicated History improves retrieval as saved decisions grow. [Implementation and acceptance](PRODUCT_UPDATE_050.md) records the data contract, checks and known limits.

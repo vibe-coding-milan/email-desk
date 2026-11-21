@@ -1,6 +1,6 @@
 # Version 0.5.0 product update — November 21, 2026
 
-final result: passed for the fictional local UI; production acceptance is recorded separately.
+final result: passed for the fictional local UI and scoped live read-back. Production access and preservation acceptance passed; the deployment workflow’s final network timeout is recorded separately in docs/PRODUCT_UPDATE_050.md.
 
 Preserved the existing pixel identity, artwork, two buckets and card hierarchy. Inspected focused login, board/status, standalone History and System in the in-app browser. Verified note saves without closing, handling, note search, no-match status filtering, reopening with unchanged XP, feedback-to-card navigation, selected labels through search, optional demo skip and independent run identity. At 390px light/dark and 320px, System and card editing reflow without horizontal overflow. Corrected the mobile three-control navigation and desktop History filter specificity during QA. Fictional failed-review and unavailable-board fixtures retain visible warnings and never claim an all-clear. No private email screenshots were captured.
 

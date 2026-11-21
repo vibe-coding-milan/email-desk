@@ -1,8 +1,18 @@
 # Email Desk handoff
 
-## Version 0.5.0 implementation — November 21, 2026
+## Version 0.5.0 production acceptance — November 21, 2026
 
-Milan authorized the product-review changes and GitHub/production publication. Implementation and rollout requirements are in [PRODUCT_UPDATE_050.md](PRODUCT_UPDATE_050.md). Source is based on remote main 66e8653a11afe0e1aba8051f64d0fad78b89b502; this checkout’s local HEAD remains older. Website and private worker are separate releases: deploy the reporting-capable Store first, then the manifest-verified worker code under its existing lock, retaining cron, dependencies, credentials and journal. Run `--report` to initialize metadata without mailbox/model calls. Do not rerun live classification just to fill the dashboard. Publication acceptance is pending until recorded below.
+Version 0.5.0 is live through [PR #15](https://github.com/vibe-coding-milan/email-desk/pull/15), merge `a0462d6a66cd5eb8df4e2c4f7fda310104b57ae8`, receipt `arcade-20261121T173801463624Z`. [Source CI](https://github.com/vibe-coding-milan/email-desk/actions/runs/44930928713) and main/shared checks passed, including 81 PHP storage and 21 HTTP/API checks. [Deployment 44931032533](https://github.com/vibe-coding-milan/email-desk/actions/runs/44931032533) installed the exact bundle, then failed during its final public connection verification with a timeout. That workflow failure is retained; independent acceptance passed the exact receipt/bundle hash, 28 served public hashes, unchanged homepage and all 27 live access checks.
+
+All 74 cards, comments, corrections, decisions, XP, labels, review history, checkpoints and pending feedback matched the private pre-release baseline, both after website installation and after worker/reporting initialization. Private worker source now matches the merge commit. Its locked, manifest-verified code upgrade retained the prior code backup and exact encrypted journal, grants, keys, configuration, activation and cron. No credentials were rotated and no SSH access was added.
+
+Metadata-only `--report` initialization succeeded with zero mailbox reads and zero model requests. The authenticated UI independently read back 32 legacy requests, 379,721 input and 36,689 output tokens, calculated at $0.065807225 from the November 20 rate snapshot. These records are setup/validation/recovery/catch-up measurement, not routine monthly cost, posted billing or remaining credit. The full snapshot and access/preservation receipts remain ignored and private.
+
+Live browser verified focused sign-in, the typed recent-success/historical-partial headline, pre-activation/next timeline labels, separate History, System totals, public demo/mobile wrapping, sign-out and empty warning/error logs. Owner inspection was read-only, without private screenshots or production decisions. Physical-device, screen-reader, cross-device, first scheduled/Mac-offline publication and disaster recovery remain separate acceptance work.
+
+The Google Doc master received a guarded November 21 operational addendum clarifying the active hosted schedule and reporting boundaries. Read-back preserved every earlier paragraph and verified the new native heading and text. The Markdown reference was refreshed afterward; taxonomy version 1.1 and its rules are unchanged.
+
+See [PRODUCT_UPDATE_050.md](PRODUCT_UPDATE_050.md) for delivered scope and contracts. This checkout’s local HEAD still predates connector-published releases; compare against current remote main when preparing follow-ups.
 
 ## Version 0.4.4 release acceptance — November 21, 2026
 

@@ -19,11 +19,11 @@ check(home==(root/'.private/homepage-before.sha256').read_text().strip(),'Existi
 with urllib.request.urlopen(base,timeout=20)as r:
  check(r.status==200,'Board page served');h=r.headers;check("frame-ancestors 'none'"in h.get('Content-Security-Policy',''),'Apache CSP active');check(h.get('X-Robots-Tag')=='noindex, nofollow, noarchive','Search indexing disabled');check('no-store'in h.get('Cache-Control',''),'Page no-store')
 status,p,h=req('session');check(status==200 and not p['authenticated'],'Anonymous session');csrf=p['csrf'];cookie=h.get('Set-Cookie','').lower();check(all(x in cookie for x in ['secure','httponly','samesite=strict','path=/email-desk/']),'Secure private session cookie')
-check(req('board')[0]==401,'Unauthenticated board denied');check(req('playbook')[0]==401,'Unauthenticated playbook denied')
+check(req('system')[0]==401,'Unauthenticated system report denied');check(req('board')[0]==401,'Unauthenticated board denied');check(req('playbook')[0]==401,'Unauthenticated playbook denied')
 password=(root/'.private/owner-login.txt').read_text().split('Password: ',1)[1].splitlines()[0]
-status,p,h=req('login',{'password':password},csrf);check(status==200,'Live owner sign-in');csrf=p['csrf'];status,p,h=req('board');check(status==200 and isinstance(p['result']['cards'],list),'Authenticated board read');check('no-store'in h.get('Cache-Control',''),'API no-store')
+status,p,h=req('login',{'password':password},csrf);check(status==200,'Live owner sign-in');csrf=p['csrf'];status,p,h=req('board');check(status==200 and isinstance(p['result']['cards'],list),'Authenticated board read');check('no-store'in h.get('Cache-Control',''),'API no-store');check(p['result'].get('capabilities',{}).get('reporting') is True,'Reporting-capable Store active');check(req('system')[0]==200,'Authenticated system report readable')
 check(req('feedback',{},csrf,origin='https://example.invalid')[0]==403,'Cross-origin mutations denied');check(req('feedback',{},'bad-csrf')[0]==403,'Missing or wrong CSRF denied')
-status,p,h=req('playbook');check(status==200 and 'Version 1.1' in p['result']['content'],'Private playbook reference readable');check(req('logout',{},csrf)[0]==200,'Live sign-out');check(req('board')[0]==401,'Signed-out access denied')
+status,p,h=req('playbook');check(status==200 and 'Version 1.1' in p['result']['content'],'Private playbook reference readable');check(req('logout',{},csrf)[0]==200,'Live sign-out');check(req('board')[0]==401,'Signed-out access denied');check(req('system')[0]==401,'Signed-out system report denied')
 for path in ['.htaccess','server/Store.php','.private/owner-login.txt','../.email-desk/config.php']:
  try:r=urllib.request.urlopen(base+path,timeout=20);status=r.status;r.close()
  except urllib.error.HTTPError as e:status=e.code
