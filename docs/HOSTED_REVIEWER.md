@@ -34,7 +34,7 @@ The `reviewer/` package now contains the bounded mail reader, strict model propo
 
 The dispatcher calculates the latest due New York slot, with DST, a process lock, durable slot completion and bounded retry/backoff. `prepare-hosted-reviewer.py` builds a code-only hash manifest; `provision-hosted-reviewer.py` guards the domain owner/homepage and separates code, credential configuration and cron activation. It preserves unrelated jobs and checks a recent two-mailbox live acceptance result before installing cron. These are source-level controls, not evidence of a configured server.
 
-Local checks pass: 18 worker tests, eight pilot/parser tests and six installer tests, all fictional and offline. The initial draft PR CI passed; subsequent reader/installer changes require a fresh CI result. Live production remains 0.4.1. The revision publication guard in `Store.php` is still a proposed backend change. No new model request, Gmail write, card publication, host installation or credential transfer occurred during implementation. The Mac is locked; signed-in Firefox steps for durable Google authorization are pending the existing unlock handoff.
+Local checks pass: 20 worker tests, eight pilot/parser tests and six installer tests, all fictional and offline. The initial draft PR CI passed; subsequent reader/installer changes require a fresh CI result. Live production remains 0.4.1. The revision publication guard in `Store.php` is still a proposed backend change. No new model request, Gmail write, card publication, host installation or credential transfer occurred during implementation. The Mac is locked; signed-in Firefox steps for durable Google authorization are pending the existing unlock handoff.
 
 ## UX review after hosted acceptance
 

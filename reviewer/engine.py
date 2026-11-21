@@ -196,6 +196,7 @@ class Engine:
                         message = gmail.get('messages/' + message_id, {'format': 'minimal'})
                         gmail.apply(message_id, event['thread_id'], desired, gmail.custom(message.get('labelIds', [])),
                                     operation('feedback', event['id'] + message_id))
+                    check_revisions({card['id']: card['revision']}, self.bridge.call({'action': 'board'}))
                     ack.update(status='applied', explanation='Requested custom labels verified on every exact message; system labels preserved.', actual_labels=sorted(desired))
                 except Exception:
                     errors += 1
@@ -330,7 +331,7 @@ class Engine:
                 if not self.dry:
                     if recent_complete and account not in self.feedback_failed:
                         checkpoints[account] = iso(now)
-                    if backfill_lower is not None and historical_complete:
+                    if backfill_lower is not None and historical_complete and account not in self.feedback_failed:
                         updates[account] = {'backfill_end': iso(backfill_lower), 'backfill_complete':
                                             backfill_lower <= dt.datetime.fromisoformat(self.config['activated_at']) - dt.timedelta(days=90)}
                 complete[account] = recent_complete and account not in self.feedback_failed and updates.get(account, {}).get('backfill_complete', state.get('backfill_complete', False))

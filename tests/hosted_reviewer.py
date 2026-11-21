@@ -372,6 +372,56 @@ class EngineIntegration(unittest.TestCase):
                 self.assertEqual(journal.data['accounts'][account]['done'], {})
                 self.assertNotIn('cursor', journal.data['accounts'][account])
 
+    def feedback_bridge(self, requested):
+        bridge = FakeBridge()
+        account = 'mijatovic@gmail.com'
+        client = self.clients[account]
+        import hashlib
+        key = hashlib.sha256((account + ':' + client.thread).encode()).hexdigest()
+        bridge.cards[key] = {'id': key, 'revision': 1, 'account': account, 'thread_id': client.thread,
+                             'message_ids': [client.id], 'state': 'handled', 'latest_feedback_id': 9,
+                             'user_labels': requested, 'comments': [{'text': 'Fictional saved owner context'}]}
+        events = [{'id': 9, 'card_id': key, 'account': account, 'thread_id': client.thread,
+                   'message_ids': [client.id], 'requested_labels': requested}]
+        original = bridge.call
+        bridge.acknowledgements = []
+        def call(payload):
+            if payload['action'] == 'feedback': return {'feedback': events, 'remaining': 0}
+            if payload['action'] == 'acknowledge':
+                bridge.acknowledgements.append(copy.deepcopy(payload))
+                return {'ok': True}
+            return original(payload)
+        bridge.call = call
+        return bridge, key
+
+    def test_failed_feedback_blocks_account_cursors_and_preserves_handled_context(self):
+        bridge, key = self.feedback_bridge(['Home'])
+        self.clients['mijatovic@gmail.com'].apply = lambda *args: (_ for _ in ()).throw(ValueError('label_verification'))
+        with Journal(self.directory) as journal:
+            self.prepare(journal)
+            self.slot = 'manual-feedback-test'
+            journal.data['slots'][self.slot] = {'attempts': 1}
+            journal.data['accounts']['mijatovic@gmail.com']['backfill_complete'] = False
+            result = Engine(journal, bridge, self.clients, ['Home', 'Needs Review'], self.config, self.slot).run()
+            state = journal.data['accounts']['mijatovic@gmail.com']
+            self.assertNotEqual(result['status'], 'success')
+            self.assertEqual(bridge.acknowledgements[0]['status'], 'error')
+            self.assertNotIn('cursor', state)
+            self.assertNotIn('backfill_end', state)
+            self.assertEqual(bridge.cards[key]['state'], 'handled')
+            self.assertEqual(bridge.cards[key]['comments'][0]['text'], 'Fictional saved owner context')
+
+    def test_context_only_and_superseded_feedback_never_modify_gmail(self):
+        for newer in [False, True]:
+            bridge, key = self.feedback_bridge(None)
+            if newer: bridge.cards[key]['latest_feedback_id'] = 10
+            with Journal(self.directory) as journal:
+                engine = Engine(journal, bridge, self.clients, ['Home', 'Needs Review'], self.config, self.slot)
+                engine.board = bridge.call({'action': 'board'})
+                self.assertEqual(engine.reconcile_feedback(), 0)
+                self.assertEqual(bridge.acknowledgements[0]['status'], 'superseded' if newer else 'recorded')
+                self.assertTrue(all(not client.writes for client in self.clients.values()))
+
 
 if __name__ == '__main__':
     unittest.main()
