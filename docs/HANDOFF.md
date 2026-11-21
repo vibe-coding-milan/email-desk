@@ -1,5 +1,12 @@
 # Email Desk handoff
 
+
+## Production renewal and install preparation — November 21, 2026
+
+Both Production grants were renewed after Milan explicitly approved same-account/same-scope replacement and encrypted backups. Milan personally completed each Google consent screen. Exact Gmail profiles, required scopes, refresh grants, owner-only encrypted replacements and retained encrypted backups are verified. No message contents were read or changed during renewal. No host transfer has occurred. A fresh owner Cyberduck check passed the domain-account/homepage guard, confirmed Python venv support and confirmed the reviewer target does not exist. Encrypted initial progress is prepared from 263 verified exact-message IDs (120 personal, 143 Workspace) and current board checkpoints; historical coverage remains incomplete. Disabled private configuration is prepared, with API execution still unapproved.
+
+Current checks: 21 worker, ten parser/pilot, six installer, two renewal-storage and three state-import tests pass (42 total). Routine worker proposals preserve existing custom labels and add approved topics; exact saved owner corrections can remove custom labels. The encrypted import contains only verified IDs, timestamps and coverage metadata, never message bodies, notes or model evidence. Broad historical completeness is not imported from the older category-filtered pass. Code, credential configuration and cron remain separate guarded operations; all host files belong outside web root under ~/.email-desk/reviewer.
+
 ## Current continuation — November 21, 2026
 
 Version 0.4.2 is live through PR #9, commit 752c9812ca264e25e75b8a7ad3400e30e9da7305, release arcade-20261121T144224251467Z. CI passed. Deployment run 44915259854 installed the matching release but timed out during its final homepage request. Independent acceptance passed: restricted receipt, 28 public hashes, all 23 authentication/access checks and exact private board/checkpoint/progress preservation. Keep the workflow failure visible; do not repeat installation or weaken checks to conceal a connectivity failure.

@@ -30,6 +30,7 @@ jobs:
           find server public tests -name '*.php' -exec php -l {} \;
           python3 -m py_compile scripts/*.py tests/*.py
           python3 -m py_compile reviewer/*.py
+          .private/hosted-reviewer/venv/bin/python tests/reviewer_state_seed.py
           .private/hosted-reviewer/venv/bin/python tests/reviewer_authorization.py
           .private/hosted-reviewer/venv/bin/python tests/reviewer_pilot.py
           .private/hosted-reviewer/venv/bin/python tests/hosted_reviewer.py

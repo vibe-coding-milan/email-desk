@@ -12,7 +12,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from cryptography.fernet import Fernet
-from reviewer.engine import Engine, card_from, check_revisions, scan, load_thread
+from reviewer.engine import Engine, card_from, check_revisions, scan, load_thread, routine_labels
 from reviewer.google import Gmail, bounded_json
 from reviewer.model import validate
 from reviewer.state import Journal, UTC, iso, scheduled_slot
@@ -169,6 +169,13 @@ class LabelBoundary(unittest.TestCase):
 
 
 class ProposalAndCoverage(unittest.TestCase):
+    def test_routine_proposals_never_authorize_removal_and_owner_corrections_remain_exact(self):
+        source = {'id': 'fictional', 'observed_custom': ['Work', 'Needs Review']}
+        self.assertEqual(routine_labels(['Home'], source, None), ['Home', 'Needs Review', 'Work'])
+        old = {'message_ids': ['fictional'], 'user_labels': ['Financial']}
+        self.assertEqual(routine_labels(['Home'], source, old), ['Financial'])
+        self.assertEqual(routine_labels(['Home'], {**source, 'id': 'new-message'}, old), ['Home', 'Needs Review', 'Work'])
+
     def setUp(self):
         self.thread = {'account': 'mijatovic@gmail.com', 'thread_id': 'abcdef1234567891',
                        'candidate_message_ids': ['abcdef1234567890'], 'existing_card': None,
@@ -274,7 +281,7 @@ class FakeGmail:
             return self.get('threads/' + self.thread)['messages'][0]
         raise AssertionError(path)
 
-    def custom(self, ids): return ['Needs Review']
+    def custom(self, ids): return ['Needs Review'] if 'Label_review' in ids else []
 
     def apply(self, message, thread, desired, observed, key):
         self.writes.append((message, desired))

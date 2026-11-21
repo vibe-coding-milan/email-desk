@@ -96,6 +96,14 @@ def check_revisions(expected, board):
         raise ValueError('board_revision_changed')
 
 
+def routine_labels(proposed, source, old):
+    if old and old.get('user_labels') is not None and source['id'] in old['message_ids']:
+        return sorted(old['user_labels'])
+    # Routine proposals may add topics, but are not evidence authorizing removal
+    # of an existing custom label. Exact owner corrections use the feedback path.
+    return sorted(set(proposed) | set(source['observed_custom']))
+
+
 def card_from(row, thread):
     old = thread.get('existing_card')
     if old and old['state'] != 'open' and not row['reopen_reason']:
@@ -244,10 +252,9 @@ class Engine:
         rows = [by_key[t['account'], t['thread_id']] for t in threads]
         for row, thread in zip(rows, threads):
             old = thread.get('existing_card')
-            if old and old.get('user_labels') is not None:
-                for proposed in row['messages']:
-                    if proposed['id'] in old['message_ids']:
-                        proposed['labels'] = old['user_labels']
+            for proposed in row['messages']:
+                source = next(m for m in thread['messages'] if m['id'] == proposed['id'])
+                proposed['labels'] = routine_labels(proposed['labels'], source, old)
         batch_id = operation('batch', self.slot + json.dumps([(t['account'], t['candidate_message_ids']) for t in threads]))
         cards = [card for row, thread in zip(rows, threads) if (card := card_from(row, thread))]
         expected = revisions(threads)

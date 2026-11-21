@@ -16,7 +16,7 @@ import tempfile
 
 MODULES = {'__init__', 'content', 'engine', 'google', 'main', 'model', 'state'}
 ALLOWED = {'reviewer/' + name + '.py' for name in MODULES} | {'requirements.txt'}
-SECRETS = ['openai-api-key.txt', 'token-encryption.key', 'google-personal.encrypted', 'google-workspace.encrypted']
+SECRETS = ['openai-api-key.txt', 'token-encryption.key', 'google-personal.encrypted', 'google-workspace.encrypted', 'initial-journal.encrypted']
 BEGIN, END = '# BEGIN EMAIL_DESK_HOSTED_REVIEWER', '# END EMAIL_DESK_HOSTED_REVIEWER'
 
 
@@ -119,7 +119,7 @@ def configure(root, staging):
     private(staging, True)
     verify_code(root)
     config_path = root / 'reviewer.json'
-    if config_path.exists() or any((root / name).exists() for name in SECRETS):
+    if config_path.exists() or any((root / name).exists() for name in SECRETS + ['journal.encrypted']):
         raise ValueError('credential_replacement_requires_review')
     config = json.loads(private(staging / 'reviewer.json').read_text())
     if any(config.get(k) is not True for k in ['api_data_authorized', 'label_writes_authorized', 'google_production_confirmed']):
@@ -134,8 +134,13 @@ def configure(root, staging):
              'from reviewer.state import Journal;from pathlib import Path;'
              'j=Journal(Path(' + repr(str(staging)) + '));'
              'a=j.open(j.directory/"google-personal.encrypted");b=j.open(j.directory/"google-workspace.encrypted");'
-             'assert all(x.get("refresh_token") and x.get("token_uri")=="https://oauth2.googleapis.com/token" for x in [a,b])'], root / 'code')
-    for name, value in values.items(): write(root / name, value)
+             'assert all(x.get("refresh_token") and x.get("token_uri")=="https://oauth2.googleapis.com/token" for x in [a,b]);'
+             's=j.open(j.directory/"initial-journal.encrypted");'
+             'assert s.get("version")==1 and set(s.get("accounts",{}))=={"mijatovic@gmail.com","milan@mijatovic.com"};'
+             'assert not s.get("slots") and not s.get("usage");'
+             'assert set(s).issubset({"version","accounts","slots","usage","imported_at"});'
+             'assert all(set(a)=={"done","cursor","backfill_complete"} and a["backfill_complete"] is False for a in s["accounts"].values())'], root / 'code')
+    for name, value in values.items(): write(root / ('journal.encrypted' if name == 'initial-journal.encrypted' else name), value)
     config['enabled'] = True  # Allows a controlled manual run; cron is still absent.
     write(config_path, json.dumps(config, indent=2).encode())
     command([str(root / 'venv/bin/python'), '-c',
