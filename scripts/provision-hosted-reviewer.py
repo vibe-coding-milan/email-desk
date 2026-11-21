@@ -149,9 +149,10 @@ def configure(root, staging):
     return {'configured': True, 'cron_enabled': False, 'transfer_copies_retained': True}
 
 
-def upgrade_code(root, archive, expected, previous_commit):
-    """Reviewed pre-activation repair only; retain old code and all private state."""
-    if (root / 'activation.json').exists():
+def upgrade_code(root, archive, expected, previous_commit, active_reviewed=False):
+    """Reviewed code-only repair under the reviewer lock; retain state and cron."""
+    active = (root / 'activation.json').exists()
+    if active and not active_reviewed:
         raise ValueError('active_upgrade_requires_review')
     lock_path = root / 'reviewer.lock'
     fd = os.open(lock_path, os.O_RDWR | os.O_CREAT | getattr(os, 'O_NOFOLLOW', 0), 0o600)
@@ -184,7 +185,7 @@ def upgrade_code(root, archive, expected, previous_commit):
             write(root / 'installed.json', json.dumps(previous).encode())
             raise
         return {'code_upgraded': True, 'source_commit': manifest['source_commit'],
-                'private_state_preserved': True, 'cron_enabled': False, 'backup': backup.name}
+                'private_state_preserved': True, 'cron_enabled': active, 'backup': backup.name}
 
 
 def managed_cron(existing, line):
@@ -240,6 +241,7 @@ def main():
     parser.add_argument('--mode', choices=['code', 'upgrade-code', 'configure', 'cron'], required=True)
     parser.add_argument('--archive-sha256')
     parser.add_argument('--expected-current-commit')
+    parser.add_argument('--reviewed-active-code-upgrade', action='store_true', help='Explicit code-release authorization; preserves activation, dependencies and credentials')
     args = parser.parse_args()
     os.umask(0o077)
     home = Path.home()
@@ -249,7 +251,7 @@ def main():
     if not root.exists(): root.mkdir(mode=0o700)
     private(root, True)
     if args.mode == 'code': result = install_code(root, home / '.email-desk/reviewer-code.tar.gz', args.archive_sha256)
-    elif args.mode == 'upgrade-code': result = upgrade_code(root, home / '.email-desk/reviewer-code.tar.gz', args.archive_sha256, args.expected_current_commit)
+    elif args.mode == 'upgrade-code': result = upgrade_code(root, home / '.email-desk/reviewer-code.tar.gz', args.archive_sha256, args.expected_current_commit, args.reviewed_active_code_upgrade)
     elif args.mode == 'configure': result = configure(root, home / '.email-desk/reviewer-transfer')
     else: result = enable_cron(root)
     print(json.dumps({'domain_guard': True, **result}))

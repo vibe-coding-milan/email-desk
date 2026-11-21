@@ -2,7 +2,7 @@
 
 The production destination remains https://mijatovic.com/email-desk/ on the verified existing DreamHost domain account. GitHub Actions builds and sends code directly to that host; the Mac and Cyberduck are not part of normal releases.
 
-This pipeline deploys application code. It does not provision the hosted reviewer, transfer model/Google credentials, create cron jobs or establish offline inbox coverage. The November 20 read-only reviewer pilot and its eight fictional checks are recorded separately in [HOSTED_REVIEWER.md](HOSTED_REVIEWER.md); production remains 0.4.1 and the replacement schedule is not activated. Keep OAuth grants, API keys, encryption keys and real pilot evidence out of Actions secrets/artifacts and release bundles; reviewer provisioning needs its own reviewed path.
+This pipeline deploys application code. It does not provision the hosted reviewer, transfer model/Google credentials, create cron jobs or establish offline inbox coverage. The private reviewer schedule was activated November 21; current evidence is recorded in [HOSTED_REVIEWER.md](HOSTED_REVIEWER.md). Website deployment still does not install private worker code. Version 0.5.0 requires a separate reviewed worker code upgrade after the compatible Store is live. Keep OAuth grants, API keys, encryption keys and real pilot evidence out of Actions secrets/artifacts and release bundles; reviewer provisioning needs its own reviewed path.
 
 ## Release flow
 

@@ -7,7 +7,7 @@ import re
 from .content import body_text, text_runs
 from .google import ACCOUNTS, IDENTIFIER
 from .model import Model
-from .state import UTC, iso, operation
+from .state import UTC, iso, operation, reporting_snapshot
 
 AUTH = re.compile(r'\bone[- ]time\b|verification code|sign.in code|passcode|magic link', re.I)
 
@@ -132,7 +132,15 @@ class Engine:
         self.board = None
         self.feedback_failed = set()
 
+    def details(self, phase):
+        entry = self.journal.data['slots'][self.slot]
+        return {'trigger': 'manual' if self.slot.startswith('manual') else 'scheduled',
+                'scheduled_at': None if self.slot.startswith('manual') else self.slot,
+                'started_at': entry.get('started_at', entry.get('last_attempt', iso())),
+                'completed_at': iso(), 'phase': phase, 'attempt': entry.get('attempts', 1)}
+
     def publish(self, payload):
+        # Never enrich an uncertain operation here: even legacy retries must be byte-identical.
         self.journal.data['pending_publication'] = payload
         self.journal.save()
         result = self.bridge.call(payload)
@@ -262,6 +270,7 @@ class Engine:
                    'expected_revisions': {c: expected[c] for c in expected if any(
                        hashlib.sha256((n['account'] + ':' + n['thread_id']).encode()).hexdigest() == c for n in cards)},
                    'run': {'status': 'partial', 'summary': 'Bounded review batch verified; account coverage is still being reconciled.', 'checkpoints': {}}}
+        payload['run']['details'] = self.details('batch')
         batch = {'id': batch_id, 'threads': threads, 'rows': rows, 'revisions': expected, 'payload': payload}
         if self.dry:
             self.journal.seal(self.journal.directory / 'validation-last.encrypted', batch)
@@ -277,10 +286,14 @@ class Engine:
         if not self.dry:
             self.recover_publication()
         errors = self.reconcile_feedback() if not self.dry else 0
-        master = ''.join(text_runs(self.clients['milan@mijatovic.com'].master()))
+        master_document = self.clients['milan@mijatovic.com'].master()
+        master = ''.join(text_runs(master_document))
         if len(master) < 1000 or 'Email Organization Playbook' not in master:
             raise ValueError('master_unavailable')
+        self.journal.data['playbook'] = {'fetched_at': iso(), 'revision': str(master_document.get('revisionId', ''))[:200]}
+        self.journal.save()
         now = dt.datetime.now(UTC)
+        coverage = {}
         checkpoints, complete, updates, processed = {}, {}, {}, 0
         old_cards = {(c['account'], c['thread_id']): c for c in self.board['cards']}
         for account, gmail in self.clients.items():
@@ -301,6 +314,13 @@ class Engine:
                         messages += older
                     else:
                         historical_complete = True
+                entry = self.journal.data['slots'][self.slot]
+                if self.dry:
+                    entry['purpose'] = 'dry_run'
+                elif self.slot.startswith('manual'):
+                    entry['purpose'] = 'manual'
+                else:
+                    entry['purpose'] = 'mixed' if backfill_lower is not None else 'routine'
                 grouped = {}
                 for message in {m['id']: m for m in messages}.values():
                     grouped.setdefault(message['threadId'], []).append(message['id'])
@@ -341,9 +361,11 @@ class Engine:
                     if backfill_lower is not None and historical_complete and account not in self.feedback_failed:
                         updates[account] = {'backfill_end': iso(backfill_lower), 'backfill_complete':
                                             backfill_lower <= dt.datetime.fromisoformat(self.config['activated_at']) - dt.timedelta(days=90)}
+                coverage[account] = 'complete' if recent_complete and account not in self.feedback_failed else 'partial'
                 complete[account] = recent_complete and account not in self.feedback_failed and updates.get(account, {}).get('backfill_complete', state.get('backfill_complete', False))
             except Exception as error:
                 errors += 1
+                coverage[account] = 'error'
                 complete[account] = False
                 code = str(error) if isinstance(error, ValueError) and str(error).replace('_', '').isalnum() and len(str(error)) < 80 else 'review_failed'
                 self.journal.data['slots'][self.slot].setdefault('issues', []).append({'account': account, 'code': code})
@@ -359,7 +381,12 @@ class Engine:
                    'summary': f'{processed} messages processed; recent coverage complete for {len(checkpoints)} of 2 mailboxes. '
                               + ('Historical catch-up is complete.' if len(complete) == 2 and all(complete.values()) else 'Historical catch-up or bounded coverage remains incomplete.')
                               + (f' Verification issues: {errors}.' if errors else ''),
-                   'checkpoints': checkpoints if status != 'error' else {}}}
+                   'checkpoints': checkpoints if status != 'error' else {},
+                   'coverage': {account: coverage.get(account, 'unknown') for account in ACCOUNTS}}}
+        payload['run']['details'] = self.details('final')
+        prospective = {**self.journal.data, 'accounts': {a: {**self.journal.data['accounts'].get(a, {}), **updates.get(a, {}),
+                       **({'cursor': checkpoints[a]} if a in checkpoints else {})} for a in ACCOUNTS}}
+        payload['report'] = reporting_snapshot(prospective, self.config)
         if not self.journal.data.get('pending_publication'):
             for account, cursor in checkpoints.items():
                 updates.setdefault(account, {})['cursor'] = cursor

@@ -61,3 +61,10 @@ Bucket and label controls still publish the same feedback fields. Save context p
 ## Sender and timing presentation (0.4.1)
 
 Publish the faithful source sender as before. Friendly display-name extraction is presentation only; do not rewrite existing cards solely for display formatting. An amber past-target pill replaces the expired meter without changing source chronology, XP, decisions or the review cadence.
+
+
+## Structured reporting in 0.5.0
+
+New publications may include `run.details` (trigger, scheduled_at, started_at, completed_at, phase, attempt), typed per-account `run.coverage`, and an allowlisted aggregate `report`. Only scheduled final results with an explicit slot satisfy a checkpoint. Old operations replay unchanged; never enrich an uncertain payload during recovery.
+
+`publish` with `report_only: true`, empty cards and no run stores aggregate metadata without changing cards, review history, checkpoints or XP. The worker's `--report` mode reads its encrypted journal and publishes this snapshot with zero mailbox/model calls. System is authenticated and read-only. Reports contain date/work-type token totals, unknown counts, dated calculated rates, account coverage, activation and playbook-fetch provenance; never prompts, message excerpts, request IDs, grants or keys. Legacy usage is not reclassified as routine. No balance, monthly forecast, new cap or automatic rule adoption is established.

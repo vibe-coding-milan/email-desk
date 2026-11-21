@@ -6,7 +6,7 @@ Email Desk turns inbox conversations into two useful views: **Needs action** and
 
 **[Try the live demo](https://mijatovic.com/email-desk/)** · **[How I built it](docs/BUILDING.md)** · **[Release history](CHANGELOG.md)**
 
-Choose **Play the demo** to explore an accelerated day with twelve fictional conversations. Try handling a card, changing a label, adding context, and skipping to the next review. Decisions move into history, earn XP, and carry through later arrivals. Demo changes live in browser memory and reset on restart or reload; no sign-in or inbox access is needed.
+Choose **Play the demo** to explore an accelerated day with twelve fictional conversations. You can skip to later reviews without clearing every card. Try handling a card, changing a label, adding context, and skipping to the next review. Decisions move into history, earn XP, and carry through later arrivals. Demo changes live in browser memory and reset on restart or reload; no sign-in or inbox access is needed.
 
 ## The problem
 
@@ -78,6 +78,9 @@ npm run check
 This covers JavaScript syntax, local assets, shared labels, guest-day behavior, card-age/XP boundaries, and review timing including DST. PHP 8.2+ with PDO SQLite and sodium is needed for `php tests/store.php` and `python3 tests/api_checks.py`. GitHub CI also runs provisioning, release, and deployment regression checks.
 
 ## Current state
+
+**Version 0.5.0 is prepared for publication.** The board separates recent freshness from historical catch-up, uses explicit run identity for scheduled checkpoints, and adds dedicated searchable History and private System views. System contains sanitized API token/cost reporting, recent publications, pending feedback and master-playbook provenance. Costs are dated calculations, not posted bills or remaining credit. Older usage stays unclassified; no monthly forecast, spending ceiling, new reminder state or Gmail action is introduced. See [the implementation record](docs/PRODUCT_UPDATE_050.md).
+
 
 **The DreamHost reviewer schedule is active.** Version 0.4.4 updates the public notice to reflect activation; the board behavior is unchanged. Weekdays: 9 AM, 1 PM and 5:30 PM. Weekends: 9 AM and 5:30 PM. All times follow America/New_York, including DST. The five-minute dispatcher runs independently of the Mac. This schedule belongs to DreamHost and does not appear in ChatGPT Scheduled Tasks.
 

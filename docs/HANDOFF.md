@@ -1,5 +1,9 @@
 # Email Desk handoff
 
+## Version 0.5.0 implementation — November 21, 2026
+
+Milan authorized the product-review changes and GitHub/production publication. Implementation and rollout requirements are in [PRODUCT_UPDATE_050.md](PRODUCT_UPDATE_050.md). Source is based on remote main 66e8653a11afe0e1aba8051f64d0fad78b89b502; this checkout’s local HEAD remains older. Website and private worker are separate releases: deploy the reporting-capable Store first, then the manifest-verified worker code under its existing lock, retaining cron, dependencies, credentials and journal. Run `--report` to initialize metadata without mailbox/model calls. Do not rerun live classification just to fill the dashboard. Publication acceptance is pending until recorded below.
+
 ## Version 0.4.4 release acceptance — November 21, 2026
 
 PR #13 merged as 95f434204c4a06cd6170572eca0c767c4afda135; release arcade-20261121T163619225596Z is installed. Source CI 44925284757 and deployment checks passed. Deployment run 44925421684 installed and acknowledged the exact code bundle, then failed when the runner timed out connecting to the root homepage during its final verification. The workflow remains failed; do not re-upload a matching installed release or weaken verification to hide that result.

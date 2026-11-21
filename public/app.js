@@ -21,21 +21,22 @@ function reviewSlots(now) {
   }
   return slots;
 }
-function reviewDay(now, runs = []) {
+function reviewDay(now, runs = [], activatedAt = null) {
   const dateKey = value => new Intl.DateTimeFormat('en-CA', {timeZone: reviewZone, year:'numeric', month:'2-digit', day:'2-digit'}).format(value);
   const slots = reviewSlots(new Date(now)).filter(t => dateKey(t) === dateKey(now));
   const firstFuture = slots.find(t => t > now);
   return slots.map((time, i) => {
     const result = runs.filter(run => {
-      const finished = Date.parse(run.finished_at);
-      return finished >= time && finished <= now && finished < (slots[i + 1] ?? Infinity) && dateKey(finished) === dateKey(now);
+      const finished = Date.parse(run.finished_at), detail = run.details;
+      return detail?.trigger === 'scheduled' && detail.phase === 'final' && Date.parse(detail.scheduled_at) === time && finished <= now;
     }).sort((a, b) => Date.parse(b.finished_at) - Date.parse(a.finished_at))[0];
-    const state = result ? ({success:'updated', partial:'partial', error:'failed'}[result.status] || 'missed') : time <= now ? (now - time <= 15 * 60000 ? 'due' : 'missed') : time === firstFuture ? 'next' : 'later';
+    const legacy = runs.some(run => !run.details && Date.parse(run.finished_at)>=time && Date.parse(run.finished_at)<(slots[i+1]??Infinity) && Date.parse(run.finished_at)<=now);
+    const state = time < Date.parse(activatedAt) ? 'inactive' : result ? ({success:'updated', partial:'partial', error:'failed'}[result.status] || 'missed') : legacy ? 'unknown' : time <= now ? (now - time <= 15 * 60000 ? 'due' : 'missed') : time === firstFuture ? 'next' : 'later';
     return {time, state, finishedAt: result?.finished_at || null};
   });
 }
-function reviewStatus(now, runs = []) {
-  const slots = reviewDay(now, runs), allSlots = reviewSlots(new Date(now));
+function reviewStatus(now, runs = [], activatedAt = null) {
+  const slots = reviewDay(now, runs, activatedAt), allSlots = reviewSlots(new Date(now));
   const next = allSlots.find(t => t > now);
   const finalDue = slots.at(-1).time <= now;
   const allUpdated = slots.every(s => s.state === 'updated');
@@ -45,6 +46,14 @@ function reviewStatus(now, runs = []) {
   const segment = slots.findIndex(t => t.time > now);
   const fraction = now <= slots[0].time ? 0 : segment < 0 ? 1 : ((segment - 1) + (now - slots[segment - 1].time) / (slots[segment].time - slots[segment - 1].time)) / (slots.length - 1);
   return {slots, next, fraction, phase, finalDue};
+}
+function reviewHealth(run, report, now = Date.now()) {
+  if (run?.status === 'error' || Object.values(run?.coverage || {}).includes('error')) return {title:'A recent inbox review needs attention', tone:'error'};
+  if (!report) return {title:run?.status === 'partial' ? 'Review coverage is incomplete · Details unavailable' : 'Recent coverage is not yet confirmed', tone:'unknown'};
+  const accounts = report.accounts || [], fresh = accounts.length === 2 && accounts.every(a => Number.isFinite(Date.parse(a.recent_through)) && Date.parse(a.recent_through) <= now && now - Date.parse(a.recent_through) <= 36 * 3600000);
+  if (!fresh) return {title:'Recent inbox coverage needs attention', tone:'unknown'};
+  if (Object.values(run?.coverage || {}).includes('partial')) return {title:'Some recent mail still needs review', tone:'unknown'};
+  return {title:accounts.every(a => a.historical_complete) ? 'Recent mail checked' : 'Recent mail checked · Older mail still being reviewed', tone:'current'};
 }
 // End schedule helpers.
 // Card timing uses elapsed hours, independent of timezone and daylight saving.
@@ -111,6 +120,7 @@ function advanceGuestDay(state, elapsed, batches) {
 
 const $ = id => document.getElementById(id);
 let guestActive = false, stopGuest = () => {};
+let deskView = 'board', systemData = null, systemLoading = false;
 let csrf = '', data = {cards: [], labels: [], run: null}, toastTimer, rewardTimer, refreshing = false, boardLoaded = false, boardReadFailed = false;
 const drafts = new Map(), opened = new Set(), attempts = new Map(), saving = new Set();
 const node = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
@@ -138,13 +148,13 @@ async function api(action, body) {
   return p;
 }
 function signedIn(value) {
-  if (value) { guestActive = false; stopGuest(); }
-  $('login').hidden = value || guestActive; $('welcome').hidden = value || guestActive;
+  if (value) { guestActive = false; stopGuest(); history.replaceState(null,'','#workspace'); }
+  $('login').hidden = true; $('welcome').hidden = value || guestActive;
   $('ownerLink').hidden = value || guestActive; $('demoBack').hidden = value || !guestActive;
   $('guestDemo').hidden = value || !guestActive;
   $('workspace').hidden = !value; $('logout').hidden = !value;
   $('skipLink').href = value ? '#workspace' : guestActive ? '#guestDemo' : '#welcome';
-  if (!value) $('ownerLogin').open = false;
+  $('navSystem').hidden = !value;
   document.querySelector('.appearance').open = false;
   $('navBoard').setAttribute('aria-current','page'); $('navHistory').removeAttribute('aria-current');
   document.body.dataset.view = value ? 'workspace' : guestActive ? 'demo' : 'welcome';
@@ -154,26 +164,40 @@ function signedIn(value) {
   const progress = value ? $('progressInfo') : document.querySelector('#guestDemo .progress-info');
   if (value || guestActive) $('railProgress').replaceChildren(progress);
   $('railProgress').hidden = !(value || guestActive);
+  if (value) setDeskView(deskView);
   $('navHistoryCount').textContent = value ? data.cards.filter(c => c.state !== 'open').length || '' : '';
 
 }
+function setDeskView(view) {
+  deskView = view;
+  $('boardOverview').hidden = view !== 'board'; $('history').hidden = view !== 'history'; $('system').hidden = view !== 'system';
+  $('deskTitle').textContent = {board:'Your board',history:'Your decisions',system:'System'}[view];
+  for (const [id, target] of [['navBoard','board'],['navHistory','history'],['navSystem','system']]) {
+    if (target === view) $(id).setAttribute('aria-current','page'); else $(id).removeAttribute('aria-current');
+  }
+}
 function goToDesk(historyView = false) {
   if ($('workspace').hidden && !guestActive) return;
-  const target = $(guestActive ? (historyView ? 'demoHistory' : 'guestDemo') : (historyView ? 'history' : 'workspace'));
+  if (!guestActive) {
+    setDeskView(historyView ? 'history' : 'board'); renderHistory();
+    $('deskTitle').tabIndex = -1; $('deskTitle').focus({preventScroll:true}); window.scrollTo({top:0,behavior:'instant'}); return;
+  }
+  const target = $(historyView ? 'demoHistory' : 'guestDemo');
   if (target.hidden) { notify('No handled or dismissed cards yet.'); return; }
   if (historyView) target.open = true;
   target.tabIndex = -1; target.focus({preventScroll:true}); target.scrollIntoView({block:'start'});
   $('navBoard').toggleAttribute('aria-current', !historyView); $('navHistory').toggleAttribute('aria-current', historyView);
-  if (historyView) $('navHistory').setAttribute('aria-current','location'); else $('navBoard').setAttribute('aria-current','page');
 }
 $('navBoard').onclick = () => goToDesk();
 $('navHistory').onclick = () => goToDesk(true);
-$('brandHome').onclick = e => { if (!$('workspace').hidden || guestActive) { e.preventDefault(); goToDesk(); } };
+$('navSystem').onclick = () => { setDeskView('system'); $('deskTitle').tabIndex=-1; $('deskTitle').focus({preventScroll:true}); window.scrollTo({top:0,behavior:'instant'}); loadSystem(); };
+$('brandHome').onclick = e => { if (!$('workspace').hidden || guestActive) { e.preventDefault(); goToDesk(); } else { e.preventDefault(); $('login').hidden=true; $('welcome').hidden=false; history.replaceState(null,'','#welcome'); window.scrollTo({top:0,behavior:'instant'}); } };
+$('loginBack').onclick = () => { $('login').hidden=true; $('welcome').hidden=false; $('skipLink').href='#welcome'; };
 function interactionLock() {
   const locked = refreshing || saving.size > 0;
   $('board').inert = locked; $('history').inert = locked;
   $('logout').disabled = locked;
-  $('navBoard').disabled = locked; $('navHistory').disabled = locked;
+  $('navBoard').disabled = locked; $('navHistory').disabled = locked; $('navSystem').disabled = locked;
 }
 function dateLabel(date) { const d = new Date(date); return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString([], {month: 'short', day: 'numeric'}); }
 const category = c => c.user_category || c.category;
@@ -213,10 +237,10 @@ function renderReviewDay() {
     $('reviewNote').textContent = boardReadFailed ? 'Could not load the board. It will retry automatically.' : 'Checking saved review results.';
     meter.removeAttribute('value'); $('reviewSlots').replaceChildren(); return;
   }
-  const now = Date.now(), runs = data.runs || (data.run ? [data.run] : []), timing = reviewStatus(now, runs);
+  const now = Date.now(), runs = data.runs || (data.run ? [data.run] : []), timing = reviewStatus(now, runs, data.report?.activated_at);
   const clock = new Intl.DateTimeFormat('en-US', {timeZone: reviewZone, hour:'numeric', minute:'2-digit'});
   const timeLabel = value => clock.format(value).replace(':00', '').replace(' ', '\u00a0');
-  const captions = {updated:'Updated', partial:'Partial', failed:'Failed', due:'Due', missed:'Missed', next:'Next', later:'Later'};
+  const captions = {inactive:'Before activation',unknown:'Unverified',updated:'Updated', partial:'Partial', failed:'Failed', due:'Due', missed:'Missed', next:'Next', later:'Later'};
   $('reviewHeading').textContent = 'Today’s reviews · New York';
   meter.value = timing.fraction; meter.setAttribute('aria-valuetext', Math.round(timing.fraction * 100) + '% of today’s route from ' + timeLabel(timing.slots[0].time) + ' to ' + timeLabel(timing.slots.at(-1).time) + ' New York time. Checkpoints show actual publication results; the route measures time.');
   $('reviewNote').hidden = !boardReadFailed;
@@ -233,11 +257,21 @@ function renderReviewDay() {
     return item;
   }));
 }
+function stampLabel(value) {
+  return Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat('en-US',{timeZone:reviewZone,month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(value)) + ' New York' : 'Not yet confirmed';
+}
 function scanStatus(failed = false) {
-  const run = data.run, stale = run?.last_success_at && Date.now() - new Date(run.last_success_at).getTime() > 36 * 3600000;
-  $('scan').hidden = (!run && !failed) || (!!run && run.status === 'success' && !stale && !failed);
-  $('scanTitle').textContent = failed ? 'Couldn’t refresh the board' : !run ? 'Waiting for the first inbox review' : run.status === 'error' ? 'Inbox review couldn’t finish' : run.status === 'partial' ? 'Inbox review is incomplete' : 'The inbox review may be out of date';
-  $('scanDetails').textContent = failed ? 'Saved cards and unsaved edits are kept. Retrying automatically.' : run?.summary || 'Cards will appear after the scheduled review.';
+  const run = data.run, health = reviewHealth(run, data.report);
+  $('scan').hidden = false;
+  $('scanTitle').textContent = failed ? (boardLoaded ? 'Couldn’t refresh the board · Showing saved results' : 'Couldn’t load the board') : health.title;
+  $('scan').dataset.health = failed ? 'error' : health.tone;
+  const details = $('scanDetails'); details.replaceChildren();
+  details.append(node('p','',failed ? 'Saved cards and unsaved edits are kept. Retrying automatically.' : run?.summary || 'Waiting for the first verified review.'));
+  details.append(node('p','', 'Latest publication: ' + stampLabel(run?.finished_at)));
+  if (data.report) {
+    details.append(node('p','',data.report.schedule_active ? 'Hosted schedule active · Weekdays 9 AM, 1 PM, 5:30 PM; weekends 9 AM, 5:30 PM New York.' : 'Hosted schedule activation is not confirmed.'));
+    for (const account of data.report.accounts) details.append(node('p','',account.account + (run?.coverage?.[account.account] ? ' · Latest review: '+run.coverage[account.account] : '') + ': recent mail checked through ' + stampLabel(account.recent_through) + '. ' + (account.historical_complete ? 'Historical catch-up complete.' : 'Older mail still being reviewed' + (account.historical_through ? ' · reached ' + stampLabel(account.historical_through) : '') + '.')));
+  } else for (const [account, time] of Object.entries(data.checkpoints || {})) details.append(node('p','',account + ': last confirmed coverage ' + stampLabel(time)));
 }
 // Shared empty-column presentation; a missing/failed review never means a clear inbox.
 function emptyColumnCopy(category, mode) {
@@ -259,22 +293,77 @@ function emptyColumn(category, mode = 'clear') {
 }
 // End empty-column presentation.
 function render() {
-  const historyOpen = $('history').open;
   for (const id of ['actionCards', 'awarenessCards', 'historyCards']) { for (const art of $(id).querySelectorAll('.agent-idle')) companionObserver?.unobserve(art); $(id).replaceChildren(); }
   const active = data.cards.filter(c => c.state === 'open');
   for (const cat of ['action', 'awareness']) {
     const group = active.filter(c => category(c) === cat); $(cat + 'Count').textContent = group.length;
     for (const c of group) $(cat + 'Cards').append(card(c));
-    if (!group.length) $(cat + 'Cards').append(emptyColumn(cat, boardReadFailed || (data.run && data.run.status !== 'success') ? 'unconfirmed' : !data.run ? 'waiting' : 'clear'));
+    if (!group.length) $(cat + 'Cards').append(emptyColumn(cat, boardReadFailed || reviewHealth(data.run,data.report).tone !== 'current' ? 'unconfirmed' : !data.run ? 'waiting' : 'clear'));
   }
-  const history = data.cards.filter(c => c.state !== 'open'); $('navHistoryCount').textContent = history.length || ''; if (!history.length) { $('navBoard').setAttribute('aria-current','page'); $('navHistory').removeAttribute('aria-current'); } $('history').hidden = !history.length;
-  $('historyTitle').textContent = 'Handled & dismissed · ' + history.length;
-  for (const c of history) $('historyCards').append(card(c));
-  $('history').open = historyOpen; $('empty').hidden = !!active.length;
-  $('empty').querySelector('h2').textContent = boardReadFailed || (data.run && data.run.status !== 'success') ? 'No active saved cards. Coverage needs attention.' : history.length ? 'No active cards' : !data.run ? 'Your board is getting started.' : data.run.status === 'success' ? 'You’re up to date.' : 'No saved cards yet.';
-  $('empty').querySelector('p').textContent = boardReadFailed || (data.run && data.run.status !== 'success') ? 'An empty board is not a confirmed all-clear. Check the review notice for coverage details.' : history.length ? 'Decisions saved in history. New cards appear automatically.' : !data.run ? 'Waiting for the first review. Planned times are above.' : data.run.status === 'success' ? 'The latest review found no cards to add.' : 'The latest review could not cover everything. See the review notice for details.';
-  renderProgress(); scanStatus(); renderReviewDay(); renderCardTiming();
+  const history = data.cards.filter(c => c.state !== 'open'); renderHistory();
+  $('empty').hidden = !!active.length;
+  $('empty').querySelector('h2').textContent = boardReadFailed || reviewHealth(data.run,data.report).tone !== 'current' ? 'No active saved cards. Coverage needs attention.' : history.length ? 'No active cards' : !data.run ? 'Your board is getting started.' : data.run.status === 'success' ? 'You’re up to date.' : 'No saved cards yet.';
+  $('empty').querySelector('p').textContent = boardReadFailed || reviewHealth(data.run,data.report).tone !== 'current' ? 'An empty board is not a confirmed all-clear. Check the review notice for coverage details.' : history.length ? 'Decisions saved in history. New cards appear automatically.' : !data.run ? 'Waiting for the first review. Planned times are above.' : data.run.status === 'success' ? 'The latest review found no cards to add.' : 'The latest review could not cover everything. See the review notice for details.';
+  renderProgress(); scanStatus(); renderReviewDay(); renderCardTiming(); setDeskView(deskView);
 }
+function renderHistory() {
+  const all=data.cards.filter(c=>c.state!=='open'), query=$('historySearch').value.trim().toLocaleLowerCase(), state=$('historyState').value, since=$('historySince').value;
+  const matches=all.filter(c=>(state==='all'||c.state===state)&&(!since||(c.decision_earned_at||'').slice(0,10)>=since)&&(!query||[c.subject,c.sender,c.description,c.note,...labels(c)].join(' ').toLocaleLowerCase().includes(query)));
+  matches.sort((a,b)=>String(b.decision_earned_at||b.updated_at||b.date).localeCompare(String(a.decision_earned_at||a.updated_at||a.date)));
+  $('navHistoryCount').textContent=all.length||''; $('historyTitle').textContent='Handled & dismissed';
+  $('historyResult').textContent=all.length ? matches.length + ' of ' + all.length + ' decisions' + (!matches.length ? ' · No matching decisions. Try another search or clear the filters.' : '') : 'No decisions yet. Handled and dismissed cards will appear here.';
+  $('historyCards').replaceChildren(...matches.map(card));
+}
+for(const id of ['historySearch','historyState','historySince']) $(id).addEventListener('input',renderHistory);
+async function loadSystem() {
+  if(systemLoading) return; systemLoading=true; $('systemState').textContent='Loading saved system information…';
+  try { const result=await api('system'); systemData=result.result; renderSystem(); $('systemState').textContent='Saved reporting · ' + stampLabel(systemData.report?.generated_at); }
+  catch(e) { $('systemState').textContent='Could not refresh system information. ' + (systemData?'Showing previously loaded data. ':'') + e.message; }
+  finally { systemLoading=false; }
+}
+function systemSection(title) { const section=node('section','system-panel'); section.append(node('h4','',title)); return section; }
+function renderSystem() {
+  const root=$('systemContent'); root.replaceChildren(); const report=systemData?.report;
+  const health=systemSection('Review health');
+  health.append(node('p','',reviewHealth(data.run,report).title));
+  health.append(node('p','',report?.schedule_active?'Hosted schedule active · New York time, including daylight saving.':'Hosted schedule status is not yet available.'));
+  health.append(node('p','','Weekdays: 9 AM, 1 PM and 5:30 PM. Weekends: 9 AM and 5:30 PM.'));
+  health.append(node('p','','Latest board publication: '+stampLabel(data.run?.finished_at)));
+  for(const a of report?.accounts||[]) health.append(node('p','',a.account+(data.run?.coverage?.[a.account]?' · Latest review: '+data.run.coverage[a.account]:'')+' · Checked through '+stampLabel(a.recent_through)+' · '+(a.historical_complete?'Historical catch-up complete':'Older mail still being reviewed'+(a.historical_through?' · reached '+stampLabel(a.historical_through):''))));
+  root.append(health);
+  const usage=systemSection('API usage');
+  usage.append(node('p','','Calculated from returned tokens, not posted billing. No balance or monthly forecast is inferred. Includes incomplete responses with recorded usage; network-uncertain requests may have unknown usage.'));
+  if(!report) usage.append(node('p','','Usage has not been published by the hosted worker yet. This is unknown, not zero.'));
+  else {
+    const controls=node('div','history-tools'), rangeLabel=node('label','','Date range'), range=node('select'), purposeLabel=node('label','','Work type'), purpose=node('select');
+    for(const [value,caption] of [['7','Last 7 days'],['30','Last 30 days'],['90','Last 90 days']]) { const option=node('option','',caption);option.value=value;range.append(option); }
+    range.value='30'; rangeLabel.append(range);
+    for(const [value,caption] of [['all','All work'],['routine','Routine'],['mixed','Routine + catch-up'],['manual','Manual validation'],['dry_run','Dry-run'],['legacy','Legacy / unclassified'],['catch_up','Catch-up']]) { const option=node('option','',caption);option.value=value;purpose.append(option); }
+    purposeLabel.append(purpose); controls.append(rangeLabel,purposeLabel); usage.append(controls);
+    const totals=node('p','usage-total'), note=node('p',''), list=node('div','usage-rows'); totals.setAttribute('role','status'); usage.append(totals,note,list);
+    const update=()=>{
+      const cutoff=new Date(Date.now()-(Number(range.value)-1)*86400000).toLocaleDateString('en-CA',{timeZone:reviewZone});
+      const rows=report.usage.rows.filter(r=>r.day>=cutoff&&(purpose.value==='all'||r.purpose===purpose.value));
+      const count=key=>rows.reduce((n,r)=>n+r[key],0), known=rows.filter(r=>r.calculated_usd!==null), cost=known.reduce((n,r)=>n+Number(r.calculated_usd),0);
+      totals.textContent=count('requests').toLocaleString()+' requests · '+count('input_tokens').toLocaleString()+' input tokens · '+count('output_tokens').toLocaleString()+' output tokens · $'+cost.toFixed(6)+' calculated'+(known.length<rows.length?' (known rates only)':'');
+      note.textContent=count('cached_tokens').toLocaleString()+' cached reads · '+count('cache_write_tokens').toLocaleString()+' cache writes (both included in input) · '+count('retries')+' retry requests · '+count('incomplete')+' incomplete or unverified responses. '+report.usage.unknown_requests+' requests have unknown usage across the reporting snapshot. Legacy work cannot be reliably divided into routine and catch-up.';
+      list.replaceChildren(); if(!rows.length) list.append(node('p','','No recorded usage matches this range. Reporting begins '+report.usage.since+'.'));
+      for(const row of rows) {const item=node('p','usage-row'); item.textContent=row.day+' · '+({routine:'Routine',mixed:'Routine + catch-up',manual:'Manual validation',dry_run:'Dry-run',legacy:'Legacy / unclassified',catch_up:'Catch-up'}[row.purpose])+' · '+row.requests+' requests · '+row.model+' · '+(row.calculated_usd===null?'Cost unknown':'$'+Number(row.calculated_usd).toFixed(6))+' · rate snapshot '+row.rate_date; list.append(item);}
+    }; range.onchange=update;purpose.onchange=update;update();
+    const rates=node('details','rate-details'), source=node('a','','Official pricing');source.href='https://developers.openai.com/api/docs/models/gpt-6-luna';source.target='_blank';source.rel='noopener noreferrer';
+    rates.append(node('summary','','How calculated cost works'),node('p','','GPT-6 Luna standard rates per million tokens: input $0.10, cached reads $0.01, cache writes $0.125, output $0.50. Snapshots November 20 and 21, 2026. Cached reads and writes are subtracted from ordinary input; reasoning is included in output. Other models or unknown rate snapshots have unknown cost.'),source);usage.append(rates);
+  } root.append(usage);
+  const runs=systemSection('Recent publications'); runs.append(node('p','','Scheduled reviews are matched to an explicit slot. Manual publications and older records do not fill a scheduled checkpoint. Intermediate batches are separate from final results.'));
+  for(const run of systemData.runs||[]) {const detail=run.details; runs.append(node('p','run-row',stampLabel(run.finished_at)+' · '+run.status+' · '+(detail ? (detail.trigger==='scheduled'?'Scheduled '+stampLabel(detail.scheduled_at):'Manual')+' · '+detail.phase+' · attempt '+detail.attempt+' · started '+stampLabel(detail.started_at)+' · review completed '+stampLabel(detail.completed_at) : 'Legacy · trigger and slot unknown')));}
+  if(!systemData.runs?.length) runs.append(node('p','','No publications recorded yet.')); root.append(runs);
+  const feedback=systemSection('Feedback awaiting review');
+  feedback.append(node('p','','Context is saved immediately. Gmail label changes are confirmed only after exact-message verification.'));
+  for(const event of systemData.feedback||[]) { const item=node('div','feedback-row'), link=node('button','','Find card');link.type='button';link.onclick=()=>{const c=data.cards.find(c=>c.id===event.card_id);if(!c){notify('This card is not loaded.');return;}opened.add(c.id);$('historySearch').value='';$('historyState').value='all';$('historySince').value='';setDeskView(c.state==='open'?'board':'history');render();const target=$('card-'+c.id);target.tabIndex=-1;target.focus();target.scrollIntoView({block:'start'});};item.append(node('p','',event.subject+' · '+(feedbackLabel[event.status]||event.status)+' · '+stampLabel(event.created_at)),link);if(event.explanation)item.append(node('p','',event.explanation));feedback.append(item); }
+  if(!systemData.feedback?.length) feedback.append(node('p','','No pending or failed feedback in the saved queue.'));
+  if(systemData.remaining)feedback.append(node('p','',systemData.remaining+' more events remain.'));root.append(feedback);
+  const rules=systemSection('Organization rules'), master=node('a','','Open the master Google Doc');master.href='https://docs.google.com/document/d/1ztPK3AzpgE8cgl3CAjiCFQVEw4LjlksIitJmg9T1BJc/edit';master.target='_blank';master.rel='noopener noreferrer';rules.append(master,node('p','','Last successful rule fetch: '+stampLabel(report?.playbook?.fetched_at)),node('p','',report?.playbook?.revision?'Source revision: '+report.playbook.revision:'Source revision was not recorded. The Google Doc remains master; the local Markdown is a reference.'));root.append(rules);
+}
+
 // Compact visual timing keeps the full policy/date explanation available to assistive tech and focus.
 function timingBadge(c, now) {
   const badge = node('div','card-timing'); updateTimingBadge(badge,c,now); return badge;
@@ -299,7 +388,7 @@ function renderCardTiming() {
   for (const c of data.cards) { const element = document.getElementById('card-' + c.id)?.querySelector('.card-timing'); if (element) updateTimingBadge(element,c,now); }
 }
 function bucketField(form,current) {
-  const group = node('fieldset','bucket-picker'), options=node('div','bucket-options'); group.append(node('legend','','Bucket'));
+  const group = node('fieldset','bucket-picker'), options=node('div','bucket-options'); group.append(node('legend','','Show in'));
   for (const [value,caption] of [['action','Needs action'],['awareness','Worth knowing']]) {
     const label=node('label'), input=node('input'); input.type='radio'; input.name='category'; input.value=value; input.checked=current===value;
     label.append(input,node('span','',caption)); options.append(label);
@@ -308,8 +397,12 @@ function bucketField(form,current) {
   Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked').value}); form.append(group); return group;
 }
 function labelSearch(picker,boxes) {
-  const label=node('label','label-search','Find a label'), input=node('input'); input.type='search'; input.placeholder='Search labels'; label.append(input); picker.append(label);
-  input.oninput=()=>{ const query=input.value.trim().toLocaleLowerCase(); for(const option of boxes.children) option.hidden=!option.textContent.toLocaleLowerCase().includes(query); };
+  const selected=node('p','selected-labels'), label=node('label','label-search','Find a label'), input=node('input'), count=node('p','label-count');
+  input.type='search'; input.placeholder='Search labels'; label.append(input); picker.append(selected,label,count); count.setAttribute('role','status');
+  const update=()=>{ const query=input.value.trim().toLocaleLowerCase(); let matches=0; const chosen=[];
+    for(const option of boxes.children) { const checked=option.querySelector('input').checked; if(checked) chosen.push(option.textContent); option.hidden=!checked&&!option.textContent.toLocaleLowerCase().includes(query); if(!option.hidden) matches++; option.style.order=checked?'-1':'0'; }
+    selected.textContent='Selected: ' + (chosen.join(', ') || 'None'); count.textContent=matches + ' labels shown' + (query ? ' · selected labels stay visible' : '');
+  }; input.oninput=update; boxes.addEventListener('change',update); update();
 }
 function card(c) {
   const draft = drafts.get(c.id), wrapper = node('article', 'card'), details = node('div', 'card-details'); wrapper.id = 'card-' + c.id;
@@ -321,7 +414,7 @@ function card(c) {
   if (c.state !== 'open') tags.append(node('span', 'tag', c.state === 'handled' ? 'Handled' : 'Dismissed'));
   const timing = timingBadge(c,Date.now()), context = node('div', 'card-context'); timing.dataset.cardTiming = c.id; context.append(timing, tags); summary.append(context); details.append(summary);
   const body = node('div', 'card-body'); body.id = 'details-' + c.id; body.hidden = !opened.has(c.id); wrapper.classList.toggle('expanded', !body.hidden);
-  if (c.reason) body.append(node('p', 'reason', c.reason)); if (c.question) body.append(node('p', 'question', c.question));
+  if (c.reason) body.append(node('h4','','Why this appeared'), node('p', 'reason', c.reason)); if (c.question) body.append(node('p', 'question', c.question));
   if (c.context_history?.length) {
     const history = node('details', 'earlier-context'); history.append(node('summary', '', 'Earlier context · ' + c.context_history.length));
     for (const previous of [...c.context_history].reverse()) {
@@ -339,7 +432,7 @@ function card(c) {
   for (const l of data.labels) { const label = node('label'), box = node('input'); box.type = 'checkbox'; box.name = 'labels'; box.value = l; box.checked = chosen.includes(l); label.append(box, node('span', '', l)); boxes.append(label); }
   labelSearch(picker,boxes); picker.append(boxes); fields.append(picker);
   const noteLabel = node('label', 'field', 'Note'), note = node('textarea'); note.name = 'note'; note.rows = 3; note.maxLength = 8000; note.placeholder = 'Add context for the next review.'; note.value = draft?.note ?? c.note ?? ''; noteLabel.append(note); fields.append(noteLabel); form.append(fields);
-  const result = node('p', 'save-result', draft ? 'Unsaved changes' : c.feedback_status ? feedbackLabel[c.feedback_status] || c.feedback_status : ''); result.setAttribute('role', 'status'); if (c.feedback_explanation) result.title = c.feedback_explanation;
+  const result = node('p', 'save-result', draft ? 'Unsaved changes' : c.feedback_status ? feedbackLabel[c.feedback_status] || c.feedback_status : ''); result.setAttribute('role', 'status'); if (c.feedback_explanation) { const explanation=node('details','feedback-explanation'); explanation.append(node('summary','','Review result'),node('p','',c.feedback_explanation)); if(c.feedback_processed_at) explanation.append(node('p','',stampLabel(c.feedback_processed_at))); body.append(explanation); }
   const actions = node('div', 'save-row'), save = node('button', 'context-save', 'Save context'); save.type = 'submit'; save.disabled = !draft; save.hidden = !draft; actions.append(save, result); form.append(actions); body.append(form); wrapper.append(details);
   const quick = node('div', 'quick-actions'), quickButtons = []; quick.append(link);
   for (const [value, caption] of c.state === 'open' ? [['handled','Handled'],['dismissed','Dismiss']] : [['open','Reopen']]) {
@@ -350,6 +443,7 @@ function card(c) {
   }
   const toggle = node('button', 'detail-toggle', 'Details'); toggle.type = 'button'; toggle.append(icon('right')); toggle.setAttribute('aria-label', 'Details: ' + c.subject); toggle.setAttribute('aria-controls', body.id); toggle.setAttribute('aria-expanded', String(!body.hidden));
   function setExpanded(value) { body.hidden = !value; wrapper.classList.toggle('expanded', value); toggle.setAttribute('aria-expanded', String(value)); if (value) opened.add(c.id); else opened.delete(c.id); }
+  const closeDetails=node('button','close-details','Close details'); closeDetails.type='button'; closeDetails.onclick=()=>{setExpanded(false);toggle.focus();}; body.append(closeDetails);
   toggle.onclick = () => setExpanded(body.hidden); quick.insertBefore(toggle, quick.querySelector('.dismiss')); wrapper.append(quick, body);
   const read = () => ({category: cat.value, state: decision, labels: [...boxes.querySelectorAll('input:checked')].map(x => x.value), note: note.value, revision: draft?.revision ?? c.revision});
   function changed() {
@@ -382,9 +476,11 @@ function card(c) {
       // Animate only after the server confirms the write. No optimistic disappearance or XP.
       if (c.state === 'open' && r.result.card.state !== 'open' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) { wrapper.classList.add('departing'); await new Promise(resolve => setTimeout(resolve, 180)); }
       data.cards = data.cards.map(x => x.id === c.id ? r.result.card : x); drafts.delete(c.id); attempts.delete(c.id);
-      if (r.result.card.state !== 'open') opened.delete(c.id); busy(false); render();
+      if (r.result.card.state !== 'open') opened.delete(c.id);
+      if(c.state!=='open' && r.result.card.state==='open') { setDeskView('board'); opened.add(c.id); }
+      busy(false); render();
       const earned = r.result.xp_earned || 0, levelUp = progress().level > previousLevel;
-      notify((levelUp ? 'Level ' + progress().level + '! ' : '') + (r.result.card.state === c.state ? 'Context saved' : r.result.card.state === 'handled' ? 'Handled' : r.result.card.state === 'dismissed' ? 'Dismissed' : 'Changes saved') + (earned ? ' · +' + earned + ' XP' : ''));
+      notify((levelUp ? 'Level ' + progress().level + '! ' : '') + (r.result.card.state === c.state ? 'Context saved' : r.result.card.state === 'handled' ? 'Handled' : r.result.card.state === 'dismissed' ? 'Dismissed' : 'Reopened') + (earned ? ' · +' + earned + ' XP' : ''));
       celebrate(earned, levelUp);
       if (levelUp) { $('level').classList.remove('level-up'); void $('level').offsetWidth; $('level').classList.add('level-up'); }
       if (hadFocus) { const target = r.result.card.state === 'open' ? $('card-' + c.id)?.querySelector('.detail-toggle') : $(category(c) + 'Cards').querySelector('.quick-actions button'); if (target) target.focus({preventScroll: true}); else { const heading = $(category(c) + 'Title'); heading.tabIndex = -1; heading.focus({preventScroll: true}); } }
@@ -402,7 +498,7 @@ async function refresh(automatic = false) {
   // Let an active editor finish without moving focus or replacing their controls.
   if (automatic === true && (drafts.size || $('board').contains(document.activeElement) || $('history').contains(document.activeElement))) return;
   if (saving.size || refreshing) return; $('error').hidden = true; refreshing = true; interactionLock();
-  try { const r = await api('board'); const changed = JSON.stringify(data) !== JSON.stringify(r.result); data = r.result; boardLoaded = true; boardReadFailed = false; if (automatic !== true || changed) render(); else { scanStatus(); renderReviewDay(); } } catch (e) { boardReadFailed = true; error(e.message);
+  try { const r = await api('board'); const changed = JSON.stringify(data) !== JSON.stringify(r.result); data = r.result; boardLoaded = true; boardReadFailed = false; if (automatic !== true || changed) { render(); if(deskView==='system') loadSystem(); } else { scanStatus(); renderReviewDay(); } } catch (e) { boardReadFailed = true; error(e.message);
     if (!boardLoaded) render();
     else for (const cat of ['action','awareness']) if ($(cat + 'Cards').querySelector('.illustrated-empty')) { for (const art of $(cat + 'Cards').querySelectorAll('.agent-idle')) companionObserver?.unobserve(art); $(cat + 'Cards').replaceChildren(emptyColumn(cat,'unconfirmed')); }
     if (!$('empty').hidden) { $('empty').querySelector('h2').textContent = 'No active saved cards. Coverage needs attention.'; $('empty').querySelector('p').textContent = 'An empty board is not a confirmed all-clear. Check the review notice for coverage details.'; }
@@ -415,11 +511,11 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && !$
 setInterval(() => { if (!$('workspace').hidden) { renderReviewDay(); renderCardTiming(); } }, 60000);
 $('logout').onclick = async () => {
   if (saving.size || (drafts.size && !confirm('Sign out with unsaved feedback?'))) return;
-  try { await api('logout', {}); data = {cards: [], labels: [], run: null}; boardLoaded = false; boardReadFailed = false; renderReviewDay(); drafts.clear(); attempts.clear(); opened.clear(); $('toast').hidden = true; clearTimeout(toastTimer); clearTimeout(rewardTimer); $('reward').hidden = true; signedIn(false); const s = await api('session'); csrf = s.csrf; } catch (e) { error(e.message); }
+  try { await api('logout', {}); data = {cards: [], labels: [], run: null}; systemData=null; deskView='board'; $('historySearch').value=''; $('historyState').value='all'; $('historySince').value=''; $('systemContent').replaceChildren(); boardLoaded = false; boardReadFailed = false; renderReviewDay(); drafts.clear(); attempts.clear(); opened.clear(); $('toast').hidden = true; clearTimeout(toastTimer); clearTimeout(rewardTimer); $('reward').hidden = true; signedIn(false); const s = await api('session'); csrf = s.csrf; } catch (e) { error(e.message); }
 };
 function today() { const date = new Date(); $('today').dateTime = date.toLocaleDateString('en-CA', {timeZone: reviewZone}); $('today').textContent = date.toLocaleDateString([], {timeZone: reviewZone, month: 'long', day: 'numeric', year: 'numeric'}); }
 today(); setInterval(today, 60000);
-(async () => { try { const s = await api('session'); csrf = s.csrf; signedIn(s.authenticated); if (s.authenticated) await refresh(); } catch (e) { error(e.message); } })();
+(async () => { try { const s = await api('session'); csrf = s.csrf; signedIn(s.authenticated); if (s.authenticated) await refresh(); else if(location.hash==='#login') { $('welcome').hidden=true; $('login').hidden=false; $('skipLink').href='#login'; $('password').focus(); } } catch (e) { error(e.message); } })();
 
 // Guest workspace: isolated fictional day, styled like the authenticated board.
 (() => {
@@ -457,7 +553,7 @@ today(); setInterval(today, 60000);
     }, 100);
   }
   function renderTime() {
-    const runs = guestTimes.slice(0, state.stage + 1).map(time => ({finished_at:new Date(time).toISOString(), status:'success'}));
+    const runs = guestTimes.slice(0, state.stage + 1).map(time => ({finished_at:new Date(time).toISOString(), status:'success', details:{trigger:'scheduled',phase:'final',scheduled_at:new Date(time).toISOString()}}));
     const timing = reviewStatus(state.now, runs);
     $('demoReviewMeter').value = timing.fraction;
     $('demoReviewMeter').setAttribute('aria-valuetext', timeLabel(state.now) + ' simulated time. Checkpoints show published fictional reviews.');
@@ -469,7 +565,7 @@ today(); setInterval(today, 60000);
       if (slot.state === 'next') item.setAttribute('aria-current','step');
       return item;
     }));
-    $('skipDemo').hidden = !state.travelling;
+    $('skipDemo').hidden = state.stage >= 2;
     $('skipDemo').textContent = state.stage < 2 ? 'Skip to ' + timeLabel(guestTimes[state.stage + 1]) : 'Skip ahead';
     if (state.travelling) $('demoEmptyText').textContent = 'Moving to ' + timeLabel(guestTimes[state.stage + 1]) + '…';
   }
@@ -596,7 +692,7 @@ today(); setInterval(today, 60000);
   function reset() {
     generation++; pending.clear(); state = createGuestDay(batches); levelRewardUntil = 0;
     clearTimeout(rewardTimer); $('reward').hidden = true; $('demoHistory').open = false;
-    renderDemo(); $('demoAnnouncement').textContent = 'Handle or dismiss each card to continue.';
+    renderDemo(); $('demoAnnouncement').textContent = 'Try Details, add context, then handle a card and find it in History. You can skip to the next review.';
     if (guestActive) runClock();
   }
   function enter() {
@@ -612,7 +708,7 @@ today(); setInterval(today, 60000);
   $('processDemo').onclick = e => { e.preventDefault(); enter(); };
   $('demoBack').onclick = e => { e.preventDefault(); leave(); };
   $('resetDemo').onclick = reset;
-  $('skipDemo').onclick = () => { if (state.travelling) { advanceGuestDay(state,6000,batches); arrive(); focusHeading('demoActionTitle'); } };
-  $('ownerLink').onclick = e => { e.preventDefault(); if (guestActive) leave(); $('ownerLogin').open = true; $('password').focus(); };
+  $('skipDemo').onclick = () => { if (state.stage < 2) { state.travelling=true; advanceGuestDay(state,6000,batches); arrive(); focusHeading('demoActionTitle'); } };
+  $('ownerLink').onclick = e => { e.preventDefault(); if (guestActive) leave(); $('welcome').hidden=true; $('login').hidden=false; $('skipLink').href='#login'; history.replaceState(null,'','#login'); window.scrollTo({top:0,behavior:'instant'}); $('password').focus({preventScroll:true}); };
   reset();
 })();

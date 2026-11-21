@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.0 — 2026-11-21
+
+- Separate recent mailbox freshness from historical catch-up; preserve visible failed/stale/offline states and per-account checkpoints.
+- Match scheduled checkpoints to explicit slot identity. Manual, batch, legacy and pre-activation records no longer impersonate scheduled success.
+- Add focused sign-in, dedicated History with search/status/date filters, bucket jumps, and separate Sign out.
+- Add private System reporting: token usage and calculated costs by date/work type, run metadata, pending/error feedback and master-source provenance. Unknown usage/rates remain visible; no credit balance or monthly forecast is inferred.
+- Improve selected-label scanning, readable feedback results, mobile close-details controls and demo exploration.
+- Add encrypted report-only publication and a reviewed code-only active-worker upgrade preserving grants, journal, activation and cron. No new model request or mailbox scan is required to initialize reporting.
+- Preserve comments, corrections, decisions, audit history and the approved 10/5 XP policy. Exploratory snooze, grouping, spending caps and rule automation remain deferred.
+
+
 ## 0.4.4 — 2026-11-21
 
 - Updated the privacy notice’s factual activation status and the footer version. Data destinations, retention and approved access scope are unchanged.
