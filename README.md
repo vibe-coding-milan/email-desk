@@ -33,13 +33,14 @@ The interface pairs readable Inter text and pixel branding with light, dark, and
 
 ## How it works
 
-An AI reviewer reads email through connected tools and uses my priorities and organization rules to curate cards. A restricted SSH bridge publishes those cards and retrieves feedback for later reviews. The website itself does not connect directly to Gmail or call a model API.
+A private worker on DreamHost reads both Gmail accounts, consults the master organization playbook, applies approved custom labels and publishes selected cards to the encrypted Store. It retrieves saved feedback and preserves owner decisions and comments. Its API keys and encrypted Google grants stay outside web root; the website does not expose them. A restricted SSH bridge remains available for maintenance and publication monitoring.
 
 ```text
-Email + priorities → AI reviewer → restricted bridge → encrypted store
-                         ↑                                  ↕
-                         └──────── saved feedback ───── authenticated board
+Gmail + master playbook → hosted API reviewer → encrypted Store
+                              ↑                      ↕
+                              └── saved feedback ── authenticated board
 
+DreamHost cron → New York schedule dispatcher → bounded review
 Public guest demo → fictional browser-memory state
 ```
 
@@ -78,9 +79,11 @@ This covers JavaScript syntax, local assets, shared labels, guest-day behavior, 
 
 ## Current state
 
-**Version 0.4.3 is live.** The approved privacy notice is published and Google authorization is In production with both grants renewed. The offline reviewer is installed privately on DreamHost, but **cron is not yet activated**. Host validation found an incomplete model response; the affected mailbox checkpoint was retained. A required-target schema repair is undergoing validation. Independent release receipt, 28 public hashes, 23 access checks and private-state preservation passed. See the [handoff](docs/HANDOFF.md) and [hosted reviewer ledger](docs/HOSTED_REVIEWER.md) for actual acceptance and remaining work.
+**The DreamHost reviewer schedule is active.** Version 0.4.4 updates the public notice to reflect activation; the board behavior is unchanged. Weekdays: 9 AM, 1 PM and 5:30 PM. Weekends: 9 AM and 5:30 PM. All times follow America/New_York, including DST. The five-minute dispatcher runs independently of the Mac. This schedule belongs to DreamHost and does not appear in ChatGPT Scheduled Tasks.
 
-**Version 0.4.1 interface changes remain in 0.4.2.** Cards retain aligned dividers as they age. After the 48-hour target, a quiet amber pill replaces the exhausted meter; first decisions still earn 5 XP. Friendly sender names replace raw mailbox headers where possible, with the original sender available on hover. The two-bucket board, History, context edits and shared labels retain their existing behavior. Local checks, CI and [deployment](https://github.com/vibe-coding-milan/email-desk/actions/runs/44603489054) passed. All 27 public hashes, 23 live access checks and exact preservation of 32 saved cards/checkpoints/progress were verified. Live desktop/mobile and light/dark browser checks passed. Release evidence is recorded in the [changelog](CHANGELOG.md) and [handoff](docs/HANDOFF.md). See the [usability notes](docs/USABILITY_TESTING.md) for everyday feedback.
+Controlled host acceptance processed 24 targets with zero errors, both recent mailbox scans complete, exact custom-label verification and independently preserved owner comments, decisions and XP. Historical catch-up remains partial. The first real scheduled publication and a Mac-offline run still need observation; the desktop task now monitors only. Google authorization is In production with both grants renewed. See the [handoff](docs/HANDOFF.md), [reviewer contract](docs/REVIEWER.md) and [hosted ledger](docs/HOSTED_REVIEWER.md) for bounds, usage, evidence and remaining checks.
+
+**Version 0.4.1 interface changes remain in 0.4.3.** Cards retain aligned dividers as they age. After the 48-hour target, a quiet amber pill replaces the exhausted meter; first decisions still earn 5 XP. Friendly sender names replace raw mailbox headers where possible, with the original sender available on hover. The two-bucket board, History, context edits and shared labels retain their existing behavior. Local checks, CI and [deployment](https://github.com/vibe-coding-milan/email-desk/actions/runs/44603489054) passed. All 27 public hashes, 23 live access checks and exact preservation of 32 saved cards/checkpoints/progress were verified. Live desktop/mobile and light/dark browser checks passed. Release evidence is recorded in the [changelog](CHANGELOG.md) and [handoff](docs/HANDOFF.md). See the [usability notes](docs/USABILITY_TESTING.md) for everyday feedback.
 
 This remains a personal application with an owner-specific reviewer and hosting setup. Unattended reviewer publication after a recovered failure, physical-device/cross-device acceptance, and disaster-recovery exercises remain open verification work. The demo demonstrates the interaction; it does not establish live inbox coverage.
 

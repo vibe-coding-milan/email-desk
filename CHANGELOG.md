@@ -1,19 +1,31 @@
 # Changelog
 
+## 0.4.4 — 2026-11-21
+
+- Updated the privacy notice’s factual activation status and the footer version. Data destinations, retention and approved access scope are unchanged.
+- Updated current architecture, reviewer operations, measured usage and acceptance documentation for the active DreamHost schedule. The private worker is deployed separately; this code release does not copy credentials or change Gmail/board state.
+
+## Hosted operations — 2026-11-21
+
+- Activated the private DreamHost reviewer after controlled live acceptance: 24 targets, zero errors, both recent mailbox scans complete, exact label verification and preserved owner state. Historical catch-up remains partial.
+- Verified one managed five-minute dispatcher for New York weekday 09:00/13:00/17:30 and weekend 09:00/17:30 slots. The existing desktop heartbeat now monitors only. First scheduled and Mac-offline publication acceptance remain pending.
+- PR #11 requires every model target and adds safe diagnostics and guarded pre-activation code repairs. PR #12 surfaces unsupported deadline evidence as uncertainty. Both passed CI and were installed with hash verification and private backups. No new credential scope or SSH permission was added.
+- Documented actual release/host state, usage measurement and scoped status-UX findings. No frontend redesign or implicit owner card decision was included.
+
 Changes are grouped by release. Dates use America/New_York. Email Desk is self-hosted under `/email-desk/`; release notes never contain private messages, feedback, credentials or connection settings.
 
-## Unreleased — hosted reviewer preparation, 2026-11-20
+## Historical preparation record — 2026-11-20
 
 - Prepared a read-only DreamHost/API reviewer prototype, official-library Google OAuth bootstrap with PKCE and encrypted private grants, bounded API connectivity check and token-usage reporter. These tools have not been installed on the host or activated as a schedule; production remains 0.4.1.
 - Verified local API access, both expected Google account grants, the live master playbook and the shared 37-label inventory. An explicitly approved four-message pilot used 9,279 tokens; calculated cost $0.001794675, not a posted charge or monthly estimate. No Gmail labels or board cards changed.
 - Fixed an HTML extraction limitation discovered after the pilot. Eight fictional proposal/parser/host-boundary checks pass; the HTML fix has no live retest yet. Preserve that distinction when reporting the pilot's quality or cost.
 - Consolidated current setup, permissions, measured usage and remaining production acceptance in [the hosted reviewer guide](docs/HOSTED_REVIEWER.md). The worker and guarded installer are now prepared in draft PR #8 with 42 passing fictional tests; initial CI passed and later changes await fresh CI. Durable authorization, live label/feedback verification, host installation and a real Mac-offline run remain pending. A post-implementation UX review is planned around review status, both-mailbox freshness and recovery.
 
-## 0.4.3 — 2026-11-21 (prepared)
+## 0.4.3 — 2026-11-21
 
 - Added optional transactional expected-revision checks to reviewer publication, rejecting stale card updates without changing existing publishers.
 - Prepared the bounded hosted worker, private installation and verified progress import. Both Production grants are renewed; Milan explicitly approved private host credential transfer and bounded recurring OpenAI payloads. No server schedule is claimed until live validation and cron read-back pass.
-- All 42 fictional reviewer checks and existing CI storage/API checks pass. Production deployment and hosted acceptance are pending.
+- All 42 fictional reviewer checks and existing CI storage/API checks pass. Production is live through PR #8, merge aee34fb6a7ccf6f29c3f14b7ede4e312a5e87432, receipt arcade-20261121T153335637529Z. Independent 28 public hashes, 23 access checks and exact private-state preservation passed; deployment run 44919759279 remains failed. At code-release time, hosted live acceptance and cron were still pending; the Hosted operations entry above records their subsequent activation.
 
 ## 0.4.2 — 2026-11-21
 

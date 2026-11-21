@@ -31,7 +31,7 @@ The visual direction is deliberately playful: cobalt, pixel typography, a robot 
 
 ## Give the AI a bounded role
 
-The reviewer uses supplied priorities and organization rules, reads conversations through connected tools, publishes selected cards, and retrieves feedback. The website stores and presents that result. It has no direct Gmail OAuth integration or embedded model API.
+The private hosted reviewer uses supplied priorities and organization rules, reads conversations through the Gmail API, publishes selected cards to the local encrypted Store, and retrieves feedback. The website stores and presents that result. It has no direct Gmail OAuth integration or embedded model API.
 
 A handled card records my decision. It grants no permission to send, archive, delete, or mark email read. Explicit label corrections are reconciled separately and acknowledged only after verification. Email and comment text are context to interpret, never instructions to execute.
 
@@ -39,9 +39,9 @@ The [reviewer contract](REVIEWER.md) makes these boundaries concrete. Feedback i
 
 ## Test the offline reviewer before relying on it
 
-Missed reviews exposed a separate infrastructure problem: a desktop task registration does not establish that the board will update while the Mac is offline. The selected replacement is a DreamHost cron worker using the OpenAI API and its own Google grants, alongside the existing authenticated board. It is still in preparation; the deployed website and release pipeline have not become an unattended mail reviewer.
+Missed reviews exposed a separate infrastructure problem: a desktop task registration does not establish that the board will update while the Mac is offline. The selected replacement is a DreamHost cron worker using the OpenAI API and its own Google grants, alongside the existing authenticated board. It was activated on November 21 after controlled two-mailbox live acceptance and independent label/board read-back. Cron follows New York weekday/weekend slots while the desktop task monitors only. The first real scheduled publication and a Mac-offline run still need observation. The deployed website and code-release pipeline remain separate from the reviewer.
 
-The first step was a bounded, read-only pilot using the live master playbook and both mailboxes. Four messages used 9,279 tokens, with calculated usage of about $0.0018. Source and label validation passed, and no labels or cards changed. Reviewing the evidence also caught an HTML extraction gap: those messages had used short snippets. The local fix reads visible HTML without executing it or fetching resources; eight fictional checks pass, but a live retest and action/feedback cases are still needed.
+The first step was a bounded, read-only pilot using the live master playbook and both mailboxes. Four messages used 9,279 tokens, with calculated usage of about $0.0018. Source and label validation passed, and no labels or cards changed. Reviewing the evidence also caught an HTML extraction gap: those messages had used short snippets. The local fix reads visible HTML without executing it or fetching resources; ten fictional parser checks now pass. Subsequent controlled host validation covered both recent mailbox scans, verified labels and publication while retaining owner state. Historical coverage and scheduled/offline execution remain separate acceptance questions.
 
 This is evidence that the connections work and a small sample is inexpensive, not proof of classification accuracy, monthly cost or schedule reliability. The [setup ledger and remaining acceptance](HOSTED_REVIEWER.md) keep those claims separate and record encrypted private storage, explicit access approvals and the eventual Mac-offline publication requirement.
 

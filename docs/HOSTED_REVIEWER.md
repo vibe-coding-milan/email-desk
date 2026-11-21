@@ -1,5 +1,43 @@
 # Offline reviewer readiness
 
+## Hosted schedule activated — November 21, 2026
+
+The DreamHost reviewer is active as of 11:24:53 AM New York (16:24:53 UTC). Cron installation and exact read-back passed under the verified domain owner/homepage guard; there is one managed dispatcher block. The first unattended dispatch was observed in the private cron log returning due:false, correctly avoiding a retroactive morning review. This proves dispatch execution, not a scheduled mailbox publication. It checks for due slots every five minutes, using America/New_York rather than server-local time: **weekdays 09:00, 13:00, 17:30; weekends 09:00, 17:30**. Allow dispatcher delay plus review runtime. Activation does not backdate a missed slot. The next real slot is November 21 at 17:30 New York.
+
+Host source is 741c6e592d59f1f0f7320a76f00b513c6aaf25d1, merged through PR #12 after CI 44924042520 passed. PR #11 (8b37d7bf4183aadb248cfeb178abbb7ca3a36771; CI 44922253829) made all model thread/message targets required and added safe issue codes/results plus a locked, manifest-verified pre-activation upgrade with retained backups. PR #12 converts an unsupported deadline into explicit source-verification uncertainty, omitting the unverified date and timing prose. Semantic message, custom-label, source, revision and reopen checks remain mandatory.
+
+Final live validation finished at 11:23:33 AM New York: **24 targets processed, zero errors, both recent mailbox scans complete, 24 exact-message label read-backs and two actual custom-label changes**. A separate read-only pass independently verified 12 exact messages per account, including unchanged system/unknown labels. Independent restricted-bridge read-back confirmed publication and both checkpoints, with all pre-existing 66 cards retained, owner comments/decisions/corrections and XP preserved; 74 cards were saved afterward. The run truthfully remains partial because historical catch-up is incomplete. No fake historical success or card deletion was used to pass acceptance.
+
+Private code, pinned dependencies, API/encryption keys, renewed encrypted Google grants and encrypted processing journal are outside web root. No SSH privilege expansion was used. Initial host Python lacked pip; the isolated venv was bootstrapped from the official pip source with a verified digest, without system-package changes. Protected transfer copies and code backups remain private. The Google Doc stays master.
+
+The local activation receipt now makes the existing desktop heartbeat **monitor only**: no duplicate mail classification, model requests or labeling. Keep it until an actual hosted scheduled publication and a Mac-offline run are independently observed. Those two checks remain pending; installed cron and controlled live publication do not prove them. This is a DreamHost schedule and will not appear in ChatGPT Scheduled Tasks.
+
+Usage is recorded by slot in the encrypted host journal. The first 32 host requests (validation, recovery and bounded catch-up, including final acceptance) used 379,721 input and 36,689 output tokens and calculate to $0.065807225 using the November 20 rate snapshot. This is not posted billing or a routine monthly forecast. Milan chose actual measurement before calibrating a ceiling; no auto-reload or monthly cap was added. Later totals should include recurring reviews, keeping dry-runs, catch-up and routine slots separate.
+
+A scoped authenticated desktop status review captured and inspected collapsed/expanded notice screenshots privately. The next-review time is clear, but the broad “incomplete” headline hides that both recent scans passed while older catch-up remains partial. Prioritize separate recent freshness, historical progress, actual recovery publication time and a concise hosted-schedule indicator. Do not parse prose to infer health or turn historical partial coverage into success. No frontend redesign was included. Mobile, dark-mode, keyboard/screen-reader and physical-device acceptance remain open. Private screenshots and source contents remain out of Git.
+
+Earlier dated sections below are historical records; this section supersedes their current-state claims.
+
+
+## Operating the active worker
+
+The approved bounds are 12 new/unprocessed incoming messages plus four active conversations per account per run, at most eight model requests per slot, 240,000 context bytes per request and 8,192 output tokens. Requests use store:false; no attachments are downloaded. Routine topic proposals add approved custom labels; only exact saved owner corrections can remove them. Every write receives an exact-message read-back that also protects system/unknown labels. The master playbook is read from the fixed Google Doc, not silently replaced by the reference snapshot.
+
+From the already-authorized domain-owner host session, inspect health without making a model/mail request:
+
+```sh
+cd ~/.email-desk/reviewer/code
+../venv/bin/python -m reviewer.main --health
+```
+
+Read the private activation receipt and managed crontab to inspect configuration; the private cron log proves dispatch execution, while saved run/checkpoint read-back proves publication. Check both recent mailbox checkpoints and errors separately from historical backfill. Do not print grants, API/encryption keys, message payloads or the decrypted journal. Keep usage/evidence exports private and metadata-only.
+
+The dispatcher uses the latest due slot, an exclusive journal lock, a maximum of three attempts and 15-minute retry spacing. A completed slot is deduplicated. Uncertain Gmail/publication acknowledgements retain exact work for read-back/replay; failed-account cursors remain unchanged. A missing model acknowledgement is not permission to repeat a charged request blindly. Inspect the encrypted pending operation before any recovery. Manual --run-now performs a real authorized review and consumes API credit; --dry-run also makes paid classification requests but changes no Gmail/board data. Neither substitutes for a scheduled/offline acceptance test.
+
+Routine source deployment does not update the separately installed private worker or transfer credentials. Current upgrade-code is deliberately limited to pre-activation repair; it rejects an activated installation. Future active-worker maintenance needs a reviewed pause/update/resume procedure with exclusive locking, manifest checks and preserved private state. Do not overwrite installed code, grants or journal to work around these guards. If authorization fails, retain cards/checkpoints and use the approved same-account renewal flow with the owner completing consent; never expand scopes or adopt another account implicitly.
+
+Keep the existing desktop task on its monitor-only branch while observing the first real 17:30 publication and a Mac-offline run. Record the actual slot, publication time, both checkpoints and label read-back independently. Then retire the redundant desktop registration. Do not add another reviewer task to ChatGPT or another machine.
+
 ## Hosted validation — November 21, 2026
 
 Version 0.4.3 is live (PR #8, merge aee34fb6a7ccf6f29c3f14b7ede4e312a5e87432). Independent receipt arcade-20261121T153335637529Z, 28 public hashes, 23 access checks and exact private-state preservation passed. Deployment run 44919759279 reported failure; independent acceptance is recorded separately and does not erase that workflow result.
