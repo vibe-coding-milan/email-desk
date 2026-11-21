@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from cryptography.fernet import Fernet
 from reviewer.engine import Engine, card_from, check_revisions, scan, load_thread, routine_labels
 from reviewer.google import Gmail, bounded_json
-from reviewer.model import validate, schema, source_key, source_rows
+from reviewer.model import validate, schema, source_key, source_rows, ground_deadlines
 from reviewer.state import Journal, UTC, iso, scheduled_slot
 
 
@@ -215,10 +215,26 @@ class ProposalAndCoverage(unittest.TestCase):
         proposal['messages']['context-only'] = ['Home']
         with self.assertRaisesRegex(ValueError, 'decision_targets'):
             source_rows(payload, [self.thread])
+
         del proposal['messages']['context-only']
         del proposal['messages']['second-target']
         with self.assertRaisesRegex(ValueError, 'decision_targets'):
             source_rows(payload, [self.thread])
+
+    def test_unsupported_deadline_becomes_explicit_uncertainty_without_coverage_failure(self):
+        row = copy.deepcopy(self.row)
+        row.update(deadline='Tuesday', deadline_evidence='Please reply by Tuesday.')
+        self.assertEqual(ground_deadlines([row], [self.thread]), 0)
+        validate([row], [self.thread], ['Home'])
+        row.update(deadline='Tomorrow', deadline_evidence='Fictional unsupported quote',
+                   description='Reply Tomorrow', reason='Due Tomorrow')
+        self.assertEqual(ground_deadlines([row], [self.thread]), 1)
+        self.assertEqual(row['deadline'], '')
+        self.assertEqual(row['deadline_evidence'], '')
+        self.assertIn('could not be verified', row['question'])
+        self.assertNotIn('Tomorrow', row['description'] + row['reason'])
+        self.assertEqual(row['messages'], self.row['messages'])
+        validate([row], [self.thread], ['Home'])
 
     def test_closed_card_not_resurfaced_without_materially_new_source(self):
         self.thread['existing_card'] = {'state': 'handled', 'message_ids': ['abcdef1234567890'], 'updated_at': '2026-11-20T00:00:00+00:00'}
