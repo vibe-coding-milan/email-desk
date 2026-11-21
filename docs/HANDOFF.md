@@ -1,5 +1,10 @@
 # Email Desk handoff
 
+## Privacy notice release preparation — November 21, 2026
+
+Milan approved publication of the prepared privacy notice at https://mijatovic.com/email-desk/assets/privacy.txt, its homepage link, Google branding URLs/authorized domain and moving the dedicated OAuth app to Production. Version 0.4.2 contains only this public notice/link and version/docs changes, parented to main c97edb0b8923f72113f62866d1eadedd6e922c42. Worker PR #8 remains separate and unactivated. No private credentials, mailbox contents, server worker or schedule are part of this release. Local checks passed; CI, deployment and live acceptance are pending. Google remains Testing until its actual UI read-back establishes otherwise.
+
+
 ## Version 0.4.1 live and verified — November 19, 2026
 
 Removed the 24/48-hour card-side rules and their extra padding, which shifted sender/content dividers. Past-target cards now retain the normal grid and show a quiet amber timing pill without an exhausted meter. The 10/5-XP policy is unchanged. Owner and demo cards display a single mailbox's friendly sender name, unquoting standard quoted names; the full original sender remains in the hover title. Bare addresses and ambiguous mailbox lists are preserved. Stored card data is untouched.
