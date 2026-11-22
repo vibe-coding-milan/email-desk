@@ -1,4 +1,4 @@
-# Using and refining 0.5.0
+# Using and refining 0.5.1
 
 Use [Email Desk](https://mijatovic.com/email-desk/) during your normal day. Choose **Milan sign in** for the real board. The public **Play the demo** uses fictional messages; its notes, decisions and XP reset on reload.
 
@@ -10,7 +10,7 @@ The hosted reviewer schedule is active on DreamHost. Recent coverage, historical
 
 Use **History** to find decisions by subject, sender, label or note, filter handled/dismissed, or select a first-decision date. Reopen returns the card to Board without another XP award. **Sign out** sits outside Appearance. The focused owner sign-in is separate from the public landing page.
 
-Usage is a private token ledger with 7/30/90-day and work-type filters. Costs use dated model rates and include returned paid usage even on incomplete/unverified responses. Unknown requests/rates are labelled; old work is legacy/unclassified. Neither the initial funding amount nor a monthly forecast is shown as a balance. First scheduled/Mac-offline acceptance remains separate from this UI release.
+Usage is a private token ledger with 7/30/90-day and work-type filters. Costs use dated model rates and include returned paid usage even on incomplete/unverified responses. Unknown requests/rates are labelled; old work is legacy/unclassified. Neither the initial funding amount nor a monthly forecast is shown as a balance. Actual hosted scheduled publications are verified; Mac-offline acceptance remains pending.
 
 For useful feedback, a short note is enough:
 
@@ -23,6 +23,16 @@ Keep private email text and screenshots out of public GitHub issues. Share only 
 
 Desktop responsive browser QA is recorded in [design-qa.md](../design-qa.md). Physical-device use, cross-device continuity and long-term review reliability need observations from actual use; simulated viewport checks do not establish them.
 
+## Reading review status
+
+- **Updated:** both recent inbox scans completed.
+- **Older mail review ongoing:** a separate, neutral description of unfinished historical work, supported by the reporting snapshot.
+- **Review ongoing:** recent mail still being processed.
+- **Needs attention:** a recorded error requires attention.
+- **Coverage unconfirmed:** the app lacks enough evidence to confirm coverage.
+
+A review can finish late and still complete both recent scans. Read its actual publication time separately from the planned slot. Manual or intermediate publications do not satisfy scheduled checkpoints. Stored partial values remain audit data; they are not a blanket user-facing failure label. See [the current status guide](REVIEW_STATUS.md).
+
 ## Hosted-reviewer follow-up
 
-During ordinary use, review whether the board makes both-mailbox freshness, the latest verified result, the next New York review slot and partial/missed/error states understandable on desktop and mobile. Distinguish unfinished historical catch-up from a failed current scan. Check whether any necessary recovery step is clear. Preserve the two buckets and verify 0.4.1's friendly sender names and quiet amber past-target treatment with real hosted summaries. Record observed issues before choosing UI changes; this follow-up is planned, not completed.
+The broad recent/historical status ambiguity was addressed in 0.5.0 and refined consistently across the timeline, Board and System in 0.5.1. Continue checking whether actual start/completion times, missed/error results and recovery are clear during ordinary use. Record repeated dispatcher delays separately from coverage. Physical-device, screen-reader, cross-device and Mac-offline acceptance still need direct evidence. Preserve the two buckets, friendly sender names and quiet past-target card treatment; propose further changes from observed use.
