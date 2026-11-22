@@ -8,7 +8,7 @@ const day = (now, runs=[]) => JSON.parse(JSON.stringify(context.reviewDay(Date.p
 const run = (finished_at,status='success') => ({finished_at,status,details:{trigger:'scheduled',phase:'final',scheduled_at: !Number.isFinite(Date.parse(finished_at)) ? null : new Date(Math.max(...context.reviewSlots(new Date(finished_at)).filter(t=>t<=Date.parse(finished_at)))).toISOString()}});
 const states = slots => slots.map(s=>s.state);
 let slots = day('2026-11-16T20:00:00Z', [run('2026-11-16T14:10:00Z'), run('2026-11-16T18:15:00Z','partial')]);
-assert.deepEqual(states(slots), ['updated','partial','next']);
+assert.deepEqual(states(slots), ['updated','unknown','next']);
 assert.deepEqual(slots.map(s=>new Date(s.time).toISOString()), ['2026-11-16T14:00:00.000Z','2026-11-16T18:00:00.000Z','2026-11-16T22:30:00.000Z']);
 // Never invent a completed morning review from an afternoon result.
 assert.deepEqual(states(day('2026-11-16T20:00:00Z',[run('2026-11-16T18:15:00Z')])),['missed','updated','next']);
@@ -66,3 +66,20 @@ assert.equal(health(null,{accounts:[{recent_through:'2026-11-18T00:00:00Z'},{}]}
 console.log('Explicit slot identity, manual/legacy exclusion, delayed recovery and typed health states passed.');
 
 assert.equal(context.reviewDay(Date.parse('2026-11-21T17:00:00Z'), [], '2026-11-21T16:24:53Z')[0].state,'inactive');
+
+// Historical catch-up never downgrades a verified recent scheduled review.
+const completeCoverage={'mijatovic@gmail.com':'complete','milan@mijatovic.com':'complete'};
+const catchingUp={...run('2026-11-21T14:15:39Z','partial'),coverage:completeCoverage};
+assert.deepEqual(states(day('2026-11-21T17:00:00Z',[catchingUp])),['updated','next']);
+assert.equal(context.reviewOutcome(catchingUp).label,'Updated');
+assert.equal(context.reviewOutcome(catchingUp).olderOngoing,true);
+assert.match(context.reviewSummary(catchingUp),/Review of older mail is ongoing/);
+assert.doesNotMatch(context.reviewSummary(catchingUp),/incomplete|failed|partial/i);
+const stillReviewing={...catchingUp,coverage:{...completeCoverage,'mijatovic@gmail.com':'partial'}};
+assert.equal(context.reviewOutcome(stillReviewing).state,'reviewing');
+assert.equal(context.reviewOutcome(stillReviewing).label,'Review ongoing');
+assert.equal(context.reviewOutcome({...catchingUp,coverage:{...completeCoverage,'mijatovic@gmail.com':'error'}}).state,'failed');
+assert.equal(context.reviewOutcome({...catchingUp,coverage:{'mijatovic@gmail.com':'complete'}}).state,'unknown');
+assert.equal(context.reviewOutcome({...catchingUp,details:{...catchingUp.details,phase:'batch'}}).state,'reviewing');
+assert.equal(context.coverageLabel('partial'),'Review ongoing');
+console.log('Recent completion, ongoing historical/recent work, errors and unconfirmed coverage have distinct presentation.');

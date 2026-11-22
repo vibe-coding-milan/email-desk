@@ -21,6 +21,22 @@ function reviewSlots(now) {
   }
   return slots;
 }
+function reviewOutcome(run) {
+  const coverage = run?.coverage || {}, values = Object.values(coverage);
+  const recentComplete = ['mijatovic@gmail.com','milan@mijatovic.com'].every(account => coverage[account] === 'complete');
+  if (run?.status === 'error' || values.includes('error')) return {state:'failed', label:'Needs attention'};
+  if (run?.details?.phase === 'batch') return {state:'reviewing', label:'Review in progress'};
+  if (recentComplete) return {state:'updated', label:'Updated', olderOngoing:run.status === 'partial'};
+  if (values.includes('partial')) return {state:'reviewing', label:'Review ongoing'};
+  if (run?.status === 'success' && !values.length) return {state:'updated', label:'Updated'};
+  return {state:'unknown', label:'Coverage unconfirmed'};
+}
+function reviewSummary(run) {
+  return reviewOutcome(run).olderOngoing ? 'Recent mail has been reviewed in both inboxes. Review of older mail is ongoing.' : run?.summary || 'Waiting for the first verified review.';
+}
+function coverageLabel(value) {
+  return {complete:'Reviewed',partial:'Review ongoing',error:'Needs attention',unknown:'Unconfirmed'}[value] || 'Unconfirmed';
+}
 function reviewDay(now, runs = [], activatedAt = null) {
   const dateKey = value => new Intl.DateTimeFormat('en-CA', {timeZone: reviewZone, year:'numeric', month:'2-digit', day:'2-digit'}).format(value);
   const slots = reviewSlots(new Date(now)).filter(t => dateKey(t) === dateKey(now));
@@ -31,8 +47,9 @@ function reviewDay(now, runs = [], activatedAt = null) {
       return detail?.trigger === 'scheduled' && detail.phase === 'final' && Date.parse(detail.scheduled_at) === time && finished <= now;
     }).sort((a, b) => Date.parse(b.finished_at) - Date.parse(a.finished_at))[0];
     const legacy = runs.some(run => !run.details && Date.parse(run.finished_at)>=time && Date.parse(run.finished_at)<(slots[i+1]??Infinity) && Date.parse(run.finished_at)<=now);
-    const state = time < Date.parse(activatedAt) ? 'inactive' : result ? ({success:'updated', partial:'partial', error:'failed'}[result.status] || 'missed') : legacy ? 'unknown' : time <= now ? (now - time <= 15 * 60000 ? 'due' : 'missed') : time === firstFuture ? 'next' : 'later';
-    return {time, state, finishedAt: result?.finished_at || null};
+    const outcome = result ? reviewOutcome(result) : null;
+    const state = time < Date.parse(activatedAt) ? 'inactive' : outcome ? outcome.state : legacy ? 'unknown' : time <= now ? (now - time <= 15 * 60000 ? 'due' : 'missed') : time === firstFuture ? 'next' : 'later';
+    return {time, state, olderOngoing:outcome?.olderOngoing || false, finishedAt: result?.finished_at || null};
   });
 }
 function reviewStatus(now, runs = [], activatedAt = null) {
@@ -49,11 +66,11 @@ function reviewStatus(now, runs = [], activatedAt = null) {
 }
 function reviewHealth(run, report, now = Date.now()) {
   if (run?.status === 'error' || Object.values(run?.coverage || {}).includes('error')) return {title:'A recent inbox review needs attention', tone:'error'};
-  if (!report) return {title:run?.status === 'partial' ? 'Review coverage is incomplete · Details unavailable' : 'Recent coverage is not yet confirmed', tone:'unknown'};
+  if (!report) return {title:'Recent coverage is not yet confirmed', tone:'unknown'};
   const accounts = report.accounts || [], fresh = accounts.length === 2 && accounts.every(a => Number.isFinite(Date.parse(a.recent_through)) && Date.parse(a.recent_through) <= now && now - Date.parse(a.recent_through) <= 36 * 3600000);
   if (!fresh) return {title:'Recent inbox coverage needs attention', tone:'unknown'};
-  if (Object.values(run?.coverage || {}).includes('partial')) return {title:'Some recent mail still needs review', tone:'unknown'};
-  return {title:accounts.every(a => a.historical_complete) ? 'Recent mail checked' : 'Recent mail checked · Older mail still being reviewed', tone:'current'};
+  if (Object.values(run?.coverage || {}).includes('partial')) return {title:'Recent mail review is ongoing', tone:'unknown'};
+  return {title:accounts.every(a => a.historical_complete) ? 'Inboxes updated' : 'Inboxes updated · Older mail review ongoing', tone:'current'};
 }
 // End schedule helpers.
 // Card timing uses elapsed hours, independent of timezone and daylight saving.
@@ -240,7 +257,7 @@ function renderReviewDay() {
   const now = Date.now(), runs = data.runs || (data.run ? [data.run] : []), timing = reviewStatus(now, runs, data.report?.activated_at);
   const clock = new Intl.DateTimeFormat('en-US', {timeZone: reviewZone, hour:'numeric', minute:'2-digit'});
   const timeLabel = value => clock.format(value).replace(':00', '').replace(' ', '\u00a0');
-  const captions = {inactive:'Before activation',unknown:'Unverified',updated:'Updated', partial:'Partial', failed:'Failed', due:'Due', missed:'Missed', next:'Next', later:'Later'};
+  const captions = {inactive:'Before activation',unknown:'Coverage unconfirmed',updated:'Updated', reviewing:'Review ongoing', failed:'Needs attention', due:'Due', missed:'Missed', next:'Next', later:'Later'};
   $('reviewHeading').textContent = 'Today’s reviews · New York';
   meter.value = timing.fraction; meter.setAttribute('aria-valuetext', Math.round(timing.fraction * 100) + '% of today’s route from ' + timeLabel(timing.slots[0].time) + ' to ' + timeLabel(timing.slots.at(-1).time) + ' New York time. Checkpoints show actual publication results; the route measures time.');
   $('reviewNote').hidden = !boardReadFailed;
@@ -253,7 +270,7 @@ function renderReviewDay() {
     item.append(mark, time, node('span', 'slot-state', captions[slot.state]));
     if (slot.state === 'next' || slot.state === 'due') item.setAttribute('aria-current', 'step');
     if (slot.state === 'missed') item.title = 'No publication recorded for this review time. Later reviews run independently.';
-    if (slot.finishedAt) item.title = captions[slot.state] + ' · published ' + timeLabel(new Date(slot.finishedAt)) + ' New York time';
+    if (slot.finishedAt) item.title = captions[slot.state] + (slot.olderOngoing ? ' · Older mail review ongoing' : '') + ' · published ' + timeLabel(new Date(slot.finishedAt)) + ' New York time';
     return item;
   }));
 }
@@ -266,11 +283,11 @@ function scanStatus(failed = false) {
   $('scanTitle').textContent = failed ? (boardLoaded ? 'Couldn’t refresh the board · Showing saved results' : 'Couldn’t load the board') : health.title;
   $('scan').dataset.health = failed ? 'error' : health.tone;
   const details = $('scanDetails'); details.replaceChildren();
-  details.append(node('p','',failed ? 'Saved cards and unsaved edits are kept. Retrying automatically.' : run?.summary || 'Waiting for the first verified review.'));
+  details.append(node('p','',failed ? 'Saved cards and unsaved edits are kept. Retrying automatically.' : reviewSummary(run)));
   details.append(node('p','', 'Latest publication: ' + stampLabel(run?.finished_at)));
   if (data.report) {
     details.append(node('p','',data.report.schedule_active ? 'Hosted schedule active · Weekdays 9 AM, 1 PM, 5:30 PM; weekends 9 AM, 5:30 PM New York.' : 'Hosted schedule activation is not confirmed.'));
-    for (const account of data.report.accounts) details.append(node('p','',account.account + (run?.coverage?.[account.account] ? ' · Latest review: '+run.coverage[account.account] : '') + ': recent mail checked through ' + stampLabel(account.recent_through) + '. ' + (account.historical_complete ? 'Historical catch-up complete.' : 'Older mail still being reviewed' + (account.historical_through ? ' · reached ' + stampLabel(account.historical_through) : '') + '.')));
+    for (const account of data.report.accounts) details.append(node('p','',account.account + (run?.coverage?.[account.account] ? ' · Recent mail: '+coverageLabel(run.coverage[account.account]) : '') + ' · Checked through ' + stampLabel(account.recent_through) + '. ' + (account.historical_complete ? 'Older mail review complete.' : 'Older mail review ongoing' + (account.historical_through ? ' · reached ' + stampLabel(account.historical_through) : '') + '.')));
   } else for (const [account, time] of Object.entries(data.checkpoints || {})) details.append(node('p','',account + ': last confirmed coverage ' + stampLabel(time)));
 }
 // Shared empty-column presentation; a missing/failed review never means a clear inbox.
@@ -302,8 +319,8 @@ function render() {
   }
   const history = data.cards.filter(c => c.state !== 'open'); renderHistory();
   $('empty').hidden = !!active.length;
-  $('empty').querySelector('h2').textContent = boardReadFailed || reviewHealth(data.run,data.report).tone !== 'current' ? 'No active saved cards. Coverage needs attention.' : history.length ? 'No active cards' : !data.run ? 'Your board is getting started.' : data.run.status === 'success' ? 'You’re up to date.' : 'No saved cards yet.';
-  $('empty').querySelector('p').textContent = boardReadFailed || reviewHealth(data.run,data.report).tone !== 'current' ? 'An empty board is not a confirmed all-clear. Check the review notice for coverage details.' : history.length ? 'Decisions saved in history. New cards appear automatically.' : !data.run ? 'Waiting for the first review. Planned times are above.' : data.run.status === 'success' ? 'The latest review found no cards to add.' : 'The latest review could not cover everything. See the review notice for details.';
+  $('empty').querySelector('h2').textContent = boardReadFailed || reviewHealth(data.run,data.report).tone !== 'current' ? 'No active saved cards. Coverage needs attention.' : history.length ? 'No active cards' : !data.run ? 'Your board is getting started.' : reviewOutcome(data.run).state === 'updated' ? 'You’re up to date.' : 'No saved cards yet.';
+  $('empty').querySelector('p').textContent = boardReadFailed || reviewHealth(data.run,data.report).tone !== 'current' ? 'An empty board is not a confirmed all-clear. Check the review notice for coverage details.' : history.length ? 'Decisions saved in history. New cards appear automatically.' : !data.run ? 'Waiting for the first review. Planned times are above.' : reviewOutcome(data.run).state === 'updated' ? 'The latest review found no cards to add.' : 'Review is ongoing. See the review notice for details.';
   renderProgress(); scanStatus(); renderReviewDay(); renderCardTiming(); setDeskView(deskView);
 }
 function renderHistory() {
@@ -329,7 +346,7 @@ function renderSystem() {
   health.append(node('p','',report?.schedule_active?'Hosted schedule active · New York time, including daylight saving.':'Hosted schedule status is not yet available.'));
   health.append(node('p','','Weekdays: 9 AM, 1 PM and 5:30 PM. Weekends: 9 AM and 5:30 PM.'));
   health.append(node('p','','Latest board publication: '+stampLabel(data.run?.finished_at)));
-  for(const a of report?.accounts||[]) health.append(node('p','',a.account+(data.run?.coverage?.[a.account]?' · Latest review: '+data.run.coverage[a.account]:'')+' · Checked through '+stampLabel(a.recent_through)+' · '+(a.historical_complete?'Historical catch-up complete':'Older mail still being reviewed'+(a.historical_through?' · reached '+stampLabel(a.historical_through):''))));
+  for(const a of report?.accounts||[]) health.append(node('p','',a.account+(data.run?.coverage?.[a.account]?' · Recent mail: '+coverageLabel(data.run.coverage[a.account]):'')+' · Checked through '+stampLabel(a.recent_through)+' · '+(a.historical_complete?'Older mail review complete':'Older mail review ongoing'+(a.historical_through?' · reached '+stampLabel(a.historical_through):''))));
   root.append(health);
   const usage=systemSection('API usage');
   usage.append(node('p','','Calculated from returned tokens, not posted billing. No balance or monthly forecast is inferred. Includes incomplete responses with recorded usage; network-uncertain requests may have unknown usage.'));
@@ -354,7 +371,7 @@ function renderSystem() {
     rates.append(node('summary','','How calculated cost works'),node('p','','GPT-6 Luna standard rates per million tokens: input $0.10, cached reads $0.01, cache writes $0.125, output $0.50. Snapshots November 20 and 21, 2026. Cached reads and writes are subtracted from ordinary input; reasoning is included in output. Other models or unknown rate snapshots have unknown cost.'),source);usage.append(rates);
   } root.append(usage);
   const runs=systemSection('Recent publications'); runs.append(node('p','','Scheduled reviews are matched to an explicit slot. Manual publications and older records do not fill a scheduled checkpoint. Intermediate batches are separate from final results.'));
-  for(const run of systemData.runs||[]) {const detail=run.details; runs.append(node('p','run-row',stampLabel(run.finished_at)+' · '+run.status+' · '+(detail ? (detail.trigger==='scheduled'?'Scheduled '+stampLabel(detail.scheduled_at):'Manual')+' · '+detail.phase+' · attempt '+detail.attempt+' · started '+stampLabel(detail.started_at)+' · review completed '+stampLabel(detail.completed_at) : 'Legacy · trigger and slot unknown')));}
+  for(const run of systemData.runs||[]) {const detail=run.details; runs.append(node('p','run-row',stampLabel(run.finished_at)+' · '+reviewOutcome(run).label+(reviewOutcome(run).olderOngoing?' · Older mail review ongoing':'')+' · '+(detail ? (detail.trigger==='scheduled'?'Scheduled '+stampLabel(detail.scheduled_at):'Manual')+' · '+detail.phase+' · attempt '+detail.attempt+' · started '+stampLabel(detail.started_at)+' · review completed '+stampLabel(detail.completed_at) : 'Legacy · trigger and slot unknown')));}
   if(!systemData.runs?.length) runs.append(node('p','','No publications recorded yet.')); root.append(runs);
   const feedback=systemSection('Feedback awaiting review');
   feedback.append(node('p','','Context is saved immediately. Gmail label changes are confirmed only after exact-message verification.'));
