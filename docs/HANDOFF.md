@@ -1,5 +1,11 @@
 # Email Desk handoff
 
+## Review-status wording — November 22, 2026
+
+Milan clarified that Partial reads as a failure when a current inbox review completed and only older-mail review continues. Version 0.5.1 presents both typed recent account results complete as Updated, with Older mail review ongoing separately. Unfinished recent work says Review ongoing; actual errors say Needs attention; missing evidence remains Coverage unconfirmed. Timeline classification uses the saved scheduled final run’s own account coverage, not a newer global report or summary parsing. Legacy/manual publications still cannot satisfy a scheduled slot. The Board, System and empty-state copy use the same vocabulary; stored status/history stays intact. This is a frontend-only release, with no hosted-worker or Gmail changes.
+
+Today’s actual scheduled morning review completed at 09:15:39 New York with both recent scans complete; historical catch-up remains ongoing. The separately saved private monitor record preserves its late start/completion. Mac-offline acceptance is still pending. Local checks cover historical-only partial mapping to Updated, incomplete recent mapping to Review ongoing, error precedence and unconfirmed coverage. Production acceptance will be recorded separately after deployment.
+
 ## Version 0.5.0 production acceptance — November 21, 2026
 
 Version 0.5.0 is live through [PR #15](https://github.com/vibe-coding-milan/email-desk/pull/15), merge `a0462d6a66cd5eb8df4e2c4f7fda310104b57ae8`, receipt `arcade-20261121T173801463624Z`. [Source CI](https://github.com/vibe-coding-milan/email-desk/actions/runs/44930928713) and main/shared checks passed, including 81 PHP storage and 21 HTTP/API checks. [Deployment 44931032533](https://github.com/vibe-coding-milan/email-desk/actions/runs/44931032533) installed the exact bundle, then failed during its final public connection verification with a timeout. That workflow failure is retained; independent acceptance passed the exact receipt/bundle hash, 28 served public hashes, unchanged homepage and all 27 live access checks.

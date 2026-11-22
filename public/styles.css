@@ -1012,10 +1012,12 @@ h1 { font-family:Inter,Arial,sans-serif; font-size:clamp(36px,4.4vw,64px); font-
 .slot-mark .icon { width:13px; height:13px; }
 .slot-state { font-size:.875rem; color:var(--muted); }
 .review-slot.updated .slot-mark { background:var(--blue); border-color:var(--blue); color:var(--accent-ink); }
+.review-slot.reviewing { color:var(--blue); }
+.review-slot.reviewing .slot-mark { border-color:var(--blue); }
 .review-slot.next { color:var(--blue); }
 .review-slot.next .slot-mark { border:2px solid var(--blue); }
-.review-slot.partial,.review-slot.missed,.review-slot.due { color:var(--notice); }
-.review-slot.partial .slot-mark,.review-slot.missed .slot-mark,.review-slot.due .slot-mark { border-color:var(--notice); }
+.review-slot.missed,.review-slot.due { color:var(--notice); }
+.review-slot.missed .slot-mark,.review-slot.due .slot-mark { border-color:var(--notice); }
 .review-slot.failed { color:var(--error); }
 .review-slot.failed .slot-mark { border-color:var(--error); }
 .review-note { font-family:Inter,Arial,sans-serif; font-size:.875rem; line-height:1.5; color:var(--muted); margin:10px 0 0; }

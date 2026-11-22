@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1 — 2026-11-22
+
+- Present a completed review of both recent inboxes as Updated even while historical review continues. Use Older mail review ongoing for that separate work, Review ongoing for unfinished recent coverage and Needs attention for errors. Unknown coverage stays unconfirmed.
+- Apply the same vocabulary to the timeline, Board details, System publication history, per-account coverage and empty-board copy. Structured stored statuses and historical records are preserved; no reviewer, Gmail, schedule or credential change is required.
+
+
 ## 0.5.0 — 2026-11-21
 
 - Separate recent mailbox freshness from historical catch-up; preserve visible failed/stale/offline states and per-account checkpoints.
