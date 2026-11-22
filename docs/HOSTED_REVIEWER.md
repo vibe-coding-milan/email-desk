@@ -1,5 +1,11 @@
 # Offline reviewer readiness
 
+## Current status — November 22, 2026
+
+The DreamHost reviewer remains active. Actual scheduled publications for November 21 evening and November 22 morning are verified with final slot identity and both recent mailbox checkpoints. Mac-offline acceptance is still pending. Historical review remains ongoing, independently of successful recent coverage. The monitor never starts duplicate Gmail/model work. See [REVIEW_STATUS.md](REVIEW_STATUS.md) for exact timing, status meanings and acceptance limits.
+
+Version 0.5.1 is a verified frontend/documentation update: current inbox reviews say Updated, older-mail progress is neutral, unfinished recent review says Review ongoing, errors say Needs attention and missing evidence stays unconfirmed. The worker retains raw audit statuses. The 0.5.0 worker reporting installation, approved bounds, credentials, journal and cron were unchanged by 0.5.1. Earlier dated sections below describe their state at the time; statements that the first scheduled publication was pending are historical.
+
 ## Reporting upgrade — November 21, 2026
 
 The 0.5.0 website and private worker reporting upgrade are installed from a0462d6a66cd5eb8df4e2c4f7fda310104b57ae8. The verified domain-owner path upgraded code under the existing reviewer lock after website acceptance, retained a code backup, and independently confirmed unchanged protected files and cron. No dependency, grant, key, configuration, activation or journal replacement occurred.

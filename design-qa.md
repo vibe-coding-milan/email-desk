@@ -1,3 +1,12 @@
+# Version 0.5.1 status wording — November 22, 2026
+
+- Fictional scheduled recent-complete/historical-ongoing scenario: the timeline shows Updated with a completed mark; the Board has a neutral Inboxes updated · Older mail review ongoing headline and consistent expanded copy. Mobile-width wrapping and System publication labels were inspected.
+- Semantic checks distinguish unfinished recent coverage, errors, missing account evidence, absent/completed historical evidence and intermediate/manual/scheduled publications. No summary parsing or historical-status rewrite is used.
+- Final source CI 45054614754 and deployment 45054711855 passed. Independent exact bundle, 28 public hashes and preservation of 82 cards and complete private state passed. The preceding 0.5.1 installation passed 27 access checks; backend/authentication was unchanged by the final guard.
+- No production card decision was fabricated for QA. Physical-device, screen-reader, cross-device and Mac-offline acceptance remain separate. See [current meanings and acceptance](docs/REVIEW_STATUS.md).
+
+The earlier dated QA records below remain historical evidence; their screenshots and status labels should not be read as the latest product state.
+
 # Version 0.5.0 product update — November 21, 2026
 
 final result: passed for the fictional local UI and scoped live read-back. Production access and preservation acceptance passed; the deployment workflow’s final network timeout is recorded separately in docs/PRODUCT_UPDATE_050.md.

@@ -2,11 +2,10 @@
 
 ## 0.5.1 — 2026-11-22
 
-- Present a completed review of both recent inboxes as Updated even while historical review continues. Use Older mail review ongoing for that separate work, Review ongoing for unfinished recent coverage and Needs attention for errors. Unknown coverage stays unconfirmed.
-- Apply the same vocabulary to the timeline, Board details, System publication history, per-account coverage and empty-board copy. Structured stored statuses and historical records are preserved; no reviewer, Gmail, schedule or credential change is required.
-
-
-Version 0.5.1 was published through PR #17, merge 3b89f020e246f45744252d267b0a9ccfef74d7ba, receipt arcade-20261122T181932725555Z. Source CI 45054185219 and deployment 45054329515 passed. Independent verification passed all 28 public hashes and 27 authentication/access checks, with exact preservation of all 82 cards, saved comments/decisions/XP, checkpoints, reports and review history. A follow-up presentation guard derives older-mail wording only from the saved report’s explicit historical coverage; a partial status alone cannot establish that history remains unfinished. Timeline/history rows use each run’s typed recent account coverage and do not borrow later historical state. No worker installation or API/mail request was part of this release.
+- Replaced the ambiguous Partial display with Updated when both recent inbox reviews completed. Historical review appears separately as Older mail review ongoing; unfinished recent work says Review ongoing, errors say Needs attention and missing evidence stays Coverage unconfirmed.
+- Applied consistent wording to the timeline, Board details, System publications, account coverage and empty states. Typed evidence drives the display; stored statuses/history remain intact. No worker, Gmail, schedule, credential or taxonomy change.
+- Published through PR #17 and the explicit-historical-coverage guard in PR #18. Final commit `6debda9a8ab59c5039f8aebead3c98a04f5ab396`, receipt `arcade-20261122T182335060567Z`. Source CI and [deployment 45054711855](https://github.com/vibe-coding-milan/email-desk/actions/runs/45054711855) passed. Independent exact bundle, 28 public hashes and complete 82-card/private-state preservation passed; all 27 access checks passed on the preceding 0.5.1 installation, with backend/authentication unchanged by the final guard.
+- Local semantic/schedule/card/demo checks, 34 release checks, 28 deployment checks and fictional browser inspection passed. See [current status meanings and acceptance](docs/REVIEW_STATUS.md). First actual hosted scheduled publications are verified; Mac-offline acceptance remains pending.
 
 ## 0.5.0 — 2026-11-21
 

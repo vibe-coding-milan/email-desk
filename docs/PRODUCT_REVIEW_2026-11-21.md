@@ -1,5 +1,7 @@
 # Email Desk product review and improvement proposal
 
+> Historical record: this document preserves the November 21 review/release evidence. Current version 0.5.1, status wording and scheduled-publication acceptance are documented in [REVIEW_STATUS.md](REVIEW_STATUS.md). Actual scheduled runs have since been verified; Mac-offline acceptance remains pending. Earlier screenshots, proposed wording and dated verification limits below are not claims about the current interface.
+
 November 21, 2026. Original audit and proposal. Milan subsequently authorized implementation and production publication. See [the implementation record](PRODUCT_UPDATE_050.md) for delivered scope and verification; the findings below preserve the original review.
 
 Email Desk's two-bucket board and visual identity are worth preserving. The hosted reviewer changes what the product needs to explain: whether recent mail was checked, what remains in historical catch-up, whether a scheduled run actually published, and what the API work costs. The most valuable next iteration makes those facts understandable and helps a growing board stay manageable.

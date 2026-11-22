@@ -10,6 +10,8 @@ Live acceptance processed 24 targets with zero errors, both recent scans complet
 
 ## Status presentation
 
+See [REVIEW_STATUS.md](REVIEW_STATUS.md) for the current user-facing vocabulary, verified release and scheduled-run evidence.
+
 Stored status is retained for audit compatibility. Present final typed recent coverage complete for both approved accounts as Updated, including records stored as partial while historical work continues. Display Older mail review ongoing only when the saved report explicitly records unfinished historical coverage. Recent coverage still being processed says Review ongoing; an error says Needs attention; missing coverage evidence remains unconfirmed. Do not parse summaries or infer historical progress from partial alone, and do not let manual, intermediate or legacy records satisfy a scheduled slot. These display terms do not change Gmail labels, scan cursors or the organization playbook.
 
 ## Restricted bridge

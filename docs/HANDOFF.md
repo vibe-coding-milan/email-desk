@@ -1,5 +1,15 @@
 # Email Desk handoff
 
+## Current continuation — November 22, 2026
+
+Version 0.5.1 is live from `6debda9a8ab59c5039f8aebead3c98a04f5ab396`, receipt `arcade-20261122T182335060567Z`. PRs #17/#18, source CI 45054614754 and deployment 45054711855 passed. Independent exact bundle/28 public hashes and complete preservation of all 82 cards and private board state passed. The preceding 0.5.1 installation passed 27 access checks; the final guard did not change backend/authentication files. This source/documents release did not reinstall the private worker or change Gmail, credentials or cron.
+
+Use [REVIEW_STATUS.md](REVIEW_STATUS.md) for the current vocabulary, evidence and limits. Updated describes complete recent coverage for both accounts; Older mail review ongoing comes only from explicit unfinished historical coverage. Recent work still pending says Review ongoing, errors say Needs attention and insufficient evidence stays unconfirmed. Stored status/history remains intact. The master Google Doc and 37-label taxonomy are unchanged.
+
+Actual hosted scheduled finals are independently verified for November 21 17:30 and November 22 09:00. The morning run processed 24 targets and completed at 09:15:39 New York, with both recent checkpoints through 09:14:20. Record its late start/completion separately from historical review progress. Mac-offline acceptance remains pending; retain the desktop publication monitor without duplicating Gmail/model work. Historical coverage, physical-device/cross-device behavior, screen-reader and recovery exercises remain separate verification work.
+
+Earlier dated sections below are preserved release/setup history and do not supersede this current continuation.
+
 ## Review-status wording — November 22, 2026
 
 Milan clarified that Partial reads as a failure when a current inbox review completed and only older-mail review continues. Version 0.5.1 presents both typed recent account results complete as Updated, with Older mail review ongoing separately. Unfinished recent work says Review ongoing; actual errors say Needs attention; missing evidence remains Coverage unconfirmed. Timeline classification uses the saved scheduled final run’s own account coverage, not a newer global report or summary parsing. Legacy/manual publications still cannot satisfy a scheduled slot. The Board, System and empty-state copy use the same vocabulary; stored status/history stays intact. This is a frontend-only release, with no hosted-worker or Gmail changes.

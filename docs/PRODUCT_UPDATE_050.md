@@ -1,5 +1,7 @@
 # Email Desk 0.5.0 implementation and release record
 
+> Historical record: this document preserves the November 21 review/release evidence. Current version 0.5.1, status wording and scheduled-publication acceptance are documented in [REVIEW_STATUS.md](REVIEW_STATUS.md). Actual scheduled runs have since been verified; Mac-offline acceptance remains pending. Earlier screenshots, proposed wording and dated verification limits below are not claims about the current interface.
+
 Milan authorized implementation of the [November 21 product review](PRODUCT_REVIEW_2026-11-21.md) and publication to GitHub and the existing DreamHost site. This release keeps the established visual system and two buckets, and adds the operational information needed for the hosted reviewer.
 
 ## Delivered scope
