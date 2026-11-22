@@ -6,6 +6,8 @@
 - Apply the same vocabulary to the timeline, Board details, System publication history, per-account coverage and empty-board copy. Structured stored statuses and historical records are preserved; no reviewer, Gmail, schedule or credential change is required.
 
 
+Version 0.5.1 was published through PR #17, merge 3b89f020e246f45744252d267b0a9ccfef74d7ba, receipt arcade-20261122T181932725555Z. Source CI 45054185219 and deployment 45054329515 passed. Independent verification passed all 28 public hashes and 27 authentication/access checks, with exact preservation of all 82 cards, saved comments/decisions/XP, checkpoints, reports and review history. A follow-up presentation guard derives older-mail wording only from the saved report’s explicit historical coverage; a partial status alone cannot establish that history remains unfinished. Timeline/history rows use each run’s typed recent account coverage and do not borrow later historical state. No worker installation or API/mail request was part of this release.
+
 ## 0.5.0 — 2026-11-21
 
 - Separate recent mailbox freshness from historical catch-up; preserve visible failed/stale/offline states and per-account checkpoints.
