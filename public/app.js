@@ -21,18 +21,18 @@ function reviewSlots(now) {
   }
   return slots;
 }
-function reviewOutcome(run) {
+function reviewOutcome(run, report) {
   const coverage = run?.coverage || {}, values = Object.values(coverage);
   const recentComplete = ['mijatovic@gmail.com','milan@mijatovic.com'].every(account => coverage[account] === 'complete');
   if (run?.status === 'error' || values.includes('error')) return {state:'failed', label:'Needs attention'};
   if (run?.details?.phase === 'batch') return {state:'reviewing', label:'Review in progress'};
-  if (recentComplete) return {state:'updated', label:'Updated', olderOngoing:run.status === 'partial'};
+  if (recentComplete) return {state:'updated', label:'Updated', olderOngoing:report?.accounts?.length === 2 && report.accounts.some(account => account.historical_complete === false)};
   if (values.includes('partial')) return {state:'reviewing', label:'Review ongoing'};
   if (run?.status === 'success' && !values.length) return {state:'updated', label:'Updated'};
   return {state:'unknown', label:'Coverage unconfirmed'};
 }
-function reviewSummary(run) {
-  return reviewOutcome(run).olderOngoing ? 'Recent mail has been reviewed in both inboxes. Review of older mail is ongoing.' : run?.summary || 'Waiting for the first verified review.';
+function reviewSummary(run, report) {
+  return reviewOutcome(run, report).olderOngoing ? 'Recent mail has been reviewed in both inboxes. Review of older mail is ongoing.' : run?.summary || 'Waiting for the first verified review.';
 }
 function coverageLabel(value) {
   return {complete:'Reviewed',partial:'Review ongoing',error:'Needs attention',unknown:'Unconfirmed'}[value] || 'Unconfirmed';
@@ -283,7 +283,7 @@ function scanStatus(failed = false) {
   $('scanTitle').textContent = failed ? (boardLoaded ? 'Couldn’t refresh the board · Showing saved results' : 'Couldn’t load the board') : health.title;
   $('scan').dataset.health = failed ? 'error' : health.tone;
   const details = $('scanDetails'); details.replaceChildren();
-  details.append(node('p','',failed ? 'Saved cards and unsaved edits are kept. Retrying automatically.' : reviewSummary(run)));
+  details.append(node('p','',failed ? 'Saved cards and unsaved edits are kept. Retrying automatically.' : reviewSummary(run, data.report)));
   details.append(node('p','', 'Latest publication: ' + stampLabel(run?.finished_at)));
   if (data.report) {
     details.append(node('p','',data.report.schedule_active ? 'Hosted schedule active · Weekdays 9 AM, 1 PM, 5:30 PM; weekends 9 AM, 5:30 PM New York.' : 'Hosted schedule activation is not confirmed.'));

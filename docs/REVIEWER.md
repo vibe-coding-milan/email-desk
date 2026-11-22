@@ -4,9 +4,13 @@
 
 The private DreamHost/API worker was activated November 21 at 11:24:53 AM New York, after explicit user authorization and controlled two-mailbox live acceptance. It operates outside web root with encrypted renewed Production Google grants, an isolated environment and the funded API key. The website never exposes those credentials. The [setup ledger](HOSTED_REVIEWER.md) records bounds, approvals, live verification, usage and outstanding acceptance.
 
-The five-minute cron dispatcher follows weekdays 09:00/13:00/17:30 and weekends 09:00/17:30 in America/New_York, including DST, with locking, deduplicated slots and bounded retries. It never backdates a missed review. A first actual scheduled publication and Mac-offline run remain unobserved. The desktop heartbeat is now monitor-only via the verified local activation receipt and must not duplicate the hosted reviewer. This job is separate from ChatGPT Scheduled Tasks.
+The five-minute cron dispatcher follows weekdays 09:00/13:00/17:30 and weekends 09:00/17:30 in America/New_York, including DST, with locking, deduplicated slots and bounded retries. It never backdates a missed review. Actual scheduled publications are verified for November 21 evening and November 22 morning; Mac-offline acceptance remains unobserved. The desktop heartbeat is now monitor-only via the verified local activation receipt and must not duplicate the hosted reviewer. This job is separate from ChatGPT Scheduled Tasks.
 
 Live acceptance processed 24 targets with zero errors, both recent scans complete, 24 verified exact-message labels and two actual custom-label changes. Independent labels/system-label preservation and board/owner-state read-back passed. Historical catch-up remains partial. Source requires every candidate target, preserves semantic validation and turns unsupported deadline quotes into explicit uncertainty instead of publishing an unverified date. Routine classification preserves existing custom labels; exact saved owner corrections may replace them. Version 0.4.3 supplies transactional expected-revision protection. The live Google Doc stays master. Measure usage before calibrating a spending ceiling.
+
+## Status presentation
+
+Stored status is retained for audit compatibility. Present final typed recent coverage complete for both approved accounts as Updated, including records stored as partial while historical work continues. Display Older mail review ongoing only when the saved report explicitly records unfinished historical coverage. Recent coverage still being processed says Review ongoing; an error says Needs attention; missing coverage evidence remains unconfirmed. Do not parse summaries or infer historical progress from partial alone, and do not let manual, intermediate or legacy records satisfy a scheduled slot. These display terms do not change Gmail labels, scan cursors or the organization playbook.
 
 ## Restricted bridge
 

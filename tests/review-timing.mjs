@@ -72,9 +72,9 @@ const completeCoverage={'mijatovic@gmail.com':'complete','milan@mijatovic.com':'
 const catchingUp={...run('2026-11-21T14:15:39Z','partial'),coverage:completeCoverage};
 assert.deepEqual(states(day('2026-11-21T17:00:00Z',[catchingUp])),['updated','next']);
 assert.equal(context.reviewOutcome(catchingUp).label,'Updated');
-assert.equal(context.reviewOutcome(catchingUp).olderOngoing,true);
-assert.match(context.reviewSummary(catchingUp),/Review of older mail is ongoing/);
-assert.doesNotMatch(context.reviewSummary(catchingUp),/incomplete|failed|partial/i);
+assert.equal(context.reviewOutcome(catchingUp,report).olderOngoing,true);
+assert.match(context.reviewSummary(catchingUp,report),/Review of older mail is ongoing/);
+assert.doesNotMatch(context.reviewSummary(catchingUp,report),/incomplete|failed|partial/i);
 const stillReviewing={...catchingUp,coverage:{...completeCoverage,'mijatovic@gmail.com':'partial'}};
 assert.equal(context.reviewOutcome(stillReviewing).state,'reviewing');
 assert.equal(context.reviewOutcome(stillReviewing).label,'Review ongoing');
@@ -83,3 +83,6 @@ assert.equal(context.reviewOutcome({...catchingUp,coverage:{'mijatovic@gmail.com
 assert.equal(context.reviewOutcome({...catchingUp,details:{...catchingUp.details,phase:'batch'}}).state,'reviewing');
 assert.equal(context.coverageLabel('partial'),'Review ongoing');
 console.log('Recent completion, ongoing historical/recent work, errors and unconfirmed coverage have distinct presentation.');
+
+assert.equal(context.reviewOutcome(catchingUp).olderOngoing,false);
+assert.equal(context.reviewOutcome(catchingUp,{accounts:[{historical_complete:true},{historical_complete:true}]}).olderOngoing,false);
