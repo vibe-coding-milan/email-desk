@@ -1,5 +1,14 @@
 # Email Desk handoff
 
+## Guidance release 0.6.1 — November 23, 2026
+
+Milan explicitly requested implementation, documentation and live publication of the Guidance refinement. The existing panel now uses Guidance consistently, retains one editable current statement and the existing Save/Attention/Change labels controls, and omits the old machine-summary timeline. Existing card text, audit history, decisions, corrections and XP remain intact. No Store/schema change. See [CONTEXT_PANEL.md](CONTEXT_PANEL.md).
+
+The private reviewer now supplies up to three bounded whole guidance candidates for related new conversations across both accounts, matched by exact non-owner correspondent or substantive subject/content overlap. Model instructions require checking scope and current purpose; a dismissal, shared label or correspondent alone never establishes a blanket rule. The current thread retains its own saved guidance. No automatic rewriting, master adoption, credential/schedule change or extra Gmail action. The Google Doc remains master.
+
+Roll out the reviewed website through normal Actions, then the exact worker commit through the authorized code-only locked active-upgrade procedure. Verify manifests, protected-file/cron preservation, worker health and fictional retrieval smoke independently. Do not trigger paid or real-mail reviews merely to certify a copy change. Future live routing quality remains observational acceptance; release evidence belongs in the merged release PR.
+
+
 ## Simplicity release 0.6.0 — November 23, 2026
 
 Milan approved implementing the lean revised mock, retaining labeling, updating documentation and pushing live. The live version uses Open email / Done / Context, with a small nonmodal editor for Attention, note and Save. Change labels preserves the existing explicit correction path, without label search/counts. Close stays outside the scrolling body and desktop board scrolling is unlocked. Context/label state, history, revisions and XP use the unchanged backend contract. Source/backend/worker match remote main 67cc9351c0da2bd39d25249766a0041f931f2559 except for this scoped frontend/documentation/fictional-preview follow-up. No worker, Gmail, schedule, credential or master-playbook edit is authorized or needed for this UI release.

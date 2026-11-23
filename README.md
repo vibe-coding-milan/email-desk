@@ -6,20 +6,20 @@ Email Desk turns inbox conversations into two useful views: **Needs action** and
 
 **[Try the live demo](https://mijatovic.com/email-desk/)** · **[How I built it](docs/BUILDING.md)** · **[Release history](CHANGELOG.md)**
 
-Choose **Play the demo** to explore an accelerated day with twelve fictional conversations. You can skip to later reviews without clearing every card. Try handling a card, changing a label, adding context, and skipping to the next review. Decisions move into history, earn XP, and carry through later arrivals. Demo changes live in browser memory and reset on restart or reload; no sign-in or inbox access is needed.
+Choose **Play the demo** to explore an accelerated day with twelve fictional conversations. You can skip to later reviews without clearing every card. Try handling a card, changing a label, adding guidance, and skipping to the next review. Decisions move into history, earn XP, and carry through later arrivals. Demo changes live in browser memory and reset on restart or reload; no sign-in or inbox access is needed.
 
 ## The problem
 
 An inbox mixes requests, useful updates, receipts, and noise. Labels help organize it, but they do not answer “What needs my attention?” Email Desk adds that missing layer: a short explanation of what matters, why it matters, and a link back to the original conversation.
 
-The board stays small. Both email accounts share one organization vocabulary and one attention board. Handled and dismissed items remain in history, and later scans preserve my notes, corrections, and decisions.
+The board stays small. Both email accounts share one organization vocabulary and one attention board. Handled and dismissed items remain in history, and later scans preserve my guidance, corrections, and decisions.
 
 ## How I work
 
 I use AI to help implement and explore ideas, while directing the product, reviewing behavior, and setting the boundaries. A few decisions show that process:
 
 - **Simplify through use.** A countdown and extra controls became a compact review summary. The interface distinguishes confirmed updates from missing or failed reviews.
-- **Make feedback durable.** Corrections and notes survive new summaries. Revision checks and deduplicated writes protect against stale edits and retries.
+- **Make feedback durable.** Corrections and guidance survive new summaries. Revision checks and deduplicated writes protect against stale edits and retries.
 - **Make the real interaction explorable.** The public demo simulates arrivals, feedback, history, and rewards using invented conversations, separate from the private workspace.
 - **Carry the idea through delivery.** The project includes automated checks, a restricted deployment path, code rollback, and live verification on the existing host.
 
@@ -27,13 +27,13 @@ The [build notes](docs/BUILDING.md) connect these choices to source files, tests
 
 ## What the app does
 
-Cards show a short conversation summary with Open email, Done and Context. The optional editor has three attention choices—Needs action, Worth knowing and Not important—plus a note and Save. Change labels retains manual correction without a search interface. Done records completion; Not important moves the card into history. Neither changes Inbox/read state or sends email. The editor’s Close control stays visible while its contents scroll; desktop board scrolling remains available.
+Cards show a short conversation summary with Open email, Done and Guidance. The optional editor has three attention choices—Needs action, Worth knowing and Not important—plus editable sorting guidance and Save. Change labels retains manual correction without a search interface. Done records completion; Not important moves the card into history. Neither changes Inbox/read state or sends email. The editor’s Close control stays visible while its contents scroll; desktop board scrolling remains available.
 
 The interface pairs readable Inter text and pixel branding with light, dark, and system themes, illustrated empty states, and a four-frame robot companion. The companion plays one short greeting and settles; reduced-motion preferences keep it still. XP rewards confirmed decisions once per card: 10 XP within 48 hours of receipt and 5 XP afterward. Existing awards stay earned.
 
 ## How it works
 
-A private worker on DreamHost reads both Gmail accounts, consults the master organization playbook, applies approved custom labels and publishes selected cards to the encrypted Store. It retrieves saved feedback and preserves owner decisions and comments. Its API keys and encrypted Google grants stay outside web root; the website does not expose them. A restricted SSH bridge remains available for maintenance and publication monitoring.
+A private worker on DreamHost reads both Gmail accounts, consults the master organization playbook, applies approved custom labels and publishes selected cards to the encrypted Store. It retrieves saved feedback and relevant owner guidance for related future conversations, while preserving owner decisions and guidance. Its API keys and encrypted Google grants stay outside web root; the website does not expose them. A restricted SSH bridge remains available for maintenance and publication monitoring.
 
 ```text
 Gmail + master playbook → hosted API reviewer → encrypted Store
@@ -79,7 +79,10 @@ This covers JavaScript syntax, local assets, shared labels, guest-day behavior, 
 
 ## Current state
 
-**Version 0.6.0 is live.** The simpler interface retains automatic labeling, manual corrections, saved context and the two-bucket board. See [the interaction guide](docs/CONTEXT_PANEL.md). A completed review of both recent inboxes says Updated; separate older-mail work says Older mail review ongoing. Unfinished recent scans say Review ongoing and errors say Needs attention. Board health separates recent inbox freshness from historical catch-up. Scheduled checkpoints use explicit run identity; manual and legacy publications do not impersonate scheduled success. History has its own view with search/status/date filters. The private System view shows run history, pending feedback, master-source provenance and aggregate API tokens/calculated costs by date and work type. No credit balance, monthly forecast or spending cap is inferred. See [current review-status meanings and acceptance](docs/REVIEW_STATUS.md) and the [0.5.0 feature record](docs/PRODUCT_UPDATE_050.md).
+Guidance replaces the personal-note framing in the existing panel. It persists across completion and resurfacing; the reviewer supplies bounded relevant guidance for new conversations as well as the original thread. No new screen, timeline, model-weight training or automatic playbook edits are introduced. [Behavior and testing](docs/CONTEXT_PANEL.md). Website and private worker require separate verified deployment; final acceptance is recorded in the release PR.
+
+
+**Version 0.6.1 introduces Guidance.** The simpler interface retains automatic labeling, manual corrections, saved guidance and the two-bucket board. See [the interaction guide](docs/CONTEXT_PANEL.md). A completed review of both recent inboxes says Updated; separate older-mail work says Older mail review ongoing. Unfinished recent scans say Review ongoing and errors say Needs attention. Board health separates recent inbox freshness from historical catch-up. Scheduled checkpoints use explicit run identity; manual and legacy publications do not impersonate scheduled success. History has its own view with search/status/date filters. The private System view shows run history, pending feedback, master-source provenance and aggregate API tokens/calculated costs by date and work type. No credit balance, monthly forecast or spending cap is inferred. See [current review-status meanings and acceptance](docs/REVIEW_STATUS.md) and the [0.5.0 feature record](docs/PRODUCT_UPDATE_050.md).
 
 Published through [PR #20](https://github.com/vibe-coding-milan/email-desk/pull/20), merge `d98ea58726e15d889cd26aa2f4630a04bad78342`, receipt `arcade-20261123T155257725392Z`. [Source CI 45209628930](https://github.com/vibe-coding-milan/email-desk/actions/runs/45209628930) and [deployment 45210050440](https://github.com/vibe-coding-milan/email-desk/actions/runs/45210050440) passed. Independent receipt/bundle, all 28 public hashes and 27 live access checks passed. All 87 saved cards, notes, decisions, XP, reported history/checkpoints and pending feedback matched the private baseline. Live owner inspection was read-only; the public demo was tested with fictional feedback and no browser warnings/errors. Documentation-only follow-ups can carry a newer receipt with identical runtime files.
 

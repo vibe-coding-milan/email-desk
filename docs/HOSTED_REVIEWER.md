@@ -1,5 +1,10 @@
 # Offline reviewer readiness
 
+## Guidance code release — November 23, 2026
+
+Version 0.6.1 adds bounded owner-guidance retrieval and explicit relevance/scope instructions to the worker. It uses existing encrypted card statements; no credential, dependency, activation, cron, journal or master-document changes. Deploy the exact reviewed commit through the existing locked `upgrade-code --reviewed-active-code-upgrade` path with expected-current manifest and archive hash. Keep the old code backup and independently compare protected-file/cron hashes before and after. Run health and fictional retrieval smoke without Gmail/model calls. Future scheduled routing quality remains separate from code-install acceptance. Final installed manifest and website acceptance are recorded in the release PR.
+
+
 ## Current status — November 22, 2026
 
 The DreamHost reviewer remains active. Actual scheduled publications for November 21 evening and November 22 morning are verified with final slot identity and both recent mailbox checkpoints. Mac-offline acceptance is still pending. Historical review remains ongoing, independently of successful recent coverage. The monitor never starts duplicate Gmail/model work. See [REVIEW_STATUS.md](REVIEW_STATUS.md) for exact timing, status meanings and acceptance limits.

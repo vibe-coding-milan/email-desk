@@ -79,3 +79,10 @@ New publications may include `run.details` (trigger, scheduled_at, started_at, c
 ## Attention editor presentation (0.6.0)
 
 Done maps to the existing handled decision; Not important maps to dismissed history, not a new Gmail label or board column. Context still submits the existing category, note, optional exact custom-label correction, operation ID and revision. The Change labels disclosure retains verification before applied acknowledgement. This interface release does not change model instructions, feedback authority, master-source ownership, stored statuses or reopening policy.
+
+
+## Guidance retrieval (0.6.1)
+
+The panel's Guidance field retains the existing encrypted `note` contract; Save replaces the current statement without rewriting prior data. Current-thread guidance is included in `existing_card.note`. Other saved owner statements are supplied as `related_guidance` candidates, at most three whole deduplicated entries/26,000 bytes, matched by exact non-owner correspondent or at least two substantive shared subject/content words. No labels, card outcomes, generated summaries or sender display names manufacture a preference. Scope must be evaluated against the current message; relationship matches do not authorize blanket sender rules. Old task progress does not establish a current obligation. The model never rewrites saved text or the master.
+
+This contextual memory is shared across the two approved accounts and uses no new API, database or model-weight training. Only the current saved statement is retrieved; clearing it removes that source from related retrieval while audit events remain. Existing safe-action, source, revision, custom-label, reopening and failure boundaries remain unchanged. Website rollout alone cannot install these worker changes. See CONTEXT_PANEL.md for matching limitations and acceptance boundaries.

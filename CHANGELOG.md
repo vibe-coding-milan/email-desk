@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.1 — November 23, 2026
+
+- Context becomes Guidance: one editable statement for future email sorting, with the same Attention, Change labels and Save controls. Remove the visible machine-summary timeline; retain stored history.
+- Preserve existing guidance through completion and resurfacing. Retrieve bounded related owner guidance across future conversations and both accounts; model instructions require checking relevance and avoiding blanket sender rules.
+- No new navigation, schema, credentials, schedule, master-playbook edits or Gmail actions. Fictional checks cover same/new/unrelated threads, shared-owner exclusion, bounds, edits and delivery to the classifier. Live release acceptance is recorded in the release PR.
+
 ## 0.6.0 — 2026-11-23
 
 - Simplified cards to Open email, Done and Context. Kept the two attention columns and existing decision history; Not important records a dismissal rather than creating a third column.

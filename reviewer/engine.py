@@ -3,6 +3,7 @@ import datetime as dt
 import hashlib
 import json
 import re
+from email.utils import getaddresses
 
 from .content import body_text, text_runs
 from .google import ACCOUNTS, IDENTIFIER
@@ -10,6 +11,52 @@ from .model import Model
 from .state import UTC, iso, operation, reporting_snapshot
 
 AUTH = re.compile(r'\bone[- ]time\b|verification code|sign.in code|passcode|magic link', re.I)
+
+# Retrieval proposes candidates, not sender rules. Only saved owner text is memory;
+# generated summaries, labels and dismissed states cannot manufacture guidance.
+GUIDANCE_STOP = set('about after again also been before building could email emails family from have here into just know like mail message need needs please reply request should some sorting subject that their them then there these they this thread through update updates very want were what when where which will with worth would your action knowing important guidance context information'.split())
+
+
+def guidance_words(text):
+    return {word for word in re.findall(r'[a-z][a-z0-9]{3,}', text.lower()) if word not in GUIDANCE_STOP}
+
+
+def correspondents(values):
+    return {address.lower() for _, address in getaddresses(values)
+            if '@' in address and address.lower() not in ACCOUNTS}
+
+
+def related_guidance(thread, cards):
+    """Bounded owner-authored examples across both accounts; never infer a rule."""
+    senders = correspondents([m['sender'] for m in thread['messages']])
+    words = guidance_words(' '.join(m['subject'] + ' ' + m['text'] for m in thread['messages']))
+    candidates = []
+    for card in cards:
+        note = card.get('note', '').strip()
+        if not note or (card['account'], card['thread_id']) == (thread['account'], thread['thread_id']):
+            continue  # The current thread already carries its complete saved card.
+        shared_sender = bool(senders & correspondents([card.get('sender', '')]))
+        shared_words = words & guidance_words(card.get('subject', '') + ' ' + note)
+        if not shared_sender and len(shared_words) < 2:
+            continue
+        candidates.append((int(shared_sender) * 10 + min(len(shared_words), 5),
+                           card.get('updated_at', ''), card.get('id', ''), {
+            'source_subject': card.get('subject', ''), 'source_sender': card.get('sender', ''),
+            'guidance': note, 'match': 'correspondent' if shared_sender else 'subject_overlap',
+        }))
+    candidates.sort(key=lambda row: row[:3], reverse=True)
+    # Whole entries only: do not truncate an exception at the end of owner text.
+    selected, seen, size = [], set(), 2
+    for _, _, _, entry in candidates:
+        if entry['guidance'] in seen:
+            continue
+        cost = len(json.dumps(entry, ensure_ascii=False).encode()) + (2 if selected else 0)
+        if size + cost > 26000:
+            continue
+        selected.append(entry); seen.add(entry['guidance']); size += cost
+        if len(selected) == 3:
+            break
+    return selected
 
 
 def routine_authentication(subject):
@@ -199,7 +246,7 @@ class Engine:
             if not card or card.get('latest_feedback_id') != event['id']:
                 ack.update(status='superseded', explanation='A newer saved correction supersedes this event; notes remain preserved.')
             elif event['requested_labels'] is None:
-                ack.update(status='recorded', explanation='Saved board context recorded for later reviews; no Gmail change requested.')
+                ack.update(status='recorded', explanation='Saved sorting guidance recorded for later reviews; no Gmail change requested.')
             else:
                 try:
                     desired = event['requested_labels']
@@ -346,6 +393,7 @@ class Engine:
                         raise ValueError('thread_identifier')
                     raw = load_thread(gmail, thread_id, ids, refreshed.get(thread_id))
                     thread = context_thread(account, raw, ids, old_cards.get((account, thread_id)), gmail)
+                    thread['related_guidance'] = related_guidance(thread, self.board['cards'])
                     size = len(json.dumps({'master': master, 'threads': chunk + [thread]}).encode())
                     if chunk and (len(chunk) >= 4 or size > self.config['max_context_bytes'] - 2000):
                         self.classify_batch(chunk, master)
