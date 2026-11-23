@@ -12,6 +12,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from cryptography.fernet import Fernet
+from reviewer.content import VisibleHTML
 from reviewer.engine import Engine, card_from, check_revisions, scan, load_thread, routine_labels, related_guidance, context_thread
 from reviewer.google import Gmail, bounded_json
 from reviewer.model import validate, schema, source_key, source_rows, ground_deadlines
@@ -87,6 +88,19 @@ class GuidanceRetrieval(unittest.TestCase):
 
 
 class ReaderBoundaries(unittest.TestCase):
+    def test_valueless_html_attributes_keep_visible_text_and_hidden_boundaries(self):
+        parser = VisibleHTML()
+        parser.feed('<div style aria-hidden>Visible request<img alt></div>'
+                    '<div hidden>Hidden secret</div><div aria-hidden="true">Also hidden</div>'
+                    '<div style="display:none">Styled secret</div>'
+                    '<section style>Visible follow-up<br style /></section>')
+        parser.close()
+        text = ''.join(parser.output)
+        self.assertIn('Visible request', text)
+        self.assertIn('Visible follow-up', text)
+        for hidden in ['Hidden secret', 'Also hidden', 'Styled secret']:
+            self.assertNotIn(hidden, text)
+
     def test_streaming_json_limit_stops_consuming_response(self):
         class Response:
             consumed = 0
@@ -528,6 +542,28 @@ class EngineIntegration(unittest.TestCase):
                 self.assertEqual(client.writes, [(client.id, ['Home'])])
                 self.assertIn(client.id, journal.data['accounts'][account]['done'])
                 self.assertIn('cursor', journal.data['accounts'][account])
+
+    def test_valueless_html_attribute_does_not_block_mailbox_coverage(self):
+        import base64
+        client = self.clients['mijatovic@gmail.com']
+        original = client.get
+        def get(path, params=None):
+            value = original(path, params)
+            if path.startswith('messages/'):
+                value['payload'].update(mimeType='text/html', body={'data': base64.urlsafe_b64encode(
+                    b'<div style aria-hidden>Please send project photos.</div>').decode()})
+            return value
+        client.get = get
+        bridge = FakeBridge()
+        with Journal(self.directory) as journal:
+            self.prepare(journal)
+            result = Engine(journal, bridge, self.clients, ['Home', 'Needs Review'], self.config, self.slot).run()
+            self.assertEqual(result['errors'], 0)
+            self.assertEqual(result['recent_mailboxes_complete'], 2)
+            self.assertIn(client.id, journal.data['accounts'][client.account]['done'])
+            self.assertIn('cursor', journal.data['accounts'][client.account])
+            self.assertTrue(any('Please send project photos.' in message['text']
+                                for thread in FakeModel.inputs for message in thread['messages']))
 
     def test_review_supplies_related_guidance_to_classifier_from_closed_card(self):
         bridge = FakeBridge()

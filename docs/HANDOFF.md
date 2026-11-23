@@ -1,5 +1,11 @@
 # Email Desk handoff
 
+## Inbox-review parser recovery — November 23, 2026
+
+The personal Gmail midday review repeatedly failed while extracting visible text from an HTML message. A bounded read-only trace reproduced an AttributeError in VisibleHTML.handle_starttag: HTMLParser represents a valueless attribute (such as style) as None, while the extractor assumed every value was a string. Normalize missing attribute values to an empty string before inspecting style/aria-hidden/alt. Preserve hidden-element boundaries, and never render HTML or fetch linked resources.
+
+Two fictional regressions cover visible/hidden valueless attributes and full Engine coverage/checkpoint advancement for an affected incoming message. All 38 worker tests pass locally. Failed-account cursors and cards were retained throughout; do not erase old failed runs or mark a scheduled slot successful after a manual recovery. The preliminary authorized bounded manual review verified 24 messages without errors but personal recent coverage remained bounded. Code installation and post-fix recent-coverage verification are pending; record their actual results separately. Existing grants, permissions, cron, master rules and Gmail write boundaries are unchanged.
+
 ## Hosted-runner route resolution — November 23, 2026
 
 PR #27 follows PR #26: retries and separation alone did not resolve the Ubuntu TCP route failure. Paired Ubuntu/macOS probes reproduced Ubuntu connection timeouts before TLS, while macOS reached the same IP normally with both clients. Public verification now runs on macOS; installation/checks remain Ubuntu. Identical source manifests and differing Python/gzip representations were verified; installation retains exact archive/receipt binding and the verifier additionally matches the complete source manifest. All homepage/static/access checks and TLS validation remain required. Twenty fictional regressions cover network/security/phase/source-binding behavior. No application/data/worker/credential/schedule or host security changes. Final CI/deployment evidence is tracked in PR #27.
