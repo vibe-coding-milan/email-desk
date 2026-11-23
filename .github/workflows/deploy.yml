@@ -48,3 +48,6 @@ jobs:
           EMAIL_DESK_HOMEPAGE_SHA256: ${{ secrets.EMAIL_DESK_HOMEPAGE_SHA256 }}
           EMAIL_DESK_EXPECTED_BUNDLE_SHA256: ${{ needs.install.outputs.bundle_sha256 }}
         run: python3 scripts/github-deploy.py --phase verify
+      - name: Diagnose a failed public connection
+        if: failure()
+        run: python3 scripts/deploy-network-check.py
