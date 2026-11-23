@@ -2,7 +2,7 @@
 
 ## Inbox-review HTML parser fix — November 23, 2026
 
-Handle valid valueless HTML attributes without aborting an account review. Keep hidden content excluded and HTML inert. Add parser and full-review coverage regressions; all 38 fictional worker checks pass locally. Saved owner state and failed-account cursor protections remain intact. See docs/HANDOFF.md for diagnosis and live recovery acceptance.
+Handle valid valueless HTML attributes without aborting an account review. Keep hidden content excluded and HTML inert. Add parser and full-review coverage regressions; all 38 fictional worker checks pass locally. Saved owner state and failed-account cursor protections remain intact. PR #28 is installed and the original failed window now parses. A real post-fix review verified 24 messages with zero errors and completed recent coverage for both accounts; prior failed history and older-mail catch-up remain distinct. See docs/HANDOFF.md for exact acceptance and workflow limits.
 
 ## Hosted-runner route fix — November 23, 2026
 
