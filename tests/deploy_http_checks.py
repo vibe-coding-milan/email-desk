@@ -64,12 +64,20 @@ class PublicChecks(unittest.TestCase):
 class PhaseChecks(unittest.TestCase):
  def setUp(self):
   self.commit='a'*40;self.raw=b'fictional exact bundle';self.digest=hashlib.sha256(self.raw).hexdigest();self.manifest={'version':'0.7.0','files':{}}
-  self.env={'GITHUB_REPOSITORY':'vibe-coding-milan/email-desk','GITHUB_REF':'refs/heads/main','GITHUB_SHA':self.commit,'EMAIL_DESK_EXPECTED_BUNDLE_SHA256':self.digest,'EMAIL_DESK_HOMEPAGE_SHA256':'b'*64}
+  self.env={'GITHUB_REPOSITORY':'vibe-coding-milan/email-desk','GITHUB_REF':'refs/heads/main','GITHUB_SHA':self.commit,'EMAIL_DESK_EXPECTED_BUNDLE_SHA256':self.digest,'EMAIL_DESK_EXPECTED_MANIFEST_SHA256':client.manifest_digest(self.manifest),'EMAIL_DESK_HOMEPAGE_SHA256':'b'*64}
  def test_verify_phase_has_no_deployment_key_ssh_or_github_token(self):
   with patch.dict(os.environ,self.env,clear=True),patch.object(sys,'argv',['deploy','--phase','verify']),patch.object(client,'build',return_value=(self.raw,self.manifest)),patch.object(client,'verify')as verify,patch.object(client.subprocess,'run',side_effect=AssertionError('SSH forbidden')),patch.object(client.urllib.request,'urlopen',side_effect=AssertionError('GitHub token forbidden')),contextlib.redirect_stdout(io.StringIO())as out:client.main()
   verify.assert_called_once_with(self.manifest);self.assertIn('Public verification passed',out.getvalue())
  def test_verify_wrong_source_fails_before_network(self):
-  with patch.dict(os.environ,{**self.env,'EMAIL_DESK_EXPECTED_BUNDLE_SHA256':'0'*64},clear=True),patch.object(sys,'argv',['deploy','--phase','verify']),patch.object(client,'build',return_value=(self.raw,self.manifest)),patch.object(client,'verify')as verify:
+  with patch.dict(os.environ,{**self.env,'EMAIL_DESK_EXPECTED_MANIFEST_SHA256':'0'*64},clear=True),patch.object(sys,'argv',['deploy','--phase','verify']),patch.object(client,'build',return_value=(self.raw,self.manifest)),patch.object(client,'verify')as verify:
+   with self.assertRaisesRegex(RuntimeError,'does not match'):client.main()
+   verify.assert_not_called()
+ def test_platform_compression_difference_retains_exact_manifest_binding(self):
+  with patch.dict(os.environ,self.env,clear=True),patch.object(sys,'argv',['deploy','--phase','verify']),patch.object(client,'build',return_value=(b'different gzip encoding',self.manifest)),patch.object(client,'verify')as verify,contextlib.redirect_stdout(io.StringIO())as out:client.main()
+  verify.assert_called_once_with(self.manifest);self.assertIn('Source manifest matched',out.getvalue())
+ def test_changed_private_source_manifest_fails_before_network(self):
+  changed={**self.manifest,'files':{'server/Store.php':'0'*64}}
+  with patch.dict(os.environ,self.env,clear=True),patch.object(sys,'argv',['deploy','--phase','verify']),patch.object(client,'build',return_value=(self.raw,changed)),patch.object(client,'verify')as verify:
    with self.assertRaisesRegex(RuntimeError,'does not match'):client.main()
    verify.assert_not_called()
  def test_verification_failure_reports_confirmed_install_and_raises(self):
@@ -94,6 +102,6 @@ class PhaseChecks(unittest.TestCase):
   self.assertEqual(sum(c[-1]=='email-desk-release '+self.commit for c in calls),1);self.assertEqual([c[-1] for c in calls[1:]],['email-desk-release-status']*2)
  def test_workflow_separates_install_and_verification_without_key_expansion(self):
   source=(ROOT/'.github/workflows/deploy.yml').read_text();verify=source.split('  verify:\n')[1]
-  self.assertIn('--phase install',source);self.assertIn('--phase verify',verify);self.assertIn('needs: install',verify)
+  self.assertIn('runs-on: macos-15',verify);self.assertIn('EMAIL_DESK_EXPECTED_MANIFEST_SHA256',verify);self.assertIn('--phase install',source);self.assertIn('--phase verify',verify);self.assertIn('needs: install',verify)
   for name in ['EMAIL_DESK_DEPLOY_KEY','EMAIL_DESK_DEPLOY_USER','EMAIL_DESK_KNOWN_HOSTS','GITHUB_TOKEN']:self.assertNotIn(name,verify)
 if __name__=='__main__':unittest.main()

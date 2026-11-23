@@ -6,6 +6,8 @@ from release_bundle import build
 ROOT=Path(__file__).resolve().parents[1]
 BASE='https://mijatovic.com/email-desk/'
 
+def manifest_digest(manifest):return hashlib.sha256(json.dumps(manifest,sort_keys=True).encode()).hexdigest()
+
 def summary(message):
  print(message,flush=True)
  if os.environ.get('GITHUB_STEP_SUMMARY'):
@@ -37,8 +39,9 @@ def main():
  if not re.fullmatch('[0-9a-f]{40}',commit):raise RuntimeError('Invalid commit')
  raw,manifest=build(ROOT,commit)
  if phase=='verify':
-  expected=os.environ.get('EMAIL_DESK_EXPECTED_BUNDLE_SHA256','')
-  if not re.fullmatch('[0-9a-f]{64}',expected) or expected!=hashlib.sha256(raw).hexdigest():raise RuntimeError('Verification source does not match confirmed installation bundle')
+  expected=os.environ.get('EMAIL_DESK_EXPECTED_MANIFEST_SHA256','')
+  if not re.fullmatch('[0-9a-f]{64}',expected) or expected!=manifest_digest(manifest):raise RuntimeError('Verification source does not match confirmed installation manifest')
+  if os.environ.get('EMAIL_DESK_EXPECTED_BUNDLE_SHA256')!=hashlib.sha256(raw).hexdigest():summary('Source manifest matched; compressed representation differs across runner platforms. Installation already verified the exact transmitted archive and receipt.')
   try:verify(manifest)
   except Exception:
    summary('Installation was confirmed. Public verification failed or remains incomplete; see the named check and attempts above. No re-upload or rollback was attempted.')
@@ -71,7 +74,7 @@ def main():
   if not re.fullmatch(r'arcade-[0-9]{8}T[0-9]{6,12}Z',receipt.get('release','')):raise RuntimeError('Invalid release receipt identity')
   status=subprocess.run(args+['email-desk-release-status'],capture_output=True,timeout=30,check=True)
   if json.loads(status.stdout)!=receipt:raise RuntimeError('Deployment receipt could not be verified')
- output('installed','true');output('bundle_sha256',receipt['bundle_sha256']);output('release',receipt['release'])
+ output('installed','true');output('bundle_sha256',receipt['bundle_sha256']);output('manifest_sha256',manifest_digest(manifest));output('release',receipt['release'])
  summary('Installation confirmed: Email Desk '+manifest['version']+' from `'+commit+'`, release `'+receipt['release']+'`. Exact bundle and durable receipt matched. Public verification is a separate required phase.')
  if phase=='all':
   try:verify(manifest)

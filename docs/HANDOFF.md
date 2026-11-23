@@ -1,5 +1,10 @@
 # Email Desk handoff
 
+## Hosted-runner route resolution — November 23, 2026
+
+PR #27 follows PR #26: retries and separation alone did not resolve the Ubuntu TCP route failure. Paired Ubuntu/macOS probes reproduced Ubuntu connection timeouts before TLS, while macOS reached the same IP normally with both clients. Public verification now runs on macOS; installation/checks remain Ubuntu. Identical source manifests and differing Python/gzip representations were verified; installation retains exact archive/receipt binding and the verifier additionally matches the complete source manifest. All homepage/static/access checks and TLS validation remain required. Twenty fictional regressions cover network/security/phase/source-binding behavior. No application/data/worker/credential/schedule or host security changes. Final CI/deployment evidence is tracked in PR #27.
+
+
 ## Deployment verification reliability — November 23, 2026
 
 Milan asked to resolve the repeated GitHub deployment errors. PR #26 adds a credential-free public network probe and separates exact-receipt installation from public verification on a fresh runner. Verification preserves all homepage/hash/anonymous/private-path checks, with bounded transient-only retries and immediate failure for certificate, redirect, hash or access mismatches. Fresh-runner probes reached the site normally using both clients; the earlier intermittent provider/network cause has not been isolated. No DNS, firewall, TLS, credential, access, app, Store, worker, mailbox or schedule changes are part of the fix. Eighteen fictional transport/phase checks and existing 28 deployment/34 release checks pass locally. Actual CI and deployment acceptance are tracked in [PR #26](https://github.com/vibe-coding-milan/email-desk/pull/26). See GITHUB_DEPLOYMENT.md for the exact limits and preserved safeguards.
