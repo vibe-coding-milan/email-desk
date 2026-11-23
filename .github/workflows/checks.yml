@@ -30,6 +30,7 @@ jobs:
           python3 tests/provision_checks.py
           python3 tests/release_checks.py
           python3 tests/github_deploy_checks.py
+          python3 tests/deploy_http_checks.py
           find server public tests -name '*.php' -exec php -l {} \;
           python3 -m py_compile scripts/*.py tests/*.py
           python3 -m py_compile reviewer/*.py

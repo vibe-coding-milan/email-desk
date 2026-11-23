@@ -11,16 +11,20 @@ concurrency:
 jobs:
   checks:
     uses: ./.github/workflows/checks.yml
-  deploy:
+  install:
     if: github.repository == 'vibe-coding-milan/email-desk' && github.ref == 'refs/heads/main'
     needs: checks
+    outputs:
+      installed: ${{ steps.publish.outputs.installed }}
+      bundle_sha256: ${{ steps.publish.outputs.bundle_sha256 }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - name: Publish verified code to DreamHost
+      - name: Install code and confirm exact release receipt
+        id: publish
         env:
           GITHUB_TOKEN: ${{ github.token }}
           EMAIL_DESK_DEPLOY_HOST: ${{ secrets.EMAIL_DESK_DEPLOY_HOST }}
@@ -28,4 +32,19 @@ jobs:
           EMAIL_DESK_DEPLOY_KEY: ${{ secrets.EMAIL_DESK_DEPLOY_KEY }}
           EMAIL_DESK_KNOWN_HOSTS: ${{ secrets.EMAIL_DESK_KNOWN_HOSTS }}
           EMAIL_DESK_HOMEPAGE_SHA256: ${{ secrets.EMAIL_DESK_HOMEPAGE_SHA256 }}
-        run: python3 scripts/github-deploy.py
+        run: python3 scripts/github-deploy.py --phase install
+  verify:
+    name: Verify public release
+    needs: install
+    if: needs.install.outputs.installed == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Verify served hashes and access protections
+        env:
+          EMAIL_DESK_HOMEPAGE_SHA256: ${{ secrets.EMAIL_DESK_HOMEPAGE_SHA256 }}
+          EMAIL_DESK_EXPECTED_BUNDLE_SHA256: ${{ needs.install.outputs.bundle_sha256 }}
+        run: python3 scripts/github-deploy.py --phase verify
