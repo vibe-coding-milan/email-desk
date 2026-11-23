@@ -2,6 +2,8 @@
 
 ## Current 0.7.0 contract
 
+Website and matching worker installed and independently verified from PR #24 / functional merge `198fd3e7e16b357a7356f00a9cfafbb07cd46535`. All eight worker files, startup and 36 fictional checks passed, with credentials, encrypted state and cron preserved; installation made zero mailbox/model calls. Real-mail archive outcomes remain scheduled/user acceptance. See HANDOFF.md for the exact website receipt and retained final-connection workflow timeout.
+
 [Focus rounds and achievements](FOCUS_ROUNDS.md) supersedes older interface/history and inbox-preserving completion notes below. Only new explicit owner Handled/Not important decisions request exact-reviewed-message archival. Classifier proposals still cannot archive; pending legacy feedback is unchanged. Guidance retrieval, new-request reopening, 10/5 once-per-card XP and existing custom-label verification remain. The worker archives on the existing schedule, with encrypted write-ahead journaling and exact-message verification. No new scopes, cron, credentials or master change. Immediate Undo ends at a newer revision/worker acknowledgement; it does not restore archived Gmail placement.
 
 
