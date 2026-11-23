@@ -1,5 +1,10 @@
 # Changelog
 
+## Hosted-runner route fix — November 23, 2026
+
+Use macOS for public release verification after paired probes reproduced Ubuntu TCP timeouts and healthy macOS connections to the same host. Retain Ubuntu checks/install, exact archive/receipt validation, complete cross-platform source-manifest binding, TLS/hash/access checks and bounded retries. Add failed-job diagnostics and cross-platform manifest/compression regressions (20 transport/phase tests total). No application/runtime/data changes. Evidence: PR #27.
+
+
 ## Deployment tooling — November 23, 2026
 
 Separate confirmed installation from required public verification on a fresh GitHub runner. Add bounded transient-only retries, named-check diagnostics, same-origin HTTPS redirect enforcement, strict bundle binding and explicit phase summaries. Content/TLS/access failures remain terminal; exhausted connectivity remains failed without re-upload or rollback. Add 18 fictional transport/phase checks and a secret-free network diagnostic workflow. App version/runtime remains 0.7.0. Evidence and acceptance: PR #26 and docs/GITHUB_DEPLOYMENT.md.

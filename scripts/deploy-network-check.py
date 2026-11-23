@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """Read-only public HTTPS diagnostics. No grants, cookies, keys or response bodies."""
-import json,socket,subprocess,time,urllib.request
+import hashlib,json,os,platform,socket,subprocess,time,urllib.request
+from pathlib import Path
+from release_bundle import build
 HOST='mijatovic.com'
 def probe():
+ raw,manifest=build(Path(__file__).resolve().parents[1],os.environ.get('GITHUB_SHA','0'*40))
+ print(json.dumps({'os':platform.system(),'python':platform.python_version(),'bundle_sha256':hashlib.sha256(raw).hexdigest(),'manifest_sha256':hashlib.sha256(json.dumps(manifest,sort_keys=True).encode()).hexdigest()}),flush=True)
  try:addresses=sorted({(socket.AddressFamily(family).name,address[0]) for family,_,_,_,address in socket.getaddrinfo(HOST,443,type=socket.SOCK_STREAM)})
  except OSError as e:addresses=[type(e).__name__]
  print(json.dumps({'host':HOST,'dns':addresses,'proxy_kinds':sorted(urllib.request.getproxies())}),flush=True)

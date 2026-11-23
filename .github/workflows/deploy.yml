@@ -17,6 +17,7 @@ jobs:
     outputs:
       installed: ${{ steps.publish.outputs.installed }}
       bundle_sha256: ${{ steps.publish.outputs.bundle_sha256 }}
+      manifest_sha256: ${{ steps.publish.outputs.manifest_sha256 }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -37,7 +38,7 @@ jobs:
     name: Verify public release
     needs: install
     if: needs.install.outputs.installed == 'true'
-    runs-on: ubuntu-24.04
+    runs-on: macos-15
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -46,5 +47,9 @@ jobs:
       - name: Verify served hashes and access protections
         env:
           EMAIL_DESK_HOMEPAGE_SHA256: ${{ secrets.EMAIL_DESK_HOMEPAGE_SHA256 }}
+          EMAIL_DESK_EXPECTED_MANIFEST_SHA256: ${{ needs.install.outputs.manifest_sha256 }}
           EMAIL_DESK_EXPECTED_BUNDLE_SHA256: ${{ needs.install.outputs.bundle_sha256 }}
         run: python3 scripts/github-deploy.py --phase verify
+      - name: Diagnose a failed public connection
+        if: failure()
+        run: python3 scripts/deploy-network-check.py
