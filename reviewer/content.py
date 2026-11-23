@@ -26,7 +26,9 @@ class VisibleHTML(HTMLParser):
         self.stack, self.output = [], []
 
     def handle_starttag(self, tag, attrs):
-        attrs = dict(attrs)
+        # HTMLParser represents valueless attributes as None (e.g. <div style>).
+        # They are valid HTML and must not abort an account's entire review.
+        attrs = {name: value if value is not None else '' for name, value in attrs}
         style = re.sub(r'\s+', '', attrs.get('style', '').lower())
         hidden = (bool(self.stack and self.stack[-1][1])
                   or tag in {'head', 'script', 'style', 'template', 'noscript'}

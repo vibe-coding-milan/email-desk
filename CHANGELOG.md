@@ -1,5 +1,9 @@
 # Changelog
 
+## Inbox-review HTML parser fix — November 23, 2026
+
+Handle valid valueless HTML attributes without aborting an account review. Keep hidden content excluded and HTML inert. Add parser and full-review coverage regressions; all 38 fictional worker checks pass locally. Saved owner state and failed-account cursor protections remain intact. See docs/HANDOFF.md for diagnosis and live recovery acceptance.
+
 ## Hosted-runner route fix — November 23, 2026
 
 Use macOS for public release verification after paired probes reproduced Ubuntu TCP timeouts and healthy macOS connections to the same host. Retain Ubuntu checks/install, exact archive/receipt validation, complete cross-platform source-manifest binding, TLS/hash/access checks and bounded retries. Add failed-job diagnostics and cross-platform manifest/compression regressions (20 transport/phase tests total). No application/runtime/data changes. Evidence: PR #27.
