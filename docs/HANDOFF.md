@@ -1,5 +1,10 @@
 # Email Desk handoff
 
+## Deployment verification reliability — November 23, 2026
+
+Milan asked to resolve the repeated GitHub deployment errors. PR #26 adds a credential-free public network probe and separates exact-receipt installation from public verification on a fresh runner. Verification preserves all homepage/hash/anonymous/private-path checks, with bounded transient-only retries and immediate failure for certificate, redirect, hash or access mismatches. Fresh-runner probes reached the site normally using both clients; the earlier intermittent provider/network cause has not been isolated. No DNS, firewall, TLS, credential, access, app, Store, worker, mailbox or schedule changes are part of the fix. Eighteen fictional transport/phase checks and existing 28 deployment/34 release checks pass locally. Actual CI and deployment acceptance are tracked in [PR #26](https://github.com/vibe-coding-milan/email-desk/pull/26). See GITHUB_DEPLOYMENT.md for the exact limits and preserved safeguards.
+
+
 ## Focus rounds 0.7.0 — November 23, 2026
 
 Milan requested reconciliation of this chat and other project work, GitHub publication and production deployment. The selected compact pixel game now connects to real authenticated cards, with finite five-item rounds, one-click Pass, inline Guidance/multiple labels, independent Classic mode, read-only date-grouped History, verified robot review timeline, preserved server XP and four encrypted persistent achievements. New Handled/Not important decisions explicitly queue exact-reviewed-message archival; old decisions are untouched. Worker verification preserves all other labels and refuses blind replay after Inbox returns. Immediate Undo cancels only before acknowledgement/new revision and keeps earned XP immutable. Existing Guidance retrieval, master ownership, schedule, credentials and deployment access remain intact. See [FOCUS_ROUNDS.md](docs/FOCUS_ROUNDS.md) for decisions, cross-chat reconciliation, architecture, tests and deferred work.

@@ -53,3 +53,8 @@ Deploy the website/Store first, then prepare the exact reviewed worker commit wi
 ## 0.7.0 frontend and worker
 
 Editable game source lives in frontend/. The build retains the existing fixed public entry filenames and asset allowlist. Publish the authenticated Store/API and website, then install the matching reviewer commit using the existing locked upgrade-code path and domain-owner connection. Do not change grants, activation or cron. Preserve encrypted quest metadata during code rollback; pre-0.7.0 code cannot display achievements or process new archive requests, so prefer a forward fix. Never replay old decisions as archive requests or restore the database for rollback.
+
+
+## Separate installation and public verification
+
+The Deploy Email Desk workflow now reports install and verify as separate required jobs. Installation success confirms the exact bundle and durable receipt; release success additionally requires the fresh runner's homepage/public-hash/access checks. Read the failed job name and named check before taking recovery action. Transient failures receive at most three bounded attempts; hashes, certificates, redirects and security-response failures do not retry. A public-verification failure never triggers another upload or database rollback. See GITHUB_DEPLOYMENT.md and PR #26 for probe evidence and acceptance.

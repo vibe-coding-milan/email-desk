@@ -1,5 +1,10 @@
 # Changelog
 
+## Deployment tooling — November 23, 2026
+
+Separate confirmed installation from required public verification on a fresh GitHub runner. Add bounded transient-only retries, named-check diagnostics, same-origin HTTPS redirect enforcement, strict bundle binding and explicit phase summaries. Content/TLS/access failures remain terminal; exhausted connectivity remains failed without re-upload or rollback. Add 18 fictional transport/phase checks and a secret-free network diagnostic workflow. App version/runtime remains 0.7.0. Evidence and acceptance: PR #26 and docs/GITHUB_DEPLOYMENT.md.
+
+
 ## 0.7.0 — Focus rounds — November 23, 2026
 
 Milan requested reconciliation of this chat and other project work, GitHub publication and production deployment. The selected compact pixel game now connects to real authenticated cards, with finite five-item rounds, one-click Pass, inline Guidance/multiple labels, independent Classic mode, read-only date-grouped History, verified robot review timeline, preserved server XP and four encrypted persistent achievements. New Handled/Not important decisions explicitly queue exact-reviewed-message archival; old decisions are untouched. Worker verification preserves all other labels and refuses blind replay after Inbox returns. Immediate Undo cancels only before acknowledgement/new revision and keeps earned XP immutable. Existing Guidance retrieval, master ownership, schedule, credentials and deployment access remain intact. See [FOCUS_ROUNDS.md](docs/FOCUS_ROUNDS.md) for decisions, cross-chat reconciliation, architecture, tests and deferred work.
