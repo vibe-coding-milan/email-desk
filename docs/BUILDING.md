@@ -98,3 +98,10 @@ Hosting the reviewer independently made operational clarity part of the product.
 ## Simplifying the decision flow — November 23, 2026
 
 The first context rail mixed triage with administration and explanatory copy. Milan’s feedback prompted a smaller nonmodal editor: Attention, Context and Save. A persistent Close header fixes the disappearing exit; removing modal scroll locking keeps the board usable. Cards now use centered Open email / Done / Context controls. Automatic labeling remains intact, and explicit corrections live under Change labels without a search box. The existing server, feedback protocol, encryption, revisions and XP policy are reused. See [the interaction guide](CONTEXT_PANEL.md) and current `design-qa.md` for scope and verification.
+
+
+## Guidance instead of personal notes — November 23, 2026
+
+Version 0.6.1 keeps the optional editor and existing feedback/storage contract, but frames its text as guidance for future sorting. Saved statements remain editable and survive completion/resurfacing. No visible note trail or new navigation is added. The reviewer retrieves bounded owner guidance for related new threads across both accounts and supplies it to the classifier with explicit relevance, scope and stale-progress instructions. A shared sender is a retrieval clue, not a blanket classification rule.
+
+The change lives in public/app.js, public/index.html, reviewer/engine.py and reviewer/model.py. Fictional worker tests exercise same-thread retention, new-thread relationships, project matching, irrelevant/generic matches, owner-address exclusion, whole-entry bounds and delivery to the classifier. No database migration, automatic statement rewriting, master-document cutover, credential or cron change is required. Website and worker deployment/health are verified independently; future actual routing quality remains observational acceptance. See CONTEXT_PANEL.md.

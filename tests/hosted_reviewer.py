@@ -12,7 +12,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from cryptography.fernet import Fernet
-from reviewer.engine import Engine, card_from, check_revisions, scan, load_thread, routine_labels
+from reviewer.engine import Engine, card_from, check_revisions, scan, load_thread, routine_labels, related_guidance, context_thread
 from reviewer.google import Gmail, bounded_json
 from reviewer.model import validate, schema, source_key, source_rows, ground_deadlines
 from reviewer.state import Journal, UTC, iso, scheduled_slot
@@ -34,6 +34,56 @@ class PublicationCompatibility(unittest.TestCase):
         engine.publish(payload)
         self.assertEqual(engine.bridge.payload,original)
         self.assertEqual(payload,original)
+
+
+class GuidanceRetrieval(unittest.TestCase):
+    def setUp(self):
+        self.card = {'id': 'saved', 'account': 'mijatovic@gmail.com', 'thread_id': 'old',
+                     'sender': 'Riley <riley@contractor.example>', 'subject': 'Ridgewood roof estimate',
+                     'note': 'Ridgewood roof work concerns our family property. Approval requests need my attention.',
+                     'state': 'handled', 'updated_at': '2026-11-23T10:00:00Z'}
+        self.thread = {'account': 'milan@mijatovic.com', 'thread_id': 'new', 'messages': [
+            {'sender': 'Riley <riley@contractor.example>', 'subject': 'Start date', 'text': 'Can you approve Tuesday?'}]}
+
+    def test_new_thread_cross_account_gets_saved_relationship_without_mutating_source(self):
+        before = copy.deepcopy(self.card)
+        result = related_guidance(self.thread, [self.card])
+        self.assertEqual(result[0]['guidance'], self.card['note'])
+        self.assertEqual(result[0]['match'], 'correspondent')
+        self.assertNotIn('state', result[0])  # A handled card is not a future dismissal rule.
+        self.assertEqual(self.card, before)
+
+    def test_new_correspondent_can_match_specific_project_but_not_generic_words_or_labels(self):
+        self.thread['messages'][0] = {'sender': 'Casey <casey@roofer.example>', 'subject': 'Ridgewood roof inspection', 'text': 'Progress photos'}
+        self.assertEqual(len(related_guidance(self.thread, [self.card])), 1)
+        self.thread['messages'][0].update(subject='Family building update', text='Please reply about this important email')
+        self.thread['labels'] = ['Home']
+        self.card['labels'] = ['Home']
+        self.assertEqual(related_guidance(self.thread, [self.card]), [])
+
+    def test_owner_address_is_not_a_cross_thread_relationship_and_empty_note_is_not_learning(self):
+        self.card['sender'] = self.thread['messages'][0]['sender'] = 'Milan <mijatovic@gmail.com>'
+        self.assertEqual(related_guidance(self.thread, [self.card]), [])
+        self.card['sender'] = self.thread['messages'][0]['sender'] = 'Riley <riley@contractor.example>'
+        self.card['note'] = ''
+        self.card['state'] = 'dismissed'
+        self.assertEqual(related_guidance(self.thread, [self.card]), [])
+
+    def test_same_thread_keeps_guidance_in_existing_card_without_duplicate_candidate(self):
+        self.thread.update(account=self.card['account'], thread_id=self.card['thread_id'])
+        self.assertEqual(related_guidance(self.thread, [self.card]), [])
+        gmail = FakeGmail('mijatovic@gmail.com')
+        raw = gmail.get('threads/' + gmail.thread)
+        thread = context_thread(gmail.account, raw, [gmail.id], self.card, gmail)
+        self.assertEqual(thread['existing_card']['note'], self.card['note'])
+
+    def test_bounded_whole_entries_deduplicate_and_latest_edit_replaces_old_text(self):
+        cards = [{**self.card, 'id': str(i), 'note': ('Guidance %d ' % i) + 'x' * 7900} for i in range(8)]
+        result = related_guidance(self.thread, cards + [cards[-1]])
+        self.assertEqual(len(result), 3)
+        self.assertTrue(all(len(entry['guidance']) > 7900 for entry in result))
+        self.card['note'] = 'Requests for approval need attention; progress photos are worth knowing.'
+        self.assertEqual(related_guidance(self.thread, [self.card])[0]['guidance'], self.card['note'])
 
 
 class ReaderBoundaries(unittest.TestCase):
@@ -348,9 +398,11 @@ class FakeGmail:
 
 class FakeModel:
     calls = 0
+    inputs = []
     def __init__(self, *unused): pass
     def classify(self, threads, master):
         type(self).calls += 1
+        type(self).inputs.extend(copy.deepcopy(threads))
         return [{'account': t['account'], 'thread_id': t['thread_id'],
                  'messages': [{'id': mid, 'labels': ['Home']} for mid in t['candidate_message_ids']],
                  'bucket': 'action', 'description': 'Send the requested project photos.', 'reason': 'A direct request is outstanding.',
@@ -370,6 +422,7 @@ class EngineIntegration(unittest.TestCase):
         self.patch = patch('reviewer.engine.Model', FakeModel)
         self.patch.start()
         FakeModel.calls = 0
+        FakeModel.inputs = []
 
     def tearDown(self):
         self.patch.stop()
@@ -394,6 +447,21 @@ class EngineIntegration(unittest.TestCase):
                 self.assertEqual(client.writes, [(client.id, ['Home'])])
                 self.assertIn(client.id, journal.data['accounts'][account]['done'])
                 self.assertIn('cursor', journal.data['accounts'][account])
+
+    def test_review_supplies_related_guidance_to_classifier_from_closed_card(self):
+        bridge = FakeBridge()
+        saved = {'id': 'prior', 'account': 'mijatovic@gmail.com', 'thread_id': 'abcdef9876543210',
+                 'revision': 2, 'state': 'handled', 'sender': 'Example <a@example.test>',
+                 'subject': 'Earlier project', 'note': 'This project concerns the family roof.',
+                 'message_ids': ['abcdef9876543211'], 'labels': ['Home']}
+        bridge.cards['prior'] = copy.deepcopy(saved)
+        with Journal(self.directory) as journal:
+            self.prepare(journal)
+            result = Engine(journal, bridge, self.clients, ['Home', 'Needs Review'], self.config, self.slot).run()
+            self.assertEqual(result['errors'], 0)
+            self.assertTrue(FakeModel.inputs)
+            self.assertTrue(all(t['related_guidance'][0]['guidance'] == saved['note'] for t in FakeModel.inputs))
+            self.assertEqual(bridge.cards['prior'], saved)
 
     def test_failed_account_never_advances_its_cursor_or_erases_other_cards(self):
         self.clients['milan@mijatovic.com'].fail = True

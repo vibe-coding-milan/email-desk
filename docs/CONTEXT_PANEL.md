@@ -1,37 +1,31 @@
-# The simpler Email Desk — 0.6.0
+# Guidance in Email Desk — 0.6.1
 
 ## Everyday review
 
-Cards show a sender, subject and short summary. Open email goes to the original Gmail conversation. Done records that you are finished with the card. Context opens the optional editor. The robot, pixel section headings, shared palette and brief confirmed-decision rewards retain the game-inspired character; ordinary reading and controls use Inter.
+The board stays Needs action and Worth knowing. Cards offer Open email, Done and Guidance. The existing optional panel contains Attention (Needs action, Worth knowing, Not important), one editable Guidance field, Change labels and the existing Save button. Close stays visible and desktop board scrolling stays available. There is no guidance dashboard, rule builder, note timeline or extra navigation.
 
-The two board columns stay Needs action and Worth knowing. Within Context, Attention offers Needs action, Worth knowing or Not important. Save commits the choice and note together. Not important moves the card to existing dismissed history rather than creating another column, archiving Gmail, or adopting a sender-wide rule. History offers explicit Reopen. Editing a closed card's note does not silently reopen it, and reopening never awards XP twice.
+Guidance asks: “What should I remember when sorting emails like this?” It is for relationship facts and sorting preferences, not personal note-taking. For example: “This contractor handles our family property. Approval requests need attention; routine progress photos are worth knowing.” Save replaces the current statement. Opening or closing the panel does not require an edit. Done, Not important, later summaries and resurfacing retain saved guidance. Existing text is preserved exactly, without automatic rewriting or a schema migration. Earlier machine-summary snapshots remain stored but are no longer displayed in this panel.
 
-## Labeling is retained
+## How future reviews use guidance
 
-The scheduled reviewer continues using the approved shared 37-label vocabulary. Change labels opens the existing explicit custom-label correction controls, with selected labels first and no search field or result counter. Save queues that exact correction using the existing revision-checked feedback path. Gmail changes are reported applied only after exact-message verification. Inbox, unread, starred and other system labels remain outside this action.
+The current thread supplies its saved owner guidance through its existing card. For other conversations, the private reviewer retrieves at most three whole, deduplicated guidance entries, up to 26,000 JSON bytes in total. Candidate matching uses an exact non-owner correspondent address or at least two substantive shared words from the saved subject/guidance and current message content. Display names, shared owner addresses, topic labels and handled/dismissed states alone cannot establish a match. Both accounts share this memory.
 
-## Context and rules
+Retrieved entries are candidates, not rules. The model must verify the actual relationship, project and message purpose, distinguish durable facts from old task progress, and apply guidance only where relevant. A one-off dismissal or completed task is not a sender-wide preference. Existing taxonomy, source/revision checks, exact-message label verification, reopening restrictions and mail-action boundaries still apply. No model rewrites guidance or changes the master playbook. Clearing a statement removes that card from future related-guidance retrieval; historical audit events remain preserved.
 
-Notes and decisions remain encrypted with their conversation and inform later reviews. They do not retrain model weights or silently become broad rules. The Google Doc remains the master playbook, and Markdown remains a reference snapshot. System contains the playbook link, latest reported rule fetch, feedback status and explanations of how context is used. That source information is deliberately absent from the everyday editor.
+This is bounded contextual memory supplied during review, not model-weight training or a guarantee of perfect classification. Matching can miss a relationship when the sender and subject vocabulary both change. More saved text does not automatically mean better routing. System explains these limits; everyday triage stays uncluttered. The live Google Doc remains the master, with Markdown as a reference snapshot.
 
-## Editor behavior
+## Labeling, decisions and safe editing
 
-The desktop editor is nonmodal. Opening it does not shrink cards or lock board scrolling. Its labelled Close control stays outside the independently scrolling body. Escape also closes and returns focus to the originating Context control. Closing or switching cards retains the current unsaved draft in page memory; refreshing or signing out is a separate action. Small screens use the available viewport with the same persistent close header.
+Change labels retains the approved 37-label vocabulary, selected first, without label search/counts. Save queues exact-message custom-label corrections; applied status requires verified Gmail read-back. Done records handled, Not important records dismissed history, and neither sends, archives nor changes system labels. Editing guidance on a closed card does not reopen it or award more XP. History retains explicit Reopen.
 
-A conflicting save preserves the draft and exposes an explicit Discard draft & load latest action. Loading the latest replaces the local unsaved edits only after its saved-board read succeeds. Existing idempotent operation retries, authentication, encryption and revision checks remain intact.
+Draft retention, visible Save errors, idempotent retry and revision checks are unchanged. A conflicting save preserves the draft and offers Discard draft & load latest. Stored private card/feedback payloads remain encrypted. The public demo uses the same wording with fictional browser-memory state; it does not perform classification or teach the private reviewer.
 
-## Status, progress and boundaries
+## Live testing
 
-The main review line is compact; missed scheduled slots, unconfirmed coverage and actual failures remain visible. System retains detailed run/coverage/usage reporting. Per-card timing/XP/topic chips are removed from everyday triage; earned XP and the approved 10/5 policy remain stored and available through the existing progress summary. No credit balance, per-run label count, forecast or new spending policy is inferred.
+1. Open Guidance. Confirm the saved statement and the prompt explain future sorting, with no notes timeline or new navigation.
+2. Edit guidance intentionally, Save, close and reopen. Confirm the statement persists. Leave it unchanged when there is nothing to teach.
+3. Done/Not important and later resurfacing must retain guidance. Guidance edits in History must not reopen the card or duplicate XP.
+4. Change labels retains explicit correction. Check System for later verification; a saved statement is not proof a future review has applied it.
+5. After a future scheduled review, inspect a related new conversation and an unrelated one. Confirm the guidance helps where applicable without creating a blanket sender rule.
 
-The public demo uses the same editor with invented conversations in browser memory. It cannot read or change private mail, cards, feedback or rules. The local preview server is not deployable production software.
-
-## Live testing checklist
-
-1. Sign in and open Context on a card. Confirm that the three attention choices and note are easy to scan.
-2. Scroll a long board and an expanded Change labels list; Close should remain visible.
-3. Save a small note or an intentional label correction. Inspect the saved result; actual label execution remains a later verified reviewer operation.
-4. Mark a card Done or Not important, find it in History, and Reopen if desired. Existing notes and XP should remain intact.
-5. Inspect phone and dark-mode layouts. Report the screen size and specific control if anything clips or feels unnecessary.
-
-Production publication and preservation evidence are recorded in README, CHANGELOG and HANDOFF after acceptance. Local/browser checks do not establish physical-device, screen-reader, cross-device or unattended-review acceptance.
+Source tests verify retrieval, bounds, preservation and actual delivery to the classifier with fictional data. Host installation/health and website acceptance are separate from observing model relevance on future real mail. Release acceptance is recorded in the release PR and HANDOFF; do not manufacture production email or decisions for QA.

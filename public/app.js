@@ -224,7 +224,7 @@ function dateLabel(date) { const d = new Date(date); return Number.isNaN(d.getTi
 const category = c => c.user_category || c.category;
 const labels = c => c.user_labels ?? c.labels;
 const same = (a, b) => JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
-const feedbackLabel = {pending: 'Saved · awaiting review', applied: 'Labels updated in Gmail', recorded: 'Context reviewed', superseded: 'Replaced by a newer decision', error: 'Feedback needs another attempt'};
+const feedbackLabel = {pending: 'Saved · awaiting review', applied: 'Labels updated in Gmail', recorded: 'Guidance reviewed', superseded: 'Replaced by a newer decision', error: 'Feedback needs another attempt'};
 function notify(message) { clearTimeout(toastTimer); $('toastMessage').textContent = message; $('toast').hidden = false; toastTimer = setTimeout(() => { $('toast').hidden = true; }, 7000); }
 function celebrate(earned, levelUp) {
   if (!earned && !levelUp) return;
@@ -380,11 +380,11 @@ function renderSystem() {
   for(const run of systemData.runs||[]) {const detail=run.details; runs.append(node('p','run-row',stampLabel(run.finished_at)+' · '+reviewOutcome(run).label+(reviewOutcome(run).olderOngoing?' · Older mail review ongoing':'')+' · '+(detail ? (detail.trigger==='scheduled'?'Scheduled '+stampLabel(detail.scheduled_at):'Manual')+' · '+detail.phase+' · attempt '+detail.attempt+' · started '+stampLabel(detail.started_at)+' · review completed '+stampLabel(detail.completed_at) : 'Legacy · trigger and slot unknown')));}
   if(!systemData.runs?.length) runs.append(node('p','','No publications recorded yet.')); root.append(runs);
   const feedback=systemSection('Feedback awaiting review');
-  feedback.append(node('p','','Context is saved immediately. Gmail label changes are confirmed only after exact-message verification.'));
+  feedback.append(node('p','','Guidance is saved immediately. Gmail label changes are confirmed only after exact-message verification.'));
   for(const event of systemData.feedback||[]) { const item=node('div','feedback-row'), link=node('button','','Find card');link.type='button';link.onclick=()=>{const c=data.cards.find(c=>c.id===event.card_id);if(!c){notify('This card is not loaded.');return;}opened.add(c.id);$('historySearch').value='';$('historyState').value='all';$('historySince').value='';setDeskView(c.state==='open'?'board':'history');render();const target=$('card-'+c.id);target.tabIndex=-1;target.focus();target.scrollIntoView({block:'start'});target.querySelector('.detail-toggle')?.click();};item.append(node('p','',event.subject+' · '+(feedbackLabel[event.status]||event.status)+' · '+stampLabel(event.created_at)),link);if(event.explanation)item.append(node('p','',event.explanation));feedback.append(item); }
   if(!systemData.feedback?.length) feedback.append(node('p','','No pending or failed feedback in the saved queue.'));
   if(systemData.remaining)feedback.append(node('p','',systemData.remaining+' more events remain.'));root.append(feedback);
-  const rules=systemSection('Organization rules'), master=node('a','','Open the master Google Doc');master.href='https://docs.google.com/document/d/1ztPK3AzpgE8cgl3CAjiCFQVEw4LjlksIitJmg9T1BJc/edit';master.target='_blank';master.rel='noopener noreferrer';rules.append(node('p','','Notes and attention decisions are saved with the conversation and used during later reviews. Explicit label corrections are applied only after exact-message verification. Dismissal does not retrain model weights or adopt a broad rule; the master playbook governs shared preferences.'),master,node('p','','Last successful rule fetch: '+stampLabel(report?.playbook?.fetched_at)),node('p','',report?.playbook?.revision?'Source revision: '+report.playbook.revision:'Source revision was not recorded. The Google Doc remains master; the local Markdown is a reference.'));root.append(rules);
+  const rules=systemSection('Organization rules'), master=node('a','','Open the master Google Doc');master.href='https://docs.google.com/document/d/1ztPK3AzpgE8cgl3CAjiCFQVEw4LjlksIitJmg9T1BJc/edit';master.target='_blank';master.rel='noopener noreferrer';rules.append(node('p','','Guidance stays with its conversation and relevant saved guidance is supplied for related future emails. Shared senders or subject words are clues, not blanket rules. Guidance is editable and does not retrain model weights. Explicit label corrections are applied only after exact-message verification. Dismissal does not retrain model weights or adopt a broad rule; the master playbook governs shared preferences.'),master,node('p','','Last successful rule fetch: '+stampLabel(report?.playbook?.fetched_at)),node('p','',report?.playbook?.revision?'Source revision: '+report.playbook.revision:'Source revision was not recorded. The Google Doc remains master; the local Markdown is a reference.'));root.append(rules);
 }
 
 // Compact visual timing keeps the full policy/date explanation available to assistive tech and focus.
@@ -466,15 +466,6 @@ function card(c) {
   const context = node('div', 'card-context'); context.append(tags); summary.append(context); details.append(summary);
   const body = node('div', 'card-body'); body.id = 'details-' + c.id; body.hidden = true;
   if (c.question) body.append(node('p', 'question', c.question));
-  if (c.context_history?.length) {
-    const history = node('details', 'earlier-context'); history.append(node('summary', '', 'Earlier context · ' + c.context_history.length));
-    for (const previous of [...c.context_history].reverse()) {
-      const entry = node('section', 'context-entry'); entry.append(node('h4', '', previous.subject));
-      for (const key of ['description', 'reason', 'deadline', 'question']) if (previous[key]) entry.append(node('p', '', previous[key]));
-      history.append(entry);
-    }
-    body.append(history);
-  }
   const link = node('a', 'email-link primary', 'Open email'); link.append(icon('right')); link.href = 'https://mail.google.com/mail/u/?authuser=' + encodeURIComponent(c.account) + '#all/' + encodeURIComponent(c.thread_id); link.target = '_blank'; link.rel = 'noopener noreferrer';
   const form = node('form', 'feedback-form'); form.setAttribute('aria-label', 'Feedback for ' + c.subject);
   const fields = node('fieldset', 'feedback-fields'), row = node('div', 'fields');
@@ -483,7 +474,7 @@ function card(c) {
   const picker = node('details', 'label-picker'), pickerSummary = node('summary', '', 'Change labels'), boxes = node('div', 'label-options'), chosen = draft?.labels ?? labels(c); picker.append(pickerSummary);
   for (const l of data.labels) { const label = node('label'), box = node('input'); box.type = 'checkbox'; box.name = 'labels'; box.value = l; box.checked = chosen.includes(l); label.append(box, node('span', '', l)); boxes.append(label); }
   labelChoices(picker,boxes); picker.append(boxes); fields.append(picker);
-  const noteLabel = node('label', 'field', 'Context'), note = node('textarea'); note.name = 'note'; note.rows = 3; note.maxLength = 8000; note.placeholder = 'What should the next review know?'; note.value = draft?.note ?? c.note ?? ''; noteLabel.append(note); fields.insertBefore(noteLabel,picker); form.append(fields);
+  const noteLabel = node('label', 'field', 'Guidance'), note = node('textarea'); note.name = 'note'; note.rows = 3; note.maxLength = 8000; note.placeholder = 'What should I remember when sorting emails like this?'; note.value = draft?.note ?? c.note ?? ''; noteLabel.append(note); fields.insertBefore(noteLabel,picker); form.append(fields);
   const result = node('p', 'save-result'); result.setAttribute('role', 'status');
   const actions = node('div', 'save-row'), save = node('button', 'context-save', 'Save'); save.type = 'submit'; save.disabled = !draft; save.hidden = !draft; actions.append(save, result); form.append(actions); body.append(form); wrapper.append(details);
   const quick = node('div', 'quick-actions'), quickButtons = []; quick.append(link);
@@ -493,7 +484,7 @@ function card(c) {
     button.setAttribute('aria-label',caption + ': ' + c.subject);
     button.onclick=()=>{ decision=value; changed(); form.requestSubmit(); }; quick.append(button); quickButtons.push(button);
   }
-  const toggle = node('button', 'detail-toggle', 'Context'); toggle.type = 'button'; toggle.setAttribute('aria-label', 'Context: ' + c.subject); toggle.setAttribute('aria-controls', body.id); toggle.setAttribute('aria-expanded', String(!body.hidden));
+  const toggle = node('button', 'detail-toggle', 'Guidance'); toggle.type = 'button'; toggle.setAttribute('aria-label', 'Guidance: ' + c.subject); toggle.setAttribute('aria-controls', body.id); toggle.setAttribute('aria-expanded', String(!body.hidden));
   function setExpanded(value) { if (!value) { closeContextPanel(); return; } opened.add(c.id); toggle.setAttribute('aria-expanded','true'); openContextPanel(body,c,toggle,wrapper,()=>{opened.delete(c.id);toggle.setAttribute('aria-expanded','false');}); }
   const closeDetails=$('closeContextPanel');
   toggle.onclick = () => setExpanded(body.hidden); quick.insertBefore(toggle, quick.querySelector('.dismiss')); wrapper.append(quick, body);
@@ -532,7 +523,7 @@ function card(c) {
       if(c.state!=='open' && r.result.card.state==='open') { setDeskView('board'); opened.add(c.id); }
       busy(false); closeContextPanel(false); render();
       const earned = r.result.xp_earned || 0, levelUp = progress().level > previousLevel;
-      notify((levelUp ? 'Level ' + progress().level + '! ' : '') + (r.result.card.state === c.state ? 'Context saved' : r.result.card.state === 'handled' ? 'Done' : r.result.card.state === 'dismissed' ? 'Not important' : 'Reopened') + (earned ? ' · +' + earned + ' XP' : ''));
+      notify((levelUp ? 'Level ' + progress().level + '! ' : '') + (r.result.card.state === c.state ? 'Guidance saved' : r.result.card.state === 'handled' ? 'Done' : r.result.card.state === 'dismissed' ? 'Not important' : 'Reopened') + (earned ? ' · +' + earned + ' XP' : ''));
       celebrate(earned, levelUp);
       if (levelUp) { $('level').classList.remove('level-up'); void $('level').offsetWidth; $('level').classList.add('level-up'); }
       if (hadFocus) { const target = r.result.card.state === 'open' || deskView === 'history' ? $('card-' + c.id)?.querySelector('.detail-toggle') : $(category(c) + 'Cards').querySelector('.quick-actions button'); if (target) target.focus({preventScroll: true}); else { const heading = $(category(c) + 'Title'); heading.tabIndex = -1; heading.focus({preventScroll: true}); } }
@@ -573,7 +564,7 @@ today(); setInterval(today, 60000);
 (() => {
   const examples = [
     {id: 'garden', sender: 'Maple Street volunteers', subject: 'Confirm your garden volunteer shift', description: 'The garden crew needs your yes or no for the morning planting shift.', category: 'action', label: 'Neighborhood', reason: 'The later supply update leaves the attendance question unanswered.', next: 'Decide whether to take the morning shift, then reply in your email app.'},
-    {id: 'shelf', sender: 'Rowan at Corner Workshop', subject: 'The shelf plan needs your pick', description: 'Choose a finish so the workshop can start your bookshelf.', category: 'action', label: 'Home / Projects', reason: 'Work is on hold until you choose a finish.', next: 'Add your preferred finish in a note for the next review.'},
+    {id: 'shelf', sender: 'Rowan at Corner Workshop', subject: 'The shelf plan needs your pick', description: 'Choose a finish so the workshop can start your bookshelf.', category: 'action', label: 'Home / Projects', reason: 'Work is on hold until you choose a finish.', next: 'Tell the agent how workshop requests should be sorted.'},
     {id: 'library', sender: 'Lantern Library', subject: 'The repair café is coming back', description: 'The library’s monthly repair café returns with volunteers offering household repairs.', category: 'awareness', label: 'Around town', reason: 'A local event that requires no RSVP.', next: 'Keep it on your radar, or dismiss it if it is not for you.'},
     {id: 'tools', sender: 'Small Tools Dispatch', subject: 'Window organizer', description: 'A window organizer with custom keyboard shortcuts.', category: 'awareness', label: 'Technology', reason: 'Software update. No reply needed.', next: 'Read when you have space. Dismiss when you have the gist.'}
   ];
@@ -688,8 +679,8 @@ today(); setInterval(today, 60000);
     }
     picker.append(pickerTitle); labelChoices(picker,boxes); picker.append(boxes); form.append(picker);
     const readLabels = () => [...boxes.querySelectorAll('input:checked')].map(input => input.value);
-    const label = node('label','field','Context'), note = node('textarea');
-    note.rows = 3; note.maxLength = 500; note.value = c.draftNote ?? c.note; note.placeholder = 'Add context for the next review.'; label.append(note); form.insertBefore(label,picker);
+    const label = node('label','field','Guidance'), note = node('textarea');
+    note.rows = 3; note.maxLength = 500; note.value = c.draftNote ?? c.note; note.placeholder = 'What should I remember when sorting emails like this?'; label.append(note); form.insertBefore(label,picker);
     note.oninput = () => { c.draftNote = note.value; }; categoryInput.onchange = () => { c.draftCategory = categoryInput.value; c.draftDismiss = categoryInput.dismissed; };
     const result = node('p','save-result'), saveRow = node('div','save-row'), save = node('button','context-save','Save'); save.type = 'submit'; save.hidden=true; save.disabled=true;
     result.setAttribute('role','status'); saveRow.append(save,result); form.append(saveRow); body.append(form);
@@ -726,7 +717,7 @@ today(); setInterval(today, 60000);
     form.addEventListener('input',contextChanged); form.addEventListener('change',contextChanged);
     function contextChanged() {
       const dirty=(categoryInput.dismissed && c.state === 'open') || note.value !== c.note || categoryInput.value !== c.category || !same(readLabels(),c.labels ?? [c.label]);
-      save.hidden=false; save.disabled=!dirty; save.textContent='Save'; result.textContent=dirty?'Unsaved context':'';
+      save.hidden=false; save.disabled=!dirty; save.textContent='Save'; result.textContent=dirty?'Unsaved changes':'';
     }
     article.dataset.category = c.category;
     const actions = node('div','quick-actions');
@@ -735,8 +726,8 @@ today(); setInterval(today, 60000);
       button.append(node('span','decision-caption',caption)); button.dataset.outcome=outcome;
       button.setAttribute('aria-label',caption + ': ' + c.subject); button.onclick = () => decide(outcome); actions.append(button);
     }
-    const toggle = node('button','detail-toggle','Context'); toggle.type = 'button';
-    toggle.setAttribute('aria-label','Context: ' + c.subject); toggle.setAttribute('aria-controls',body.id); toggle.setAttribute('aria-expanded',String(!body.hidden));
+    const toggle = node('button','detail-toggle','Guidance'); toggle.type = 'button';
+    toggle.setAttribute('aria-label','Guidance: ' + c.subject); toggle.setAttribute('aria-controls',body.id); toggle.setAttribute('aria-expanded',String(!body.hidden));
     toggle.onclick = () => { toggle.setAttribute('aria-expanded','true'); openContextPanel(body,c,toggle,article,()=>{c.expanded=false;toggle.setAttribute('aria-expanded','false');},true); };
     contextChanged();
     actions.insertBefore(toggle, actions.querySelector('.dismiss')); article.append(actions,body);
@@ -745,7 +736,7 @@ today(); setInterval(today, 60000);
   function reset() {
     generation++; pending.clear(); state = createGuestDay(batches); levelRewardUntil = 0;
     clearTimeout(rewardTimer); $('reward').hidden = true; $('demoHistory').open = false;
-    renderDemo(); $('demoAnnouncement').textContent = 'Try Context, add a note, then mark a card Done. You can skip to the next review.';
+    renderDemo(); $('demoAnnouncement').textContent = 'Give sorting guidance, then mark a card Done. You can skip to the next review.';
     if (guestActive) runClock();
   }
   function enter() {

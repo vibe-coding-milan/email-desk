@@ -1,3 +1,15 @@
+# Guidance refinement 0.6.1 — November 23, 2026
+
+Local result: passed. Live acceptance is recorded separately in the release PR.
+
+Scoped changes use the accepted 0.6.0 interface as the visual target: existing typography, tokens, panel size, persistent Close, Attention/Change labels/Save and game-inspired shell are unchanged. Context becomes Guidance with a future-sorting prompt; the earlier machine-summary trail is omitted. No assets, navigation or new UI components.
+
+Browser inspection used fictional owner data at 1280×720 and fictional demo data at 320×740 in dark mode. The desktop optional panel and phone full-viewport panel retain centered controls and visible Close. Saved guidance was observed after Save, close/reopen and completion/history; owner unsaved drafts survived Close. Not important plus a label correction retained guidance in History. All 37 checkboxes remain, with no label-search field, modal, body scroll lock or earlier-context trail. Model retrieval/scoping tests cover new/same/unrelated conversations and exclude generic-only/owner-address/label-only matching. The end-to-end fictional worker verifies guidance actually reaches the classifier and preserves its source card. No real mail or production decisions are used for QA.
+
+The prior passed 0.6.0 design comparison below remains the baseline. The user approved this wording/behavior refinement in conversation; no visual redesign was requested. Physical-device/screen-reader/cross-device acceptance and model relevance on future real mail are separate.
+
+---
+
 # Simpler Email Desk 0.6.0 — November 23, 2026
 
 final result: passed
