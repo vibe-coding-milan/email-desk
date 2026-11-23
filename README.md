@@ -6,7 +6,7 @@ Email Desk turns inbox conversations into two useful views: **Needs action** and
 
 **[Try the live demo](https://mijatovic.com/email-desk/)** · **[How I built it](docs/BUILDING.md)** · **[Release history](CHANGELOG.md)**
 
-Choose **Play the demo** to explore an accelerated day with twelve fictional conversations. You can skip to later reviews without clearing every card. Try handling a card, changing a label, adding guidance, and skipping to the next review. Decisions move into history, earn XP, and carry through later arrivals. Demo changes live in browser memory and reset on restart or reload; no sign-in or inbox access is needed.
+Choose **Play the demo** for a five-item focus round with fictional conversations. Handle, pass, change labels, add Guidance, explore Classic view and unlock achievements. Demo changes live in browser memory and reset on reload; no sign-in or inbox access is needed.
 
 ## The problem
 
@@ -27,9 +27,10 @@ The [build notes](docs/BUILDING.md) connect these choices to source files, tests
 
 ## What the app does
 
-Cards show a short conversation summary with Open email, Done and Guidance. The optional editor has three attention choices—Needs action, Worth knowing and Not important—plus editable sorting guidance and Save. Change labels retains manual correction without a search interface. Done records completion; Not important moves the card into history. Neither changes Inbox/read state or sends email. The editor’s Close control stays visible while its contents scroll; desktop board scrolling remains available.
+Sign-in opens a focus round of up to five items, one at a time, with a separate Worth knowing round and an independent Classic list. Inline Guidance, multiple shared topic labels, source links, a robot review timeline and the XP meter retain the useful context. History is read-only and grouped by date.
 
-The interface pairs readable Inter text and pixel branding with light, dark, and system themes, illustrated empty states, and a four-frame robot companion. The companion plays one short greeting and settles; reduced-motion preferences keep it still. XP rewards confirmed decisions once per card: 10 XP within 48 hours of receipt and 5 XP afterward. Existing awards stay earned.
+Handled and Not important save a decision and request archiving of the exact reviewed messages at the next scheduled review. Pass moves an item to the back without archiving or awarding XP. Pending and failed archive requests remain visible. New replies, existing decisions, labels, stars and read state are protected. Four persistent achievements reward follow-through without bonus XP or streak pressure. [Interaction, storage and archive contract](docs/FOCUS_ROUNDS.md).
+
 
 ## How it works
 
@@ -44,7 +45,7 @@ DreamHost cron → New York schedule dispatcher → bounded review
 Public guest demo → fictional browser-memory state
 ```
 
-The frontend uses plain JavaScript, HTML, and CSS. The backend uses PHP 8.2+, SQLite, and sodium encryption for stored card and feedback payloads. Python handles packaging, deployment, and bridge tooling. GitHub Actions checks and deploys reviewed code to the existing DreamHost site.
+The welcome and System screens use plain JavaScript, HTML and CSS; the game workspace uses locally bundled React and Motion. Editable frontend source lives under frontend/. The backend uses PHP 8.2+, SQLite, and sodium encryption for stored card and feedback payloads. Python handles packaging, deployment, and bridge tooling. GitHub Actions checks and deploys reviewed code to the existing DreamHost site.
 
 Private API operations require authentication. State and configuration live outside web root; reviewer and deployment keys have separate forced commands. The guest demo cannot read or change the private board.
 
@@ -72,6 +73,8 @@ Open http://127.0.0.1:8000/. The public demo is available without signing in; th
 For checks, use Node.js and Python 3:
 
 ```sh
+npm ci
+npm run build
 npm run check
 ```
 
@@ -79,17 +82,7 @@ This covers JavaScript syntax, local assets, shared labels, guest-day behavior, 
 
 ## Current state
 
-Published through [PR #22](https://github.com/vibe-coding-milan/email-desk/pull/22), merge `1558a78aa1ed5eb345c6d68e5ea3918652718299`, receipt `arcade-20261123T174912147840Z`. [Source CI 45231350210](https://github.com/vibe-coding-milan/email-desk/actions/runs/45231350210) and [deployment 45231524266](https://github.com/vibe-coding-milan/email-desk/actions/runs/45231524266) passed. Independent exact receipt/bundle, all 28 public hashes, homepage guard and 27 access checks passed; all 87 cards, guidance, decisions, XP, board metadata and pending feedback matched the private baseline. Live owner inspection was read-only; the published fictional demo saved/reopened guidance without browser warnings/errors.
-
-The separate private worker is installed from the same functional merge, with all eight manifest files verified, healthy startup and fictional related/unrelated guidance smoke passed. Under-lock checks confirmed unchanged credentials, encrypted journal, configuration, activation and cron; old code was retained. Installation made zero mailbox/model calls. Future real-mail relevance and matching quality remain observational acceptance. Documentation-only follow-ups retain identical runtime bytes and do not require worker reinstallation.
-
-
-Guidance replaces the personal-note framing in the existing panel. It persists across completion and resurfacing; the reviewer supplies bounded relevant guidance for new conversations as well as the original thread. No new screen, timeline, model-weight training or automatic playbook edits are introduced. [Behavior and testing](docs/CONTEXT_PANEL.md). Website and private worker are installed and independently verified.
-
-
-**Version 0.6.1 is live with Guidance.** The simpler interface retains automatic labeling, manual corrections, saved guidance and the two-bucket board. See [the interaction guide](docs/CONTEXT_PANEL.md). A completed review of both recent inboxes says Updated; separate older-mail work says Older mail review ongoing. Unfinished recent scans say Review ongoing and errors say Needs attention. Board health separates recent inbox freshness from historical catch-up. Scheduled checkpoints use explicit run identity; manual and legacy publications do not impersonate scheduled success. History has its own view with search/status/date filters. The private System view shows run history, pending feedback, master-source provenance and aggregate API tokens/calculated costs by date and work type. No credit balance, monthly forecast or spending cap is inferred. See [current review-status meanings and acceptance](docs/REVIEW_STATUS.md) and the [0.5.0 feature record](docs/PRODUCT_UPDATE_050.md).
-
-Published through [PR #20](https://github.com/vibe-coding-milan/email-desk/pull/20), merge `d98ea58726e15d889cd26aa2f4630a04bad78342`, receipt `arcade-20261123T155257725392Z`. [Source CI 45209628930](https://github.com/vibe-coding-milan/email-desk/actions/runs/45209628930) and [deployment 45210050440](https://github.com/vibe-coding-milan/email-desk/actions/runs/45210050440) passed. Independent receipt/bundle, all 28 public hashes and 27 live access checks passed. All 87 saved cards, notes, decisions, XP, reported history/checkpoints and pending feedback matched the private baseline. Live owner inspection was read-only; the public demo was tested with fictional feedback and no browser warnings/errors. Documentation-only follow-ups can carry a newer receipt with identical runtime files.
+Version 0.7.0 integrates the selected game flow and persistent achievements with the production board. See [focus rounds](docs/FOCUS_ROUNDS.md), [release history](CHANGELOG.md) and [handoff](docs/HANDOFF.md) for deployment evidence and remaining acceptance. The 0.6.1 Guidance retrieval, shared labels, System usage/cost reporting and verified review-status meanings are retained. No rename has been adopted.
 
 The DreamHost schedule is active: weekdays 9 AM, 1 PM and 5:30 PM; weekends 9 AM and 5:30 PM, America/New_York including DST. The dispatcher operates independently of the Mac. Recent mailbox coverage was verified in both accounts; historical catch-up remains partial. Actual hosted scheduled publications are verified, including November 22’s morning review. Mac-offline acceptance remains pending. The desktop task monitors only.
 

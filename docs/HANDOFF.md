@@ -1,5 +1,12 @@
 # Email Desk handoff
 
+## Focus rounds 0.7.0 — November 23, 2026
+
+Milan requested reconciliation of this chat and other project work, GitHub publication and production deployment. The selected compact pixel game now connects to real authenticated cards, with finite five-item rounds, one-click Pass, inline Guidance/multiple labels, independent Classic mode, read-only date-grouped History, verified robot review timeline, preserved server XP and four encrypted persistent achievements. New Handled/Not important decisions explicitly queue exact-reviewed-message archival; old decisions are untouched. Worker verification preserves all other labels and refuses blind replay after Inbox returns. Immediate Undo cancels only before acknowledgement/new revision and keeps earned XP immutable. Existing Guidance retrieval, master ownership, schedule, credentials and deployment access remain intact. See [FOCUS_ROUNDS.md](docs/FOCUS_ROUNDS.md) for decisions, cross-chat reconciliation, architecture, tests and deferred work.
+
+Release preparation is in progress; this entry is not a claim of successful deployment. Final CI, release receipt and preservation evidence will be recorded after verification.
+
+
 ## Guidance release 0.6.1 — November 23, 2026
 
 Milan explicitly requested implementation, documentation and live publication of the Guidance refinement. The existing panel now uses Guidance consistently, retains one editable current statement and the existing Save/Attention/Change labels controls, and omits the old machine-summary timeline. Existing card text, audit history, decisions, corrections and XP remain intact. No Store/schema change. See [CONTEXT_PANEL.md](CONTEXT_PANEL.md).

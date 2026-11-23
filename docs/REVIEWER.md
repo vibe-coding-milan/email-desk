@@ -1,5 +1,10 @@
 # Reviewer integration contract
 
+## Current 0.7.0 contract
+
+[Focus rounds and achievements](FOCUS_ROUNDS.md) supersedes older interface/history and inbox-preserving completion notes below. Only new explicit owner Handled/Not important decisions request exact-reviewed-message archival. Classifier proposals still cannot archive; pending legacy feedback is unchanged. Guidance retrieval, new-request reopening, 10/5 once-per-card XP and existing custom-label verification remain. The worker archives on the existing schedule, with encrypted write-ahead journaling and exact-message verification. No new scopes, cron, credentials or master change. Immediate Undo ends at a newer revision/worker acknowledgement; it does not restore archived Gmail placement.
+
+
 ## Hosted reviewer: active on DreamHost
 
 The private DreamHost/API worker was activated November 21 at 11:24:53 AM New York, after explicit user authorization and controlled two-mailbox live acceptance. It operates outside web root with encrypted renewed Production Google grants, an isolated environment and the funded API key. The website never exposes those credentials. The [setup ledger](HOSTED_REVIEWER.md) records bounds, approvals, live verification, usage and outstanding acceptance.

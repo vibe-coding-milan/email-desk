@@ -1,5 +1,10 @@
 # Guidance in Email Desk — 0.6.1
 
+## Current 0.7.0 contract
+
+[Focus rounds and achievements](FOCUS_ROUNDS.md) supersedes older interface/history and inbox-preserving completion notes below. Only new explicit owner Handled/Not important decisions request exact-reviewed-message archival. Classifier proposals still cannot archive; pending legacy feedback is unchanged. Guidance retrieval, new-request reopening, 10/5 once-per-card XP and existing custom-label verification remain. The worker archives on the existing schedule, with encrypted write-ahead journaling and exact-message verification. No new scopes, cron, credentials or master change. Immediate Undo ends at a newer revision/worker acknowledgement; it does not restore archived Gmail placement.
+
+
 ## Everyday review
 
 The board stays Needs action and Worth knowing. Cards offer Open email, Done and Guidance. The existing optional panel contains Attention (Needs action, Worth knowing, Not important), one editable Guidance field, Change labels and the existing Save button. Close stays visible and desktop board scrolling stays available. There is no guidance dashboard, rule builder, note timeline or extra navigation.
