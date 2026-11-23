@@ -1,5 +1,15 @@
 # Email Desk handoff
 
+## Simplicity release 0.6.0 — November 23, 2026
+
+Milan approved implementing the lean revised mock, retaining labeling, updating documentation and pushing live. The candidate uses Open email / Done / Context, with a small nonmodal editor for Attention, note and Save. Change labels preserves the existing explicit correction path, without label search/counts. Close stays outside the scrolling body and desktop board scrolling is unlocked. Context/label state, history, revisions and XP use the unchanged backend contract. Source/backend/worker match remote main 67cc9351c0da2bd39d25249766a0041f931f2559 except for this scoped frontend/documentation/fictional-preview follow-up. No worker, Gmail, schedule, credential or master-playbook edit is authorized or needed for this UI release.
+
+Pre-release private homepage/board/feedback snapshots are saved under ignored `.private/simplicity-060/` (87 cards). Local shared checks, 34 release and 28 deployment regression checks pass. Browser testing and final release acceptance are recorded in `design-qa.md` and the release continuation below. Do not claim publication until its actual receipt and served source are verified. Earlier context-panel notes below are superseded by this implementation; retain the existing dirty local checkout and publish a commit parented to current remote main.
+
+## Local context-panel follow-up — November 22, 2026
+
+Milan selected design option 3 (Context at the decision). The working tree now implements a responsive Details side panel in the existing app and fictional demo, using the established feedback/storage contract. See [CONTEXT_PANEL.md](CONTEXT_PANEL.md) for behavior, context boundaries and deferred reporting work. Quick decisions remain one click; notes and correction history remain intact. Review details routes to existing System reporting. There are no new per-run counters or inferred billing figures. No release, Gmail operation, master-playbook update, credential/access change or worker installation is part of this follow-up. Keep the existing dirty working tree intact; it contained substantial prior release work before this task. Current local verification status is the top entry in `design-qa.md`.
+
 ## Current continuation — November 22, 2026
 
 Version 0.5.1 is live from `6debda9a8ab59c5039f8aebead3c98a04f5ab396`, receipt `arcade-20261122T182335060567Z`. PRs #17/#18, source CI 45054614754 and deployment 45054711855 passed. Independent exact bundle/28 public hashes and complete preservation of all 82 cards and private board state passed. The preceding 0.5.1 installation passed 27 access checks; the final guard did not change backend/authentication files. This source/documents release did not reinstall the private worker or change Gmail, credentials or cron.

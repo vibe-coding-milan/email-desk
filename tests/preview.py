@@ -22,6 +22,9 @@ if os.environ.get('EMAIL_DESK_LEVEL_DEMO')=='1':
   sample=dict(cards[0]);sample.update(id='demo-'+str(i),subject='Fictional completed example '+str(i+1),state='handled',decision_earned_at=now);cards.append(sample)
 # Operational fixtures are invented and kept in process memory.
 scenario=os.environ.get('EMAIL_DESK_PREVIEW_SCENARIO','partial')
+if scenario=='context':
+ cards[:]=cards[:2]
+ cards[1].update(subject='Library event reminder',description='A reminder about an upcoming library event, with guest speakers.',reason='An event invitation may need a reply.',labels=['Education'])
 def scheduled_time():
  local=datetime.datetime.now(ZoneInfo('America/New_York'));slots=[]
  for offset in [-1,0]:
@@ -31,9 +34,9 @@ def scheduled_time():
    if stamp<=local:slots.append(stamp)
  return max(slots).isoformat()
 def report():
- return dict(generated_at=now,schedule_active=True,activated_at=(datetime.datetime.now(datetime.timezone.utc)-datetime.timedelta(days=2)).isoformat() if scenario=='catchup' else now,accounts=[dict(account=a,recent_through=now,historical_through=now,historical_complete=False) for a in ['mijatovic@gmail.com','milan@mijatovic.com']],playbook=dict(fetched_at=now,revision='fictional-revision'),usage=dict(since=now[:10],unknown_requests=1,rows=[dict(day=now[:10],purpose='manual',model='gpt-6-luna',rate_date='2026-11-21',requests=2,retries=1,incomplete=1,input_tokens=12000,output_tokens=1200,cached_tokens=3000,cache_write_tokens=2000,calculated_usd='0.00158')]))
+ return dict(generated_at=now,schedule_active=True,activated_at=(datetime.datetime.now(datetime.timezone.utc)-datetime.timedelta(days=2)).isoformat() if scenario in {'catchup','context'} else now,accounts=[dict(account=a,recent_through=now,historical_through=now,historical_complete=False) for a in ['mijatovic@gmail.com','milan@mijatovic.com']],playbook=dict(fetched_at=now,revision='fictional-revision'),usage=dict(since=now[:10],unknown_requests=1,rows=[dict(day=now[:10],purpose='manual',model='gpt-6-luna',rate_date='2026-11-21',requests=2,retries=1,incomplete=1,input_tokens=12000,output_tokens=1200,cached_tokens=3000,cache_write_tokens=2000,calculated_usd='0.00158')]))
 def run():
- return dict(status='error' if scenario=='error' else 'partial',summary='Fictional preview: recent mail checked; historical catch-up remains incomplete.',finished_at=now,last_success_at=None,coverage={a:('error' if scenario=='error' else 'complete') for a in ['mijatovic@gmail.com','milan@mijatovic.com']},details=dict(trigger='scheduled' if scenario=='catchup' else 'manual',scheduled_at=scheduled_time() if scenario=='catchup' else None,phase='final',started_at=now,completed_at=now,attempt=1))
+ return dict(status='error' if scenario=='error' else 'partial',summary='Fictional preview: recent mail checked; historical catch-up remains incomplete.',finished_at=now,last_success_at=None,coverage={a:('error' if scenario=='error' else 'complete') for a in ['mijatovic@gmail.com','milan@mijatovic.com']},details=dict(trigger='scheduled' if scenario in {'catchup','context'} else 'manual',scheduled_at=scheduled_time() if scenario in {'catchup','context'} else None,phase='final',started_at=now,completed_at=now,attempt=1))
 port=int(os.environ.get('EMAIL_DESK_PREVIEW_PORT','8000'))
 class Handler(SimpleHTTPRequestHandler):
  def __init__(self,*a,**kw):super().__init__(*a,directory=str(root/'public'),**kw)

@@ -38,3 +38,8 @@ Private monitor snapshots retain the exact run/slot/coverage evidence outside Gi
 Local checks included npm run check, 34 release checks, 28 GitHub deployment checks, fictional preview compilation and git diff --check. Semantic checks cover completed recent work with unfinished history, ongoing recent work, error precedence, missing account evidence, absent/completed historical evidence and scheduled/manual/batch distinctions. Fictional browser inspection verified the Updated marker, neutral older-mail headline/details, mobile wrapping and consistent System labels. It was not a production card mutation or an independent physical-device/accessibility audit.
 
 This was a frontend/documentation release. The installed hosted worker, credentials, encrypted processing journal, Gmail labels, schedule and master taxonomy were unchanged. Earlier dated release/audit records remain historical evidence; this page and the current handoff describe the latest state.
+
+
+## Compact Board presentation (0.6.0)
+
+The everyday Board uses a compact latest-publication/next-review line rather than the expanded daily route. It still derives outcome from the same typed coverage, displays missing scheduled-slot counts, and retains visible failed/stale/unconfirmed/older-mail notices. System retains the detailed publication/coverage history. This is presentation only: manual or legacy publications cannot satisfy scheduled checkpoints, and no cursor or audit record is rewritten.
