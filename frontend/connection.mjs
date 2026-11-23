@@ -27,6 +27,7 @@ export function productionConnection({api,board,timeline,health,onExit,onSystem,
   async preference(celebrations){const r=await request('quest_preference',{celebrations});saved.quest=r.quest;return state();},
   async undo(target,card){const r=await request('undo_decision',{target_id:target,revision:card.revision});saved.cards=saved.cards.map(c=>c.id===r.card.id?r.card:c);saved.quest=r.quest;saved.progress=r.progress;return state();},
   async save(card,draft,{type=null,category=card.category,mode='round'}={}){
+   if(!saved.quest)throw Error('App update in progress. Reload the latest board before saving.');
    const labels=draft.label?draft.label.split('\n'):[];
    const raw=saved.cards.find(c=>c.id===card.id);
    const changed=JSON.stringify([...labels].sort())!==JSON.stringify([...(raw.user_labels??raw.labels)].sort());
