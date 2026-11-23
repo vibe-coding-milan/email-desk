@@ -2,6 +2,8 @@
 
 final result: passed
 
+Production acceptance: Published through [PR #20](https://github.com/vibe-coding-milan/email-desk/pull/20), merge `d98ea58726e15d889cd26aa2f4630a04bad78342`, receipt `arcade-20261123T155257725392Z`. [Source CI 45209628930](https://github.com/vibe-coding-milan/email-desk/actions/runs/45209628930) and [deployment 45210050440](https://github.com/vibe-coding-milan/email-desk/actions/runs/45210050440) passed. Independent receipt/bundle, all 28 public hashes and 27 live access checks passed. All 87 saved cards, notes, decisions, XP, reported history/checkpoints and pending feedback matched the private baseline. Live owner inspection was read-only; the public demo was tested with fictional feedback and no browser warnings/errors. Physical-device, screen-reader, cross-device and unattended scheduling remain separate acceptance work.
+
 ## Target and comparison evidence
 
 Milan approved the single revised lean-editor mock and live publication. Source visual truth: `.local/simplicity-release/reference.png` (1487 x 1058). Implementation: `.local/simplicity-release/desktop.jpg` (1440 x 994 captured pixels at 1440 x 1024 CSS viewport). Normalize the source proportionally to 1440 x 1024 and crop its top 994px to match the in-app screenshot capture; do not stretch the implementation. Source and implementation were opened together in `.local/simplicity-release/comparison.png`. Readable focused panel comparison: `comparison-panel.png` in the same folder, showing complete source and implementation panel regions at their native normalized widths. Both combined inputs were opened and inspected.
