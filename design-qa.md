@@ -1,3 +1,15 @@
+# Focus-round integration QA — November 23, 2026
+
+Production integration of the selected revision-5 game and achievement design is ready for release checks. See [FOCUS_ROUNDS.md](docs/FOCUS_ROUNDS.md) for the final contract; the original snapshot remains under prototypes/decision-show.
+
+Verified in the fictional authenticated localhost app: default finite game round, actual account-specific source URL, multiple selected labels from all 37, inline saved Guidance, one-click Pass to back with zero XP, classic completion without leaving classic, first/returned-item milestones, opt-out preference and milestone/XP retention after reload, read-only dated History with Archive pending, immediate Undo, friendly sender presentation and retained System reporting. Fixed shadow-tree outside-click handling and isolated legacy/game styles; no browser warnings/errors. At 320×844 there is no horizontal page overflow and all three sticky decisions fit in the viewport; reduced-motion uses MotionConfig and the existing CSS preference guards. Desktop and mobile actual-device/screen-reader acceptance remain separate.
+
+Evidence: [fictional authenticated game](docs/screenshots/focus-rounds/01-fictional-authenticated-game.jpg), [fictional retained achievements](docs/screenshots/focus-rounds/02-fictional-persistent-achievements.jpg). The preview is a memory mock; durable encrypted behavior is established by affected PHP checks, not by those screenshots.
+
+Fresh offline npm ci succeeded with 0 reported vulnerabilities. The isolated clean release checkout rebuilt the same public bundle. 29 game/achievement/connection checks, existing schedule/guest/timing checks, 36 fictional reviewer checks, 34 release and 28 deployment regression checks pass locally. The guarded isolated host run passed PHP lint, 96 storage and 21 API checks before the additional archive-claim and endpoint-auth tests; final expanded counts and CI/deployment evidence will be recorded after the release checks. Production inspection will remain read-only; no real card or Gmail write is used as a QA fixture.
+
+Earlier QA below is retained as dated release history.
+
 # Guidance refinement 0.6.1 — November 23, 2026
 
 final result: passed

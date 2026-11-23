@@ -130,3 +130,40 @@ class Gmail:
         self.journal.save()
         self.verified_count = getattr(self, 'verified_count', 0) + 1
         return sorted(desired)
+
+    def archive_reviewed(self, message_id, thread_id, journal_key):
+        """Explicit owner decision only. Never a classifier or thread-wide action."""
+        if not IDENTIFIER.fullmatch(message_id) or not IDENTIFIER.fullmatch(thread_id):
+            raise ValueError('message_identifier')
+        before = self.get('messages/' + message_id, {'format': 'minimal'})
+        if before.get('threadId') != thread_id:
+            raise ValueError('thread_mismatch')
+        labels = set(before.get('labelIds', []))
+        writes = self.journal.data.setdefault('archive_writes', {})
+        pending = writes.get(journal_key)
+        if pending:
+            if pending['account'] != self.account or pending['message_id'] != message_id or pending['thread_id'] != thread_id:
+                raise ValueError('archive_journal_conflict')
+            # An ambiguous write or deliberate inbox return must never be re-enforced.
+            if 'INBOX' in labels:
+                raise ValueError('archive_requires_review')
+            protected = set(pending['protected'])
+        else:
+            protected = labels - {'INBOX'}
+            writes[journal_key] = {'account': self.account, 'message_id': message_id,
+                                  'thread_id': thread_id, 'protected': sorted(protected), 'attempted': 'INBOX' in labels}
+            self.journal.save()
+            if 'INBOX' in labels:
+                try:
+                    response = self.session.post('https://gmail.googleapis.com/gmail/v1/users/me/messages/' + message_id + '/modify',
+                                                 json={'removeLabelIds': ['INBOX']}, timeout=45, allow_redirects=False)
+                finally:
+                    self.persist()
+                response.raise_for_status()
+                self.write_count = getattr(self, 'write_count', 0) + 1
+        after = self.get('messages/' + message_id, {'format': 'minimal'})
+        if after.get('threadId') != thread_id or set(after.get('labelIds', [])) != protected:
+            raise ValueError('archive_verification')
+        writes[journal_key]['verified'] = True
+        self.journal.save()
+        return message_id

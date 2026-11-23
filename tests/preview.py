@@ -1,12 +1,12 @@
 """Fictional, localhost-only UI preview. Never deploy this server or its fixture data."""
 from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
 from pathlib import Path
-import json,secrets,urllib.parse,datetime,os
+import json,secrets,urllib.parse,datetime,os,copy,hashlib,time
 from zoneinfo import ZoneInfo
 root=Path(__file__).resolve().parents[1]
 labels=json.loads((root/'server/labels.json').read_text());logged_in=False;operations={}
 now=datetime.datetime.now(datetime.timezone.utc).isoformat()
-cards=[]
+cards=[];quest=dict(schemaVersion=1,events=[],celebrations=True);undo=None
 def progress():
  count=sum(bool(c.get('decision_earned_at')) for c in cards);xp=sum(c.get('decision_xp',10) for c in cards if c.get('decision_earned_at'))
  return dict(xp=xp,decisions=count,level=xp//100+1,level_xp=xp%100,level_target=100)
@@ -52,22 +52,39 @@ class Handler(SimpleHTTPRequestHandler):
   if not logged_in:return self.respond(dict(ok=False,error='sign_in'),401)
   if action=='board':
    if scenario=='offline':return self.respond(dict(ok=False,error='temporary'),503)
-   return self.respond(dict(ok=True,result=dict(cards=cards,labels=labels,progress=progress(),run=run(),runs=[run()],report=None if scenario=='legacy' else report())))
+   return self.respond(dict(ok=True,result=dict(cards=cards,labels=labels,progress=progress(),quest=quest,run=run(),runs=[run()],report=None if scenario=='legacy' else report())))
   if action=='system':return self.respond(dict(ok=True,result=dict(report=None if scenario=='legacy' else report(),runs=[run()],feedback=[dict(card_id=c['id'],subject=c['subject'],status=c['feedback_status'],created_at=now) for c in cards if c.get('feedback_status') in ['pending','error']],remaining=0)))
   if action=='playbook':return self.respond(dict(ok=True,result=dict(content='Fictional preview. Real playbook reference is loaded only after private server setup.')))
   return self.respond(dict(ok=False,error='not_found'),404)
  def do_POST(self):
-  global logged_in
+  global logged_in,quest,undo
   action=urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query).get('action',[''])[0];a=json.loads(self.rfile.read(int(self.headers.get('Content-Length',0))))
   if action=='login':
    if a.get('password')!='preview-only':return self.respond(dict(ok=False,error='invalid_login'),401)
    logged_in=True;return self.respond(dict(ok=True,csrf='preview'))
   if action=='logout':logged_in=False;return self.respond(dict(ok=True))
   if not logged_in:return self.respond(dict(ok=False,error='sign_in'),401)
+  if action=='quest_preference':
+   quest['celebrations']=a['celebrations'];return self.respond(dict(ok=True,result=dict(quest=quest)))
+  if action=='undo_decision':
+   if not undo or undo['operation_id']!=a['target_id']:return self.respond(dict(ok=False,error='undo_unavailable'),409)
+   current=next(c for c in cards if c['id']==undo['card']['id'])
+   if current['revision']!=a['revision']:return self.respond(dict(ok=False,error='conflict'),409)
+   prior=undo['card'];prior['revision']=current['revision']+1
+   for key in ['decision_xp','decision_earned_at','decision_started_at']:
+    if key in current:prior[key]=current[key]
+   current.clear();current.update(prior)
+   if undo['event_id']:quest['events'].append(dict(id=a['operation_id'],type='undo',at=datetime.datetime.now(datetime.timezone.utc).isoformat(),targetId=undo['event_id']))
+   undo=None;return self.respond(dict(ok=True,result=dict(card=current,quest=quest,progress=progress())))
   if action=='feedback':
    if a['operation_id']in operations:return self.respond(operations[a['operation_id']])
    c=next(c for c in cards if c['id']==a['card_id'])
    if c['revision']!=a['revision']:return self.respond(dict(ok=False,error='conflict'),409)
+   prior=copy.deepcopy(c);event_id=None
+   if a.get('decision_mode') and c['state']=='open' and (a.get('pass') or a['state']!='open'):
+    event_id=a['operation_id'];quest['events'].append(dict(id=event_id,type='decision',at=datetime.datetime.now(datetime.timezone.utc).isoformat(),cardId=hashlib.sha256((c['id']+':'+c.get('attention_started_at',c['date'])).encode()).hexdigest(),category=a['category'],outcome='pass' if a.get('pass') else a['state'],mode=a['decision_mode']))
+   if a.get('pass'):c['queue_order']=time.time()
+   if a.get('archive'):c['archive_status']='pending'
    earned=c['state']=='open' and a['state']!='open' and not c.get('decision_earned_at')
    if earned:
     moment=datetime.datetime.now(datetime.timezone.utc);c['decision_earned_at']=moment.isoformat()
@@ -75,7 +92,8 @@ class Handler(SimpleHTTPRequestHandler):
     c['decision_started_at']=c.get('attention_started_at',c['date'])
     c['decision_xp']=5 if (moment-start).total_seconds()>48*3600 else 10
    c.update(revision=c['revision']+1,state=a['state'],user_category=a['category'],user_labels=a['labels'],note=a['note'],feedback_status='pending')
-   p=dict(ok=True,result=dict(card=c,feedback_id=secrets.token_hex(16),xp_earned=c['decision_xp'] if earned else 0,progress=progress()));operations[a['operation_id']]=p;return self.respond(p)
+   undo=dict(operation_id=a['operation_id'],event_id=event_id,card=prior)
+   p=dict(ok=True,result=dict(operation_id=a['operation_id'],card=c,quest=quest,feedback_id=secrets.token_hex(16),xp_earned=c['decision_xp'] if earned else 0,progress=progress()));operations[a['operation_id']]=p;return self.respond(p)
   return self.respond(dict(ok=False,error='not_found'),404)
 print(f'Fictional UI preview: http://127.0.0.1:{port} — password preview-only',flush=True)
 ThreadingHTTPServer(('127.0.0.1',port),Handler).serve_forever()

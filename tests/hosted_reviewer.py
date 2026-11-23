@@ -236,6 +236,87 @@ class LabelBoundary(unittest.TestCase):
         self.assertNotIn('verified', client.journal.data['label_writes']['test-operation'])
 
 
+class ArchiveBoundary(unittest.TestCase):
+    def setUp(self):
+        self.helper = LabelBoundary()
+        self.message = self.helper.message
+
+    def test_explicit_archive_exact_message_both_accounts_preserves_all_other_labels(self):
+        for account in ['mijatovic@gmail.com', 'milan@mijatovic.com']:
+            protected = ['UNREAD', 'STARRED', 'Label_home', 'Label_unknown', 'CATEGORY_PERSONAL']
+            client, calls = self.helper.gmail(self.message(['INBOX'] + protected), self.message(protected))
+            client.account = account
+            self.assertEqual(client.archive_reviewed('abcdef1234567890', 'abcdef1234567891', 'owner-operation'), 'abcdef1234567890')
+            self.assertEqual(calls[0][1]['json'], {'removeLabelIds': ['INBOX']})
+            self.assertIn('/messages/abcdef1234567890/modify', calls[0][0])
+            self.assertTrue(client.journal.data['archive_writes']['owner-operation']['verified'])
+
+    def test_uncertain_archive_reconciles_readback_without_second_write(self):
+        client, calls = self.helper.gmail(self.message(['INBOX', 'UNREAD']), self.message(['UNREAD']), True)
+        with self.assertRaises(TimeoutError):
+            client.archive_reviewed('abcdef1234567890', 'abcdef1234567891', 'owner-operation')
+        retry, retry_calls = self.helper.gmail(self.message(['UNREAD']), self.message(['UNREAD']))
+        retry.journal.data = copy.deepcopy(client.journal.data)
+        retry.archive_reviewed('abcdef1234567890', 'abcdef1234567891', 'owner-operation')
+        self.assertEqual(retry_calls, [])
+        returned, returned_calls = self.helper.gmail(self.message(['INBOX', 'UNREAD']), self.message(['UNREAD']))
+        returned.journal.data = copy.deepcopy(retry.journal.data)
+        with self.assertRaisesRegex(ValueError, 'archive_requires_review'):
+            returned.archive_reviewed('abcdef1234567890', 'abcdef1234567891', 'owner-operation')
+        self.assertEqual(returned_calls, [])
+
+    def test_archive_refuses_wrong_thread_and_changed_read_state(self):
+        client, calls = self.helper.gmail(self.message(['INBOX', 'UNREAD']), self.message([]))
+        with self.assertRaisesRegex(ValueError, 'thread_mismatch'):
+            client.archive_reviewed('abcdef1234567890', 'abcdef1234567899', 'wrong-thread')
+        self.assertEqual(calls, [])
+        client, calls = self.helper.gmail(self.message(['INBOX', 'UNREAD']), self.message([]))
+        with self.assertRaisesRegex(ValueError, 'archive_verification'):
+            client.archive_reviewed('abcdef1234567890', 'abcdef1234567891', 'owner-operation')
+
+
+class ArchiveFeedback(unittest.TestCase):
+    def engine(self, reopened=False, prior_archive=False):
+        engine = Engine.__new__(Engine)
+        event = dict(id='owner-decision', card_id='card', account='milan@mijatovic.com', thread_id='abcdef1234567891',
+                     message_ids=['abcdef1234567890'], requested_labels=['Home'], state='handled', archive_requested=True)
+        card = dict(id='card', revision=3, latest_feedback_id=event['id'], state='open' if reopened else 'handled')
+        class Bridge:
+            def call(self, payload):
+                if payload['action']=='board':return {'cards':[copy.deepcopy(card)]}
+                if payload['action']=='feedback':return {'feedback':[copy.deepcopy(event)],'remaining':0}
+                self.ack=copy.deepcopy(payload);return {}
+        class Client:
+            def __init__(self):
+                self.journal=FakeJournal();self.applied=[];self.archived=[]
+            def get(self,*unused):return {'labelIds':['Label_home']}
+            def custom(self,unused):return ['Home']
+            def apply(self,*args):self.applied.append(args)
+            def archive_reviewed(self,*args):self.archived.append(args)
+        client=Client()
+        if prior_archive:
+            from reviewer.engine import operation
+            client.journal.data['archive_writes']={operation('archive',event['id']+event['message_ids'][0]):{'verified':True}}
+        engine.board={'cards':[card]};engine.bridge=Bridge();engine.clients={event['account']:client};engine.labels=['Home'];engine.feedback_failed=set()
+        return engine,client
+
+    def test_owner_archive_and_labels_acknowledge_exact_reviewed_ids(self):
+        engine,client=self.engine();self.assertEqual(engine.reconcile_feedback(),0)
+        self.assertEqual(len(client.applied),1);self.assertEqual(len(client.archived),1)
+        self.assertEqual(engine.bridge.ack['archived_message_ids'],['abcdef1234567890'])
+        self.assertEqual(engine.bridge.ack['status'],'applied')
+
+    def test_acknowledgement_replay_after_archive_does_not_reapply_custom_labels(self):
+        engine,client=self.engine(prior_archive=True);self.assertEqual(engine.reconcile_feedback(),0)
+        self.assertEqual(client.applied,[]);self.assertEqual(len(client.archived),1)
+        self.assertEqual(engine.bridge.ack['status'],'applied')
+
+    def test_materially_reopened_request_supersedes_old_archive_without_mutation(self):
+        engine,client=self.engine(reopened=True);engine.reconcile_feedback()
+        self.assertEqual(client.applied,[]);self.assertEqual(client.archived,[])
+        self.assertEqual(engine.bridge.ack['status'],'superseded')
+
+
 class ProposalAndCoverage(unittest.TestCase):
     def test_routine_proposals_never_authorize_removal_and_owner_corrections_remain_exact(self):
         source = {'id': 'fictional', 'observed_custom': ['Work', 'Needs Review']}

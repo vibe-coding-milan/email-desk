@@ -243,28 +243,51 @@ class Engine:
         for event in queue['feedback']:
             card = cards.get(event['card_id'])
             ack = {'action': 'acknowledge', 'feedback_id': event['id']}
-            if not card or card.get('latest_feedback_id') != event['id']:
+            if not card or card.get('latest_feedback_id') != event['id'] or (event.get('archive_requested') and card.get('state') != event['state']):
                 ack.update(status='superseded', explanation='A newer saved correction supersedes this event; notes remain preserved.')
-            elif event['requested_labels'] is None:
+            elif event['requested_labels'] is None and not event.get('archive_requested'):
                 ack.update(status='recorded', explanation='Saved sorting guidance recorded for later reviews; no Gmail change requested.')
             else:
                 try:
+                    if event.get('archive_requested'):
+                        claim = {'action': 'acknowledge', 'feedback_id': event['id'], 'status': 'processing',
+                                 'expected_revision': card['revision'], 'explanation': 'Claimed explicit owner archive; immediate Undo ends before Gmail writes.'}
+                        claim['operation_id'] = operation('archive_claim', event['id'] + str(card['revision']))
+                        self.bridge.call(claim)
+                        self.board = self.bridge.call({'action': 'board'})
+                        card = next(c for c in self.board['cards'] if c['id'] == event['card_id'])
+                        if card.get('latest_feedback_id') != event['id'] or card.get('state') != event['state']:
+                            raise ValueError('conflict')
                     desired = event['requested_labels']
-                    if not set(desired).issubset(self.labels):
+                    if desired is not None and not set(desired).issubset(self.labels):
                         raise ValueError('feedback_labels')
                     check_revisions({card['id']: card['revision']}, self.bridge.call({'action': 'board'}))
                     gmail = self.clients[event['account']]
                     for message_id in event['message_ids']:
                         check_revisions({card['id']: card['revision']}, self.bridge.call({'action': 'board'}))
-                        message = gmail.get('messages/' + message_id, {'format': 'minimal'})
-                        gmail.apply(message_id, event['thread_id'], desired, gmail.custom(message.get('labelIds', [])),
-                                    operation('feedback', event['id'] + message_id))
+                        if desired is not None:
+                            message = gmail.get('messages/' + message_id, {'format': 'minimal'})
+                            archive_key = operation('archive', event['id'] + message_id)
+                            if event.get('archive_requested') and archive_key in gmail.journal.data.get('archive_writes', {}):
+                                if gmail.custom(message.get('labelIds', [])) != sorted(desired):
+                                    raise ValueError('archive_custom_verification')
+                            else:
+                                gmail.apply(message_id, event['thread_id'], desired, gmail.custom(message.get('labelIds', [])),
+                                            operation('feedback', event['id'] + message_id))
+                        if event.get('archive_requested'):
+                            check_revisions({card['id']: card['revision']}, self.bridge.call({'action': 'board'}))
+                            gmail.archive_reviewed(message_id, event['thread_id'], operation('archive', event['id'] + message_id))
                     check_revisions({card['id']: card['revision']}, self.bridge.call({'action': 'board'}))
-                    ack.update(status='applied', explanation='Requested custom labels verified on every exact message; system labels preserved.', actual_labels=sorted(desired))
+                    if desired is not None:
+                        ack.update(status='applied', explanation='Requested custom labels verified on every exact message; other labels preserved.', actual_labels=sorted(desired))
+                    else:
+                        ack.update(status='recorded', explanation='Owner decision recorded.')
+                    if event.get('archive_requested'):
+                        ack.update(archived_message_ids=list(event['message_ids']), explanation='Reviewed messages archived in the correct account; topic labels, stars and read state verified unchanged.')
                 except Exception:
                     errors += 1
                     self.feedback_failed.add(event['account'])
-                    ack.update(status='error', explanation='Label correction could not be safely verified; it remains queued for review.')
+                    ack.update(status='error', explanation='Requested Gmail change could not be safely verified; it remains queued for review.')
             ack['operation_id'] = operation('ack', json.dumps(ack, sort_keys=True))
             self.bridge.call(ack)
             self.board = self.bridge.call({'action': 'board'})

@@ -28,7 +28,9 @@ try{
  if($action==='logout'&&$method==='POST'){$_SESSION=[];session_destroy();setcookie('__Secure-emaildesk','',['expires'=>time()-3600,'path'=>'/email-desk/','secure'=>true,'httponly'=>true,'samesite'=>'Strict']);respond(['ok'=>true]);}
  if($action==='board'&&$method==='GET')respond(['ok'=>true,'result'=>desk_store($config)->board()]);
  if($action==='system'&&$method==='GET')respond(['ok'=>true,'result'=>desk_store($config)->system()]);
- if($action==='feedback'&&$method==='POST')respond(['ok'=>true,'result'=>desk_store($config)->feedback($a)]);
+ if($action==='feedback'&&$method==='POST'){$store=desk_store($config);$result=$store->feedback($a);$result['quest']=$store->quest();respond(['ok'=>true,'result'=>$result]);}
+ if($action==='quest_preference'&&$method==='POST'){$store=desk_store($config);$result=$store->questPreference($a);$result['quest']=$store->quest();respond(['ok'=>true,'result'=>$result]);}
+ if($action==='undo_decision'&&$method==='POST'){$store=desk_store($config);$result=$store->undoDecision($a);$result['quest']=$store->quest();respond(['ok'=>true,'result'=>$result]);}
  if($action==='playbook'&&$method==='GET')respond(['ok'=>true,'result'=>['content'=>file_get_contents((getenv('EMAIL_DESK_SERVER') ?: dirname(__DIR__,2).'/.email-desk/server').'/playbook.md'),'master'=>'Google Doc; reference snapshot.']]);
  throw new DeskError('not_found',404);
 }catch(Throwable $e){respond(['ok'=>false,'error'=>$e instanceof DeskError?$e->reason:($e instanceof JsonException?'invalid_json':'temporary')],$e instanceof DeskError?$e->status:($e instanceof JsonException?400:503));}

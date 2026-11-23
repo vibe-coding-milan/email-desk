@@ -3,8 +3,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check public/app.js && node --check public/theme.js && node scripts/check.mjs && node tests/review-timing.mjs && node tests/card-timing.mjs && node tests/guest-day.mjs && python3 tests/review_schedule.py",
-    "test": "php tests/store.php"
+    "check": "node --check public/app.js && node --check public/theme.js && node scripts/check.mjs && node tests/review-timing.mjs && node tests/card-timing.mjs && node tests/guest-day.mjs && python3 tests/review_schedule.py && node --test tests/quest-game.mjs tests/quest-achievements.mjs tests/quest-connection.mjs",
+    "test": "php tests/store.php",
+    "build": "node scripts/build-frontend.mjs"
   },
-  "version": "0.6.1"
+  "version": "0.7.0",
+  "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "@vitejs/plugin-react": "5.0.4",
+    "canvas-confetti": "^1.9.4",
+    "motion": "^14.14.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "vite": "6.4.2"
+  }
 }

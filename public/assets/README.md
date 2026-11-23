@@ -35,3 +35,6 @@ The earlier composite companion PNGs remain available as still artwork. The prev
 ## Interaction refinement — November 19, 2026
 
 `icons/archive.svg` is the unmodified Pixelarticons archive icon from the same official MIT-licensed library, used for History instead of reload. The idle character now plays one 4.8-second greeting cycle and settles; reduced-motion still freezes it. This supersedes earlier references to continuous idle playback and an explicit decorative pause button. The demo timeline also advances automatically; its Pause timeline control was removed in the subsequent polish pass.
+
+
+`robot-host.png` is the approved transparent blue/yellow companion crop used above the focus card and on the review route. Generated from the selected fictional design in this chat; no private mail data. The existing four-frame idle sheet remains the level-up animation. See prototypes/decision-show/README.md and docs/FOCUS_ROUNDS.md.

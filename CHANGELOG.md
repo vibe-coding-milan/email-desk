@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.0 — Focus rounds — November 23, 2026
+
+Milan requested reconciliation of this chat and other project work, GitHub publication and production deployment. The selected compact pixel game now connects to real authenticated cards, with finite five-item rounds, one-click Pass, inline Guidance/multiple labels, independent Classic mode, read-only date-grouped History, verified robot review timeline, preserved server XP and four encrypted persistent achievements. New Handled/Not important decisions explicitly queue exact-reviewed-message archival; old decisions are untouched. Worker verification preserves all other labels and refuses blind replay after Inbox returns. Immediate Undo cancels only before acknowledgement/new revision and keeps earned XP immutable. Existing Guidance retrieval, master ownership, schedule, credentials and deployment access remain intact. See [FOCUS_ROUNDS.md](docs/FOCUS_ROUNDS.md) for decisions, cross-chat reconciliation, architecture, tests and deferred work.
+
+Release preparation is in progress; this entry is not a claim of successful deployment. Final CI, release receipt and preservation evidence will be recorded after verification.
+
+
 ## 0.6.1 — November 23, 2026
 
 - Context becomes Guidance: one editable statement for future email sorting, with the same Attention, Change labels and Save controls. Remove the visible machine-summary timeline; retain stored history.

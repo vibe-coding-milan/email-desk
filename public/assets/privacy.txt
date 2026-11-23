@@ -1,5 +1,5 @@
 Email Desk privacy notice
-Updated November 21, 2026
+Updated November 23, 2026
 
 Purpose and access
 
@@ -14,8 +14,10 @@ The reviewer reads message headers, visible message text, thread context and
 labels to classify mail and surface requests or useful updates. It reads the
 owner's selected organization playbook in Google Docs. Google's authorization
 scopes permit broader Gmail operations and Docs reading, but the hosted worker
-provides only mail reads, changes to approved custom labels, and reading of the
-fixed master playbook. It does not send, archive, delete or mark email read.
+provides mail reads, changes to approved custom labels, reading of the fixed
+master playbook, and archiving of exact reviewed messages after an explicit
+owner completion decision. It does not send, delete or mark email read.
+Classification alone cannot archive. New replies are excluded from older archive requests.
 
 AI processing and hosting
 
@@ -30,7 +32,8 @@ DreamHost hosts the authenticated board and the active private reviewer.
 Stored card and feedback payloads are encrypted. Hosted Google grants and
 review journals are encrypted and kept outside the public web directory.
 Authorized local maintenance copies are kept in private project storage.
-Technical usage records track review outcomes and model token use. Email Desk
+Technical usage records track review outcomes and model token use. Encrypted,
+content-free decision events track achievements and optional celebration settings. Email Desk
 does not sell Google user data, use it for advertising, or use it to train
 general-purpose AI models.
 

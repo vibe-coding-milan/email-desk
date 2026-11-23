@@ -105,3 +105,8 @@ The first context rail mixed triage with administration and explanatory copy. Mi
 Version 0.6.1 keeps the optional editor and existing feedback/storage contract, but frames its text as guidance for future sorting. Saved statements remain editable and survive completion/resurfacing. No visible note trail or new navigation is added. The reviewer retrieves bounded owner guidance for related new threads across both accounts and supplies it to the classifier with explicit relevance, scope and stale-progress instructions. A shared sender is a retrieval clue, not a blanket classification rule.
 
 The change lives in public/app.js, public/index.html, reviewer/engine.py and reviewer/model.py. Fictional worker tests exercise same-thread retention, new-thread relationships, project matching, irrelevant/generic matches, owner-address exclusion, whole-entry bounds and delivery to the classifier. No database migration, automatic statement rewriting, master-document cutover, credential or cron change is required. Website and worker deployment/health are verified independently; future actual routing quality remains observational acceptance. See CONTEXT_PANEL.md.
+
+
+## November 23: making decisions the game
+
+The selected third design evolved through five feedback passes: finite single-item rounds, compact timeline/XP, inline classification and Guidance, independent Classic decisions, handcrafted pixel controls, event-driven motion and optional achievements. The production integration retains PHP/Store and the hosted worker while bundling the game from frontend/. See [the current implementation record](FOCUS_ROUNDS.md), including cross-chat archival safeguards and deferred weekly reporting/rename work.
