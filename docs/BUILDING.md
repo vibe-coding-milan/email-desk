@@ -93,3 +93,8 @@ A corrected scheduled review executed, but publication needed recovery. Unattend
 ## Making hosted reviews understandable in 0.5.0
 
 Hosting the reviewer independently made operational clarity part of the product. The board now separates recent freshness from older catch-up, while explicit slot/trigger metadata keeps manual validation and recovered publication from masquerading as an on-time scheduled review. A secondary authenticated System view exposes safe token/cost aggregates, run history, feedback and the master source without exposing the encrypted journal or introducing another inbox action. Dedicated History improves retrieval as saved decisions grow. [Implementation and acceptance](PRODUCT_UPDATE_050.md) records the data contract, checks and known limits.
+
+
+## Simplifying the decision flow — November 23, 2026
+
+The first context rail mixed triage with administration and explanatory copy. Milan’s feedback prompted a smaller nonmodal editor: Attention, Context and Save. A persistent Close header fixes the disappearing exit; removing modal scroll locking keeps the board usable. Cards now use centered Open email / Done / Context controls. Automatic labeling remains intact, and explicit corrections live under Change labels without a search box. The existing server, feedback protocol, encryption, revisions and XP policy are reused. See [the interaction guide](CONTEXT_PANEL.md) and current `design-qa.md` for scope and verification.

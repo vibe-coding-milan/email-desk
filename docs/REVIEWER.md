@@ -74,3 +74,8 @@ Publish the faithful source sender as before. Friendly display-name extraction i
 New publications may include `run.details` (trigger, scheduled_at, started_at, completed_at, phase, attempt), typed per-account `run.coverage`, and an allowlisted aggregate `report`. Only scheduled final results with an explicit slot satisfy a checkpoint. Old operations replay unchanged; never enrich an uncertain payload during recovery.
 
 `publish` with `report_only: true`, empty cards and no run stores aggregate metadata without changing cards, review history, checkpoints or XP. The worker's `--report` mode reads its encrypted journal and publishes this snapshot with zero mailbox/model calls. System is authenticated and read-only. Reports contain date/work-type token totals, unknown counts, dated calculated rates, account coverage, activation and playbook-fetch provenance; never prompts, message excerpts, request IDs, grants or keys. Legacy usage is not reclassified as routine. No balance, monthly forecast, new cap or automatic rule adoption is established.
+
+
+## Attention editor presentation (0.6.0)
+
+Done maps to the existing handled decision; Not important maps to dismissed history, not a new Gmail label or board column. Context still submits the existing category, note, optional exact custom-label correction, operation ID and revision. The Change labels disclosure retains verification before applied acknowledgement. This interface release does not change model instructions, feedback authority, master-source ownership, stored statuses or reopening policy.

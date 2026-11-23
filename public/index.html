@@ -35,8 +35,8 @@
         <div class="cover-copy"><p class="pixel-eyebrow">Personal email board</p><h2 id="welcomeTitle">What needs<br><em>your attention.</em></h2><p class="cover-description">An AI reviewer finds requests and useful updates in your email.</p><div class="cover-actions"><a class="primary" href="#guestDemo" id="startDemo">Play the demo <span class="icon icon-right" aria-hidden="true"></span></a><span class="pixel-caption">A fictional day. No sign-in needed.</span></div><p class="cover-credit">Built by <a href="https://github.com/vibe-coding-milan" rel="noopener noreferrer" target="_blank">Milan Mijatovic</a>.</p></div>
         <div class="welcome-preview" aria-label="Preview with fictional conversations"><img class="welcome-desk" src="assets/desk-vignette.png" width="460" height="165" alt=""/><section class="pixel-panel"><div class="column-heading"><h3>Needs action</h3><span>1</span></div><div class="sample-message"><span class="sample-meta">Riley Parker · Fictional example</span><h4>Confirm committee attendance</h4><p>A quick yes so the team can finalize the agenda.</p></div></section><section class="pixel-panel"><div class="column-heading"><h3>Worth knowing</h3><span>1</span></div><div class="sample-message"><span class="sample-meta">Casey Ellis · Fictional example</span><h4>Your stylist has a new booking page</h4><p>Useful for next time. Nothing to do right now.</p></div></section></div>
       </div>
-      <section class="process-section" aria-labelledby="processTitle"><h2 id="processTitle">How it works</h2><ol class="guest-how" aria-label="The review and feedback process"><li><h3>Review</h3><p>At scheduled times, the agent reviews messages and replies using your priorities and rules.</p></li><li><h3>Decide</h3><p>Open the email, handle the card, or dismiss it.</p></li><li><h3>Add context</h3><p>Notes and label corrections inform the next review.</p></li></ol><p class="public-boundary">Handling a card records a decision. It never sends, archives, deletes, or marks email read.</p><a class="process-cta" href="#guestDemo" id="processDemo">Open demo <span class="icon icon-right" aria-hidden="true"></span></a></section>
-      <footer class="project-footer"><span>Built with Codex.</span><a href="assets/privacy.txt">Privacy</a><a href="https://github.com/vibe-coding-milan/email-desk/blob/main/docs/BUILDING.md" target="_blank" rel="noopener noreferrer">How it’s built</a><a href="https://github.com/vibe-coding-milan/email-desk/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Release notes · v0.5.1</a><a href="https://github.com/vibe-coding-milan/email-desk" target="_blank" rel="noopener noreferrer">Source</a></footer>
+      <section class="process-section" aria-labelledby="processTitle"><h2 id="processTitle">How it works</h2><ol class="guest-how" aria-label="The review and feedback process"><li><h3>Review</h3><p>At scheduled times, the agent reviews messages and replies using your priorities and rules.</p></li><li><h3>Decide</h3><p>Open the email, mark it Done, or adjust its attention level.</p></li><li><h3>Add context</h3><p>Notes and label corrections inform the next review.</p></li></ol><p class="public-boundary">Handling a card records a decision. It never sends, archives, deletes, or marks email read.</p><a class="process-cta" href="#guestDemo" id="processDemo">Open demo <span class="icon icon-right" aria-hidden="true"></span></a></section>
+      <footer class="project-footer"><span>Built with Codex.</span><a href="assets/privacy.txt">Privacy</a><a href="https://github.com/vibe-coding-milan/email-desk/blob/main/docs/BUILDING.md" target="_blank" rel="noopener noreferrer">How it’s built</a><a href="https://github.com/vibe-coding-milan/email-desk/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Release notes · v0.6.0</a><a href="https://github.com/vibe-coding-milan/email-desk" target="_blank" rel="noopener noreferrer">Source</a></footer>
     </section>
     <section id="guestDemo" class="guest-demo" tabindex="-1" aria-labelledby="demoTitle" hidden>
       <div class="workspace-cover"><div><p class="pixel-eyebrow">Demo</p><h2 id="demoTitle">Try Email Desk</h2></div><img src="assets/desk-vignette.png" width="460" height="165" alt=""></div>
@@ -52,7 +52,7 @@
           <p id="demoReviewNote" class="review-note">Demo time 9 AM</p>
         </div></section>
       </div>
-      <div class="demo-guide"><p id="demoAnnouncement" role="status" aria-live="polite">Try Details, add context, then handle a card and find it in History. You can skip to the next review.</p><button id="skipDemo" type="button" hidden>Skip ahead</button></div>
+      <div class="demo-guide"><p id="demoAnnouncement" role="status" aria-live="polite">Try Context, add a note, then mark a card Done. You can skip to the next review.</p><button id="skipDemo" type="button" hidden>Skip ahead</button></div>
       <div id="demoEmpty" class="empty" hidden><h2>No cards left.</h2><p id="demoEmptyText">Moving to the next review…</p></div>
       <div class="board" id="demoBoard" aria-label="Fictional demo board">
         <section class="pixel-panel" aria-labelledby="demoActionTitle"><div class="column-heading"><span class="icon icon-trend" aria-hidden="true"></span><h2 id="demoActionTitle">Needs action</h2><span id="demoActionCount">2</span><span class="heading-rule" aria-hidden="true"></span></div><div id="demoActionCards"></div></section>
@@ -85,7 +85,7 @@
         <p id="progressDetails">10 XP per card handled or dismissed, once per card. Level up every 100 XP.</p>
       </details>
       <section class="review-day" aria-label="Inbox review schedule, New York time"><div class="review-expanded">
-        <p id="reviewHeading" class="review-day-label">Loading updates…</p>
+        <div class="review-heading-row"><p id="reviewHeading" class="review-day-label">Loading updates…</p><button id="reviewReceipt" class="review-receipt" type="button">Review details</button></div>
         <div class="review-route">
           <progress id="reviewMeter" class="review-meter" max="1" aria-label="Time along today’s review route"></progress>
           <ol id="reviewSlots" class="review-slots" aria-label="Today's review results"></ol>
@@ -104,7 +104,7 @@
       </div>
       <section id="history" class="history history-view" aria-labelledby="historyTitle" hidden>
         <h3 id="historyTitle">Handled &amp; dismissed</h3>
-        <div class="history-tools"><label>Find a decision<input id="historySearch" type="search" placeholder="Search subjects, senders, labels or notes"></label><label>Status<select id="historyState"><option value="all">All decisions</option><option value="handled">Handled</option><option value="dismissed">Dismissed</option></select></label><label>First decision since<input id="historySince" type="date"></label></div>
+        <div class="history-tools"><label>Find a decision<input id="historySearch" type="search" placeholder="Search subjects, senders, labels or notes"></label><label>Status<select id="historyState"><option value="all">All decisions</option><option value="handled">Done</option><option value="dismissed">Not important</option></select></label><label>First decision since<input id="historySince" type="date"></label></div>
         <p id="historyResult" role="status"></p><div id="historyCards"></div>
       </section>
       <section id="system" aria-labelledby="systemTitle" hidden>
@@ -114,6 +114,10 @@
 
     </section>
   </main>
+  <aside id="contextPanel" class="context-panel" aria-labelledby="contextPanelTitle" hidden>
+    <header class="context-panel-header"><h2 id="contextPanelTitle" tabindex="-1">Context</h2><button id="closeContextPanel" type="button" aria-label="Close context">Close<span class="icon icon-close" aria-hidden="true"></span></button></header>
+    <div class="context-panel-scroll"><p id="contextPanelSender" class="context-panel-sender"></p><h3 id="contextPanelSubject"></h3><div id="contextPanelContent"></div></div>
+  </aside>
   <div id="toast" class="toast" hidden><p id="toastMessage" role="status" aria-live="polite" aria-atomic="true"></p><button id="closeToast" type="button" aria-label="Dismiss notification"><span class="icon icon-close" aria-hidden="true"></span></button></div>
   <div id="reward" class="reward" hidden aria-hidden="true"><span id="rewardArt" class="agent-idle" aria-hidden="true" hidden></span><span id="rewardTitle"></span><strong id="rewardValue"></strong><span id="rewardDetail"></span></div>
   <script src="app.js" defer></script>

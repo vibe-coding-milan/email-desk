@@ -1,3 +1,75 @@
+# Simpler Email Desk 0.6.0 — November 23, 2026
+
+final result: passed
+
+## Target and comparison evidence
+
+Milan approved the single revised lean-editor mock and live publication. Source visual truth: `.local/simplicity-release/reference.png` (1487 x 1058). Implementation: `.local/simplicity-release/desktop.jpg` (1440 x 994 captured pixels at 1440 x 1024 CSS viewport). Normalize the source proportionally to 1440 x 1024 and crop its top 994px to match the in-app screenshot capture; do not stretch the implementation. Source and implementation were opened together in `.local/simplicity-release/comparison.png`. Readable focused panel comparison: `comparison-panel.png` in the same folder, showing complete source and implementation panel regions at their native normalized widths. Both combined inputs were opened and inspected.
+
+State: light desktop, two fictional conversations, Library event reminder, Not important selected, invented context note. Supporting captures: `mobile.jpg` (390 x 844 CSS), `mobile-dark.jpg` (320 x 740 CSS), and `failure.jpg` (explicit failed-scan fixture). All screenshots are fictional and ignored; none contains production email or comments.
+
+## Comparison history
+
+1. Initial candidate left the full-width board behind the rail, clipping summary text at 1440px. Set a stable 720px board maximum independent of editor state; the panel does not resize cards. Condensed the daily review presentation to the approved summary while retaining real missing-slot/error/history information. The final full-view comparison shows complete readable cards and persistent, aligned actions.
+2. Earlier modal rail locked background scrolling and lost Close below long content. The replacement is a nonmodal aside with a separate persistent header and independently scrolling body. Observed desktop page scrollY 174.5 with the editor open, body overflow visible, no modal element, and Close still visible. Closing and switching cards retain drafts.
+3. Standardized centered Open email / Done / Context controls without decorative icon spacing in the captions. Three native Attention radio choices and one Save replace the former status/edit action inventory. Change labels remains a secondary disclosure, without search or result counts. The final panel comparison has no actionable P0/P1/P2 difference from the selected direction.
+
+## Required fidelity surfaces
+
+- Fonts/typography: original Inter and Silkscreen retained; 15–16px reading/input text, readable headings and consistently centered control text. Pixel display type remains in brand/section headings.
+- Spacing/layout: stable board width, ordinary 44px controls, 48px Save and persistent Close. Independent overflow at smaller heights; full-viewport editor on phones. No horizontal overflow observed at 390px light or 320px dark. No nested label search interface.
+- Colors/tokens: existing ivory, cobalt and lavender plus dark-theme variables. Selected choices use explicit foreground and native radio state, not color alone. Focus outlines remain visible.
+- Assets: existing robot sprite and desk vignette reused without approximation, new raster generation or dependency changes. Actual source assets retain their pixel presentation. Ordinary menu controls use the existing simpler corners.
+- Copy/content: faithful attention labels and Context/Save, separate Done completion. Keep an optional Change labels disclosure because Milan explicitly retained manual labeling. Actual failure/missed-slot/older-mail evidence remains visible rather than copying invented mock status. These are intentional product constraints, not added teaching prose. Help/provenance lives in System.
+
+## Functional verification
+
+Fictional owner: attention reclassification; note plus Not important save; preserved note and label correction through History; closed-note save without reopening; explicit Reopen with no duplicate XP; retained unsaved draft after Close; label addition/removal with no search field; desktop nonmodal scrolling; persistent Close; Escape/focus return. Two-tab conflict preserved the stale draft and the new inline Discard draft & load latest action successfully loaded the newer note and reopened its editor, without a native dialog. Public demo: note, empty label selection and Not important retained in fictional history. Failed-scan fixture retained all four saved cards and visibly said Needs attention. Ordinary flows had no script warnings/errors; the intentional conflicting write returned the expected conflict.
+
+Shared npm checks, Python compilation, 5 destination guards, 34 release checks, 28 deployment checks and all six isolated reviewer/provisioning test groups passed locally. GitHub CI supplies PHP lint/storage/API acceptance before merge. Production release hashes, access and private-state preservation remain a distinct release checklist; no fabricated production decisions are used for QA.
+
+## Limits and follow-up polish
+
+No unresolved P0/P1/P2 findings. P3: original rail width and artwork proportions differ slightly from the generated mock; these retain the existing application shell. Full screen-reader, physical-device and cross-device acceptance remain separate from desktop browser checks. Earlier blocked QA entries below describe superseded prototypes and do not establish the current release state.
+
+---
+
+# Context panel — local follow-up, November 22, 2026
+
+final result: blocked
+
+The implementation is local and unpublished. Final recapture is temporarily blocked by the in-app browser's native discard confirmation from the concurrency test. Browser control could not retrieve or dismiss that dialog; Milan has been asked to dismiss it. The recovery control has since been changed to an explicit inline Discard draft & load latest action, avoiding another native prompt. Do not claim the revised recovery flow or final visual capture has passed until rechecked.
+
+## Visual truth and evidence
+
+Source: `/Users/milan/.codex/generated_images/01a205b8-3721-73d3-814e-35b6541447fb/exec-b18d5586-45c7-490c-baac-f8f054c6d91b.png` (third displayed concept; 1487 x 1058).
+
+Implementation: `.local/context-panel/desktop.jpg` (1440 x 994 captured pixels at 1440 x 1024 CSS viewport). The in-app capture omits 30 pixels of viewport height. For the full comparison the source is scaled to 1440 x 1024 and cropped to the same top 994 pixels; the implementation is not stretched. Combined full-view evidence: `.local/context-panel/comparison.png`. Combined readable right-panel evidence: `.local/context-panel/comparison-panel.png`. Both combined inputs were opened and inspected. State: light theme, two fictional conversations, Library event reminder open, dismissal selected with an invented note. Mobile evidence: `mobile.jpg` (390 CSS px) and `mobile-dark.jpg` (320 CSS px) in the same folder. All screenshots contain fictional data only and remain ignored.
+
+## Comparison history and required surfaces
+
+- Initial P2: reserving panel width left sender text in a narrow implicit grid column; selected text also had insufficient dark-theme contrast. Fixed the reserved-width card grid and explicit selected foreground/native radio treatment. Rechecked light desktop and dark 320px; no horizontal overflow in either page or panel.
+- Second P2: fully stacked desktop cards materially increased board density relative to the source. Restored a compact sender/content/actions grid while retaining the existing real labels and timing. The combined screenshots above show the post-fix grid. The subsequent 20px sender-width adjustment awaits final recapture.
+- Fonts and typography: existing Inter body and Silkscreen branding retained; panel hierarchy and readable native inputs match the direction. Normal controls deliberately retain the current product's simpler corners.
+- Spacing and layout: right panel is 460px at desktop and full width at 390/320px. Both buckets remain on the left; mandatory operational-health information remains visible. Label/provenance/feedback text adds deliberate scrollable height beyond the simplified mock.
+- Colors and tokens: existing ivory/cobalt/lavender theme tokens reused; panel has a subtle theme-aware tint. Selected foreground was corrected and dark-theme readability inspected.
+- Images and assets: original robot sprite and desk vignette reused unchanged, with no generated replacements or fabricated icons. Small concept-only envelope/book ornaments were omitted in favor of existing plain links.
+- Copy/content: keep the product heading Your board; explicitly explain conversation-scoped feedback and the unchanged master source. Both buckets are available alongside dismissal; the generated mock omitted the current action bucket. No fabricated processing counters or costs.
+
+## Functional checks observed
+
+Fictional owner sign-in; bucket change with note; saved note reopening; save-and-dismiss; saved dismissal in History; note edits retaining closed state; explicit reopen with unchanged earned XP; Escape restoring focus; 390px light and 320px dark no overflow; public-demo note plus dismissal retained in fictional history. Browser warning/error logs were empty on ordinary flows. The intentional stale write returned a conflict, retained the note and exposed recovery; testing its old native confirmation then blocked browser control. Shared npm checks pass. No PHP/backend code changed, and these checks do not establish production or screen-reader/physical-device acceptance.
+
+## Remaining checklist
+
+- Dismiss the browser's test confirmation and reload the updated local app.
+- Verify the explicit inline conflict recovery end to end, recapture the final desktop state, regenerate/open the two combined comparison images, and change this result only after there are no actionable P0/P1/P2 findings.
+- Keep the local preview open for inspection. Publication remains separate.
+
+---
+
+Earlier release QA below is historical evidence and does not establish acceptance of this local follow-up.
+
 # Version 0.5.1 status wording — November 22, 2026
 
 - Fictional scheduled recent-complete/historical-ongoing scenario: the timeline shows Updated with a completed mark; the Board has a neutral Inboxes updated · Older mail review ongoing headline and consistent expanded copy. Mobile-width wrapping and System publication labels were inspected.

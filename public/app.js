@@ -165,6 +165,7 @@ async function api(action, body) {
   return p;
 }
 function signedIn(value) {
+  if (!value) { closeContextPanel(false,true); $('contextPanelContent').replaceChildren(); }
   if (value) { guestActive = false; stopGuest(); history.replaceState(null,'','#workspace'); }
   $('login').hidden = true; $('welcome').hidden = value || guestActive;
   $('ownerLink').hidden = value || guestActive; $('demoBack').hidden = value || !guestActive;
@@ -186,6 +187,7 @@ function signedIn(value) {
 
 }
 function setDeskView(view) {
+  if(view !== deskView) closeContextPanel(false);
   deskView = view;
   $('boardOverview').hidden = view !== 'board'; $('history').hidden = view !== 'history'; $('system').hidden = view !== 'system';
   $('deskTitle').textContent = {board:'Your board',history:'Your decisions',system:'System'}[view];
@@ -195,6 +197,7 @@ function setDeskView(view) {
 }
 function goToDesk(historyView = false) {
   if ($('workspace').hidden && !guestActive) return;
+  closeContextPanel(false);
   if (!guestActive) {
     setDeskView(historyView ? 'history' : 'board'); renderHistory();
     $('deskTitle').tabIndex = -1; $('deskTitle').focus({preventScroll:true}); window.scrollTo({top:0,behavior:'instant'}); return;
@@ -208,6 +211,7 @@ function goToDesk(historyView = false) {
 $('navBoard').onclick = () => goToDesk();
 $('navHistory').onclick = () => goToDesk(true);
 $('navSystem').onclick = () => { setDeskView('system'); $('deskTitle').tabIndex=-1; $('deskTitle').focus({preventScroll:true}); window.scrollTo({top:0,behavior:'instant'}); loadSystem(); };
+$('reviewReceipt').onclick = () => $('navSystem').click();
 $('brandHome').onclick = e => { if (!$('workspace').hidden || guestActive) { e.preventDefault(); goToDesk(); } else { e.preventDefault(); $('login').hidden=true; $('welcome').hidden=false; history.replaceState(null,'','#welcome'); window.scrollTo({top:0,behavior:'instant'}); } };
 $('loginBack').onclick = () => { $('login').hidden=true; $('welcome').hidden=false; $('skipLink').href='#welcome'; };
 function interactionLock() {
@@ -258,7 +262,8 @@ function renderReviewDay() {
   const clock = new Intl.DateTimeFormat('en-US', {timeZone: reviewZone, hour:'numeric', minute:'2-digit'});
   const timeLabel = value => clock.format(value).replace(':00', '').replace(' ', '\u00a0');
   const captions = {inactive:'Before activation',unknown:'Coverage unconfirmed',updated:'Updated', reviewing:'Review ongoing', failed:'Needs attention', due:'Due', missed:'Missed', next:'Next', later:'Later'};
-  $('reviewHeading').textContent = 'Today’s reviews · New York';
+  const missed=timing.slots.filter(slot=>slot.state==='missed').length;
+  $('reviewHeading').textContent = (data.run ? reviewOutcome(data.run,data.report).label + ' · ' + stampLabel(data.run.finished_at) : 'Coverage unconfirmed') + (timing.next ? ' · Next review ' + timeLabel(timing.next) : '') + (missed ? ' · ' + missed + ' missed review' + (missed===1?'':'s') : '');
   meter.value = timing.fraction; meter.setAttribute('aria-valuetext', Math.round(timing.fraction * 100) + '% of today’s route from ' + timeLabel(timing.slots[0].time) + ' to ' + timeLabel(timing.slots.at(-1).time) + ' New York time. Checkpoints show actual publication results; the route measures time.');
   $('reviewNote').hidden = !boardReadFailed;
   $('reviewNote').textContent = boardReadFailed ? 'Connection lost · showing saved results' : '';
@@ -310,6 +315,7 @@ function emptyColumn(category, mode = 'clear') {
 }
 // End empty-column presentation.
 function render() {
+  closeContextPanel(false);
   for (const id of ['actionCards', 'awarenessCards', 'historyCards']) { for (const art of $(id).querySelectorAll('.agent-idle')) companionObserver?.unobserve(art); $(id).replaceChildren(); }
   const active = data.cards.filter(c => c.state === 'open');
   for (const cat of ['action', 'awareness']) {
@@ -327,7 +333,7 @@ function renderHistory() {
   const all=data.cards.filter(c=>c.state!=='open'), query=$('historySearch').value.trim().toLocaleLowerCase(), state=$('historyState').value, since=$('historySince').value;
   const matches=all.filter(c=>(state==='all'||c.state===state)&&(!since||(c.decision_earned_at||'').slice(0,10)>=since)&&(!query||[c.subject,c.sender,c.description,c.note,...labels(c)].join(' ').toLocaleLowerCase().includes(query)));
   matches.sort((a,b)=>String(b.decision_earned_at||b.updated_at||b.date).localeCompare(String(a.decision_earned_at||a.updated_at||a.date)));
-  $('navHistoryCount').textContent=all.length||''; $('historyTitle').textContent='Handled & dismissed';
+  $('navHistoryCount').textContent=all.length||''; $('historyTitle').textContent='Done & not important';
   $('historyResult').textContent=all.length ? matches.length + ' of ' + all.length + ' decisions' + (!matches.length ? ' · No matching decisions. Try another search or clear the filters.' : '') : 'No decisions yet. Handled and dismissed cards will appear here.';
   $('historyCards').replaceChildren(...matches.map(card));
 }
@@ -375,10 +381,10 @@ function renderSystem() {
   if(!systemData.runs?.length) runs.append(node('p','','No publications recorded yet.')); root.append(runs);
   const feedback=systemSection('Feedback awaiting review');
   feedback.append(node('p','','Context is saved immediately. Gmail label changes are confirmed only after exact-message verification.'));
-  for(const event of systemData.feedback||[]) { const item=node('div','feedback-row'), link=node('button','','Find card');link.type='button';link.onclick=()=>{const c=data.cards.find(c=>c.id===event.card_id);if(!c){notify('This card is not loaded.');return;}opened.add(c.id);$('historySearch').value='';$('historyState').value='all';$('historySince').value='';setDeskView(c.state==='open'?'board':'history');render();const target=$('card-'+c.id);target.tabIndex=-1;target.focus();target.scrollIntoView({block:'start'});};item.append(node('p','',event.subject+' · '+(feedbackLabel[event.status]||event.status)+' · '+stampLabel(event.created_at)),link);if(event.explanation)item.append(node('p','',event.explanation));feedback.append(item); }
+  for(const event of systemData.feedback||[]) { const item=node('div','feedback-row'), link=node('button','','Find card');link.type='button';link.onclick=()=>{const c=data.cards.find(c=>c.id===event.card_id);if(!c){notify('This card is not loaded.');return;}opened.add(c.id);$('historySearch').value='';$('historyState').value='all';$('historySince').value='';setDeskView(c.state==='open'?'board':'history');render();const target=$('card-'+c.id);target.tabIndex=-1;target.focus();target.scrollIntoView({block:'start'});target.querySelector('.detail-toggle')?.click();};item.append(node('p','',event.subject+' · '+(feedbackLabel[event.status]||event.status)+' · '+stampLabel(event.created_at)),link);if(event.explanation)item.append(node('p','',event.explanation));feedback.append(item); }
   if(!systemData.feedback?.length) feedback.append(node('p','','No pending or failed feedback in the saved queue.'));
   if(systemData.remaining)feedback.append(node('p','',systemData.remaining+' more events remain.'));root.append(feedback);
-  const rules=systemSection('Organization rules'), master=node('a','','Open the master Google Doc');master.href='https://docs.google.com/document/d/1ztPK3AzpgE8cgl3CAjiCFQVEw4LjlksIitJmg9T1BJc/edit';master.target='_blank';master.rel='noopener noreferrer';rules.append(master,node('p','','Last successful rule fetch: '+stampLabel(report?.playbook?.fetched_at)),node('p','',report?.playbook?.revision?'Source revision: '+report.playbook.revision:'Source revision was not recorded. The Google Doc remains master; the local Markdown is a reference.'));root.append(rules);
+  const rules=systemSection('Organization rules'), master=node('a','','Open the master Google Doc');master.href='https://docs.google.com/document/d/1ztPK3AzpgE8cgl3CAjiCFQVEw4LjlksIitJmg9T1BJc/edit';master.target='_blank';master.rel='noopener noreferrer';rules.append(node('p','','Notes and attention decisions are saved with the conversation and used during later reviews. Explicit label corrections are applied only after exact-message verification. Dismissal does not retrain model weights or adopt a broad rule; the master playbook governs shared preferences.'),master,node('p','','Last successful rule fetch: '+stampLabel(report?.playbook?.fetched_at)),node('p','',report?.playbook?.revision?'Source revision: '+report.playbook.revision:'Source revision was not recorded. The Google Doc remains master; the local Markdown is a reference.'));root.append(rules);
 }
 
 // Compact visual timing keeps the full policy/date explanation available to assistive tech and focus.
@@ -404,22 +410,50 @@ function renderCardTiming() {
   const now = Date.now();
   for (const c of data.cards) { const element = document.getElementById('card-' + c.id)?.querySelector('.card-timing'); if (element) updateTimingBadge(element,c,now); }
 }
-function bucketField(form,current) {
+// The panel reuses each card's existing editor and save path; drafts stay with the card.
+let panelSession = null, panelPending = false;
+function closeContextPanel(restoreFocus = true,force = false) {
+  if (!panelSession || ((saving.size || panelPending) && !force)) return;
+  const session = panelSession; panelSession = null;
+  session.home.append(session.body); session.body.hidden = true; session.home.classList.remove('context-selected'); session.onClose();
+  $('contextPanel').hidden = true; document.body.classList.remove('context-panel-open');
+  if (restoreFocus && session.trigger.isConnected) session.trigger.focus({preventScroll:true});
+}
+function openContextPanel(body, c, trigger, home, onClose, fictional = false) {
+  if (saving.size || panelPending || panelSession?.body === body) return;
+  closeContextPanel(false);
+  panelSession = {body, trigger, home, onClose}; home.classList.add('context-selected');
+  $('contextPanelSender').textContent = senderName(c.sender);
+  $('contextPanelSubject').textContent = c.subject;
+  body.hidden = false; $('contextPanelContent').replaceChildren(body);
+  $('contextPanel').dataset.fictional = String(fictional);
+  document.body.classList.add('context-panel-open'); $('contextPanel').hidden = false;
+  $('contextPanel').querySelector('.context-panel-scroll').scrollTop = 0; $('contextPanelTitle').focus({preventScroll:true});
+}
+$('closeContextPanel').onclick = () => closeContextPanel();
+document.addEventListener('keydown', e => {
+  if(!panelSession) return;
+  if(e.key === 'Escape') { e.preventDefault(); closeContextPanel(); return; }
+  // On phones the editor fills the screen; desktop focus remains nonmodal.
+  if(e.key !== 'Tab' || !matchMedia('(max-width:760px)').matches) return;
+  const panel=$('contextPanel'), controls=[...panel.querySelectorAll('button,input,textarea,a[href],summary')].filter(el=>!el.matches(':disabled') && el.getClientRects().length);
+  const first=controls[0], last=controls.at(-1); if(!first) return;
+  if(!panel.contains(document.activeElement) || (e.shiftKey && (document.activeElement===first || document.activeElement===$('contextPanelTitle')))) { e.preventDefault(); (e.shiftKey?last:first).focus(); }
+  else if(!e.shiftKey && document.activeElement===last) { e.preventDefault(); first.focus(); }
+});
+function bucketField(form,current,includeDismiss = false,dismissed = false) {
   const group = node('fieldset','bucket-picker'), options=node('div','bucket-options'); group.append(node('legend','','Show in'));
-  for (const [value,caption] of [['action','Needs action'],['awareness','Worth knowing']]) {
-    const label=node('label'), input=node('input'); input.type='radio'; input.name='category'; input.value=value; input.checked=current===value;
+  for (const [value,caption] of [['action','Needs action'],['awareness','Worth knowing'],...(includeDismiss ? [['dismissed','Not important']] : [])]) {
+    const label=node('label'), input=node('input'); input.type='radio'; input.name='category'; input.value=value; input.checked=(dismissed ? 'dismissed' : current)===value;
     label.append(input,node('span','',caption)); options.append(label);
   }
   group.append(options);
-  Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked').value}); form.append(group); return group;
+  Object.defineProperty(group,'value',{get:()=>group.querySelector('input:checked').value === 'dismissed' ? current : group.querySelector('input:checked').value});
+  Object.defineProperty(group,'dismissed',{get:()=>group.querySelector('input:checked').value === 'dismissed'}); form.append(group); return group;
 }
-function labelSearch(picker,boxes) {
-  const selected=node('p','selected-labels'), label=node('label','label-search','Find a label'), input=node('input'), count=node('p','label-count');
-  input.type='search'; input.placeholder='Search labels'; label.append(input); picker.append(selected,label,count); count.setAttribute('role','status');
-  const update=()=>{ const query=input.value.trim().toLocaleLowerCase(); let matches=0; const chosen=[];
-    for(const option of boxes.children) { const checked=option.querySelector('input').checked; if(checked) chosen.push(option.textContent); option.hidden=!checked&&!option.textContent.toLocaleLowerCase().includes(query); if(!option.hidden) matches++; option.style.order=checked?'-1':'0'; }
-    selected.textContent='Selected: ' + (chosen.join(', ') || 'None'); count.textContent=matches + ' labels shown' + (query ? ' · selected labels stay visible' : '');
-  }; input.oninput=update; boxes.addEventListener('change',update); update();
+function labelChoices(picker,boxes) {
+  const update=()=>{ for(const option of boxes.children) option.style.order=option.querySelector('input').checked?'-1':'0'; };
+  boxes.addEventListener('change',update); update();
 }
 function card(c) {
   const draft = drafts.get(c.id), wrapper = node('article', 'card'), details = node('div', 'card-details'); wrapper.id = 'card-' + c.id;
@@ -428,10 +462,10 @@ function card(c) {
   summary.append(meta, node('h3', '', c.subject), node('p', 'description', c.description));
   if (c.deadline) summary.append(node('p', 'deadline', c.deadline));
   const tags = node('div', 'tags'); for (const l of labels(c)) tags.append(node('span', 'tag', l));
-  if (c.state !== 'open') tags.append(node('span', 'tag', c.state === 'handled' ? 'Handled' : 'Dismissed'));
-  const timing = timingBadge(c,Date.now()), context = node('div', 'card-context'); timing.dataset.cardTiming = c.id; context.append(timing, tags); summary.append(context); details.append(summary);
-  const body = node('div', 'card-body'); body.id = 'details-' + c.id; body.hidden = !opened.has(c.id); wrapper.classList.toggle('expanded', !body.hidden);
-  if (c.reason) body.append(node('h4','','Why this appeared'), node('p', 'reason', c.reason)); if (c.question) body.append(node('p', 'question', c.question));
+  if (c.state !== 'open') tags.append(node('span', 'tag state-tag', c.state === 'handled' ? 'Done' : 'Not important'));
+  const context = node('div', 'card-context'); context.append(tags); summary.append(context); details.append(summary);
+  const body = node('div', 'card-body'); body.id = 'details-' + c.id; body.hidden = true;
+  if (c.question) body.append(node('p', 'question', c.question));
   if (c.context_history?.length) {
     const history = node('details', 'earlier-context'); history.append(node('summary', '', 'Earlier context · ' + c.context_history.length));
     for (const previous of [...c.context_history].reverse()) {
@@ -441,49 +475,50 @@ function card(c) {
     }
     body.append(history);
   }
-  const link = node('a', 'email-link primary', 'Open email'); link.append(icon('right')); link.href = 'https://mail.google.com/mail/u/?authuser=' + encodeURIComponent(c.account) + '#all/' + encodeURIComponent(c.thread_id); link.target = '_blank'; link.rel = 'noopener noreferrer'; body.append(node('span', 'account', c.account));
+  const link = node('a', 'email-link primary', 'Open email'); link.append(icon('right')); link.href = 'https://mail.google.com/mail/u/?authuser=' + encodeURIComponent(c.account) + '#all/' + encodeURIComponent(c.thread_id); link.target = '_blank'; link.rel = 'noopener noreferrer';
   const form = node('form', 'feedback-form'); form.setAttribute('aria-label', 'Feedback for ' + c.subject);
   const fields = node('fieldset', 'feedback-fields'), row = node('div', 'fields');
-  const cat = bucketField(row,draft?.category ?? category(c)); let decision = c.state; fields.append(row);
-  const picker = node('details', 'label-picker'), pickerSummary = node('summary', '', 'Labels'), boxes = node('div', 'label-options'), chosen = draft?.labels ?? labels(c); picker.append(pickerSummary);
+  const cat = bucketField(row,draft?.category ?? category(c),c.state !== 'handled',(draft?.state ?? c.state) === 'dismissed' && c.state !== 'handled'); let decision = draft?.state ?? c.state; fields.append(row);
+  cat.querySelector('legend').textContent = 'Attention';
+  const picker = node('details', 'label-picker'), pickerSummary = node('summary', '', 'Change labels'), boxes = node('div', 'label-options'), chosen = draft?.labels ?? labels(c); picker.append(pickerSummary);
   for (const l of data.labels) { const label = node('label'), box = node('input'); box.type = 'checkbox'; box.name = 'labels'; box.value = l; box.checked = chosen.includes(l); label.append(box, node('span', '', l)); boxes.append(label); }
-  labelSearch(picker,boxes); picker.append(boxes); fields.append(picker);
-  const noteLabel = node('label', 'field', 'Note'), note = node('textarea'); note.name = 'note'; note.rows = 3; note.maxLength = 8000; note.placeholder = 'Add context for the next review.'; note.value = draft?.note ?? c.note ?? ''; noteLabel.append(note); fields.append(noteLabel); form.append(fields);
-  const result = node('p', 'save-result', draft ? 'Unsaved changes' : c.feedback_status ? feedbackLabel[c.feedback_status] || c.feedback_status : ''); result.setAttribute('role', 'status'); if (c.feedback_explanation) { const explanation=node('details','feedback-explanation'); explanation.append(node('summary','','Review result'),node('p','',c.feedback_explanation)); if(c.feedback_processed_at) explanation.append(node('p','',stampLabel(c.feedback_processed_at))); body.append(explanation); }
-  const actions = node('div', 'save-row'), save = node('button', 'context-save', 'Save context'); save.type = 'submit'; save.disabled = !draft; save.hidden = !draft; actions.append(save, result); form.append(actions); body.append(form); wrapper.append(details);
+  labelChoices(picker,boxes); picker.append(boxes); fields.append(picker);
+  const noteLabel = node('label', 'field', 'Context'), note = node('textarea'); note.name = 'note'; note.rows = 3; note.maxLength = 8000; note.placeholder = 'What should the next review know?'; note.value = draft?.note ?? c.note ?? ''; noteLabel.append(note); fields.insertBefore(noteLabel,picker); form.append(fields);
+  const result = node('p', 'save-result'); result.setAttribute('role', 'status');
+  const actions = node('div', 'save-row'), save = node('button', 'context-save', 'Save'); save.type = 'submit'; save.disabled = !draft; save.hidden = !draft; actions.append(save, result); form.append(actions); body.append(form); wrapper.append(details);
   const quick = node('div', 'quick-actions'), quickButtons = []; quick.append(link);
-  for (const [value, caption] of c.state === 'open' ? [['handled','Handled'],['dismissed','Dismiss']] : [['open','Reopen']]) {
+  for (const [value, caption] of c.state === 'open' ? [['handled','Done']] : [['open','Reopen']]) {
     const button = node('button',value === 'handled' ? 'handled' : value === 'open' ? 'reopen' : 'dismiss'); button.type='button'; button.dataset.outcome=value;
-    const text=node('span','decision-caption',caption); if(value === 'handled') button.append(icon('check')); button.append(text);
+    const text=node('span','decision-caption',caption); button.append(text);
     button.setAttribute('aria-label',caption + ': ' + c.subject);
     button.onclick=()=>{ decision=value; changed(); form.requestSubmit(); }; quick.append(button); quickButtons.push(button);
   }
-  const toggle = node('button', 'detail-toggle', 'Details'); toggle.type = 'button'; toggle.append(icon('right')); toggle.setAttribute('aria-label', 'Details: ' + c.subject); toggle.setAttribute('aria-controls', body.id); toggle.setAttribute('aria-expanded', String(!body.hidden));
-  function setExpanded(value) { body.hidden = !value; wrapper.classList.toggle('expanded', value); toggle.setAttribute('aria-expanded', String(value)); if (value) opened.add(c.id); else opened.delete(c.id); }
-  const closeDetails=node('button','close-details','Close details'); closeDetails.type='button'; closeDetails.onclick=()=>{setExpanded(false);toggle.focus();}; body.append(closeDetails);
+  const toggle = node('button', 'detail-toggle', 'Context'); toggle.type = 'button'; toggle.setAttribute('aria-label', 'Context: ' + c.subject); toggle.setAttribute('aria-controls', body.id); toggle.setAttribute('aria-expanded', String(!body.hidden));
+  function setExpanded(value) { if (!value) { closeContextPanel(); return; } opened.add(c.id); toggle.setAttribute('aria-expanded','true'); openContextPanel(body,c,toggle,wrapper,()=>{opened.delete(c.id);toggle.setAttribute('aria-expanded','false');}); }
+  const closeDetails=$('closeContextPanel');
   toggle.onclick = () => setExpanded(body.hidden); quick.insertBefore(toggle, quick.querySelector('.dismiss')); wrapper.append(quick, body);
   const read = () => ({category: cat.value, state: decision, labels: [...boxes.querySelectorAll('input:checked')].map(x => x.value), note: note.value, revision: draft?.revision ?? c.revision});
   function changed() {
-    const v = read(); pickerSummary.textContent = 'Labels' + (v.labels.length ? ' · ' + v.labels.length : '');
+    const v = read(); pickerSummary.textContent = 'Change labels';
     const dirty = v.category !== category(c) || v.state !== c.state || v.note !== (c.note || '') || !same(v.labels, labels(c));
-    save.disabled = !dirty; save.hidden = !dirty;
-    const contextDirty = v.category !== category(c) || v.note !== (c.note || '') || !same(v.labels,labels(c));
-    for(const button of quickButtons) { const outcome=button.dataset.outcome, caption=outcome==='handled'?'Handled':outcome==='open'?'Reopen':'Dismiss', visible=contextDirty ? outcome==='handled'?'Save & handle':outcome==='open'?'Save & reopen':'Save & dismiss' : caption; button.querySelector('.decision-caption').textContent=visible; button.setAttribute('aria-label',visible + ': ' + c.subject); }
+    save.disabled = !dirty; save.hidden = false; save.textContent = 'Save';
     if (dirty) drafts.set(c.id, v); else drafts.delete(c.id);
-    result.classList.remove('save-error'); result.textContent = dirty ? 'Unsaved context' : c.feedback_status ? feedbackLabel[c.feedback_status] || c.feedback_status : '';
+    result.classList.remove('save-error'); result.textContent = dirty ? 'Unsaved' : c.feedback_status === 'error' ? feedbackLabel.error : '';
   }
   function busy(value) {
     if (value) saving.add(c.id); else saving.delete(c.id);
     wrapper.classList.toggle('saving', value); wrapper.setAttribute('aria-busy', String(value)); fields.disabled = value; save.disabled = value || !drafts.has(c.id);
+    const reload=actions.querySelector('.load-latest'); if(reload) reload.disabled=value;
     for (const button of quickButtons) button.disabled = value;
-    interactionLock();
+    $('closeContextPanel').disabled = value; closeDetails.disabled = value; interactionLock();
   }
-  pickerSummary.textContent = 'Labels' + (chosen.length ? ' · ' + chosen.length : ''); form.addEventListener('input', changed); form.addEventListener('change', changed); if (draft) changed();
+  cat.addEventListener('change',()=>{decision=cat.dismissed ? 'dismissed' : c.state;});
+  pickerSummary.textContent = 'Change labels'; form.addEventListener('input', changed); form.addEventListener('change', changed); changed();
   if (saving.has(c.id)) busy(true);
   form.addEventListener('submit', async e => {
     e.preventDefault(); if (saving.size || refreshing) return;
-    if (e.submitter === save) decision = c.state;
-    const v = read(), hadFocus = wrapper.contains(document.activeElement), previousLevel = progress().level;
+    if (e.submitter === save) decision = cat.dismissed ? 'dismissed' : c.state;
+    const v = read(), hadFocus = wrapper.contains(document.activeElement) || body.contains(document.activeElement), previousLevel = progress().level;
     const payload = {operation_id: crypto.randomUUID(), card_id: c.id, revision: v.revision, state: v.state, category: v.category, note: v.note, labels: same(v.labels, c.labels) ? null : v.labels};
     const signature = JSON.stringify({...payload, operation_id: ''}), old = attempts.get(c.id);
     if (old?.signature === signature) payload.operation_id = old.operation_id; else attempts.set(c.id, {signature, operation_id: payload.operation_id});
@@ -495,17 +530,17 @@ function card(c) {
       data.cards = data.cards.map(x => x.id === c.id ? r.result.card : x); drafts.delete(c.id); attempts.delete(c.id);
       if (r.result.card.state !== 'open') opened.delete(c.id);
       if(c.state!=='open' && r.result.card.state==='open') { setDeskView('board'); opened.add(c.id); }
-      busy(false); render();
+      busy(false); closeContextPanel(false); render();
       const earned = r.result.xp_earned || 0, levelUp = progress().level > previousLevel;
-      notify((levelUp ? 'Level ' + progress().level + '! ' : '') + (r.result.card.state === c.state ? 'Context saved' : r.result.card.state === 'handled' ? 'Handled' : r.result.card.state === 'dismissed' ? 'Dismissed' : 'Reopened') + (earned ? ' · +' + earned + ' XP' : ''));
+      notify((levelUp ? 'Level ' + progress().level + '! ' : '') + (r.result.card.state === c.state ? 'Context saved' : r.result.card.state === 'handled' ? 'Done' : r.result.card.state === 'dismissed' ? 'Not important' : 'Reopened') + (earned ? ' · +' + earned + ' XP' : ''));
       celebrate(earned, levelUp);
       if (levelUp) { $('level').classList.remove('level-up'); void $('level').offsetWidth; $('level').classList.add('level-up'); }
-      if (hadFocus) { const target = r.result.card.state === 'open' ? $('card-' + c.id)?.querySelector('.detail-toggle') : $(category(c) + 'Cards').querySelector('.quick-actions button'); if (target) target.focus({preventScroll: true}); else { const heading = $(category(c) + 'Title'); heading.tabIndex = -1; heading.focus({preventScroll: true}); } }
+      if (hadFocus) { const target = r.result.card.state === 'open' || deskView === 'history' ? $('card-' + c.id)?.querySelector('.detail-toggle') : $(category(c) + 'Cards').querySelector('.quick-actions button'); if (target) target.focus({preventScroll: true}); else { const heading = $(category(c) + 'Title'); heading.tabIndex = -1; heading.focus({preventScroll: true}); } }
     } catch (err) {
-      busy(false); result.textContent = err.message; result.classList.add('save-error'); setExpanded(true); if ($('workspace').hidden) error(err.message);
-      if (err.message.startsWith('This card changed') && !actions.querySelector('button[type=button]')) {
-        const reload = node('button', '', 'Load latest'); reload.type = 'button';
-        reload.onclick = async () => { if (!confirm('Discard this card’s unsaved changes and load the latest version?')) return; try { const latest = await api('board'); drafts.delete(c.id); attempts.delete(c.id); data = latest.result; render(); } catch (e) { result.textContent = e.message; } }; actions.append(reload);
+      busy(false); result.textContent = err.message; result.classList.add('save-error'); if ($('workspace').hidden) { error(err.message); return; } setExpanded(true);
+      if (err.message.startsWith('This card changed') && !actions.querySelector('.load-latest')) {
+        const reload = node('button', 'load-latest', 'Discard draft & load latest'); reload.type = 'button';
+        reload.onclick = async () => { reload.disabled=true; try { const latest = await api('board'); drafts.delete(c.id); attempts.delete(c.id); data = latest.result; const latestCard=data.cards.find(item=>item.id===c.id); if(latestCard) { $('historySearch').value=''; $('historyState').value='all'; $('historySince').value=''; setDeskView(latestCard.state==='open'?'board':'history'); } render(); $('card-'+c.id)?.querySelector('.detail-toggle')?.click(); } catch (e) { result.textContent = e.message; reload.disabled=false; } }; actions.append(node('p','context-boundary','Your draft is still here. Loading the latest version replaces these unsaved edits.'),reload);
       }
     }
   });
@@ -513,7 +548,7 @@ function card(c) {
 }
 async function refresh(automatic = false) {
   // Let an active editor finish without moving focus or replacing their controls.
-  if (automatic === true && (drafts.size || $('board').contains(document.activeElement) || $('history').contains(document.activeElement))) return;
+  if (automatic === true && (panelSession || drafts.size || $('board').contains(document.activeElement) || $('history').contains(document.activeElement))) return;
   if (saving.size || refreshing) return; $('error').hidden = true; refreshing = true; interactionLock();
   try { const r = await api('board'); const changed = JSON.stringify(data) !== JSON.stringify(r.result); data = r.result; boardLoaded = true; boardReadFailed = false; if (automatic !== true || changed) { render(); if(deskView==='system') loadSystem(); } else { scanStatus(); renderReviewDay(); } } catch (e) { boardReadFailed = true; error(e.message);
     if (!boardLoaded) render();
@@ -564,7 +599,7 @@ today(); setInterval(today, 60000);
     stop(); lastTick = performance.now();
     timer = setInterval(() => {
       const tick = performance.now(), elapsed = Math.min(250, tick - lastTick); lastTick = tick;
-      if (!guestActive || document.hidden || !state.travelling) return;
+      if (!guestActive || document.hidden || panelSession || !state.travelling) return;
       const arrived = advanceGuestDay(state, elapsed, batches); renderTime();
       if (arrived) arrive();
     }, 100);
@@ -575,6 +610,7 @@ today(); setInterval(today, 60000);
     $('demoReviewMeter').value = timing.fraction;
     $('demoReviewMeter').setAttribute('aria-valuetext', timeLabel(state.now) + ' simulated time. Checkpoints show published fictional reviews.');
     $('demoReviewNote').textContent = 'Demo time ' + timeLabel(state.now);
+    document.querySelector('#guestDemo .review-day-label').textContent = 'Updated at ' + timeLabel(guestTimes[state.stage]) + (state.stage<2 ? ' · Next review ' + timeLabel(guestTimes[state.stage+1]) : ' · Day complete');
     $('demoSlots').replaceChildren(...timing.slots.map(slot => {
       const item = node('li', 'review-slot ' + slot.state), mark = node('span', 'slot-mark'); mark.setAttribute('aria-hidden','true');
       if (slot.state === 'updated') mark.append(icon('check'));
@@ -595,6 +631,7 @@ today(); setInterval(today, 60000);
     $('demoProgressDetails').textContent = state.xp + ' demo XP. 10 XP within 48 hours; 5 XP afterward. This demo stays within one day.';
   }
   function renderDemo() {
+    closeContextPanel(false);
     $('demoBoard').classList.remove('demo-arrival');
     renderXP(); renderTime();
     for (const [cat, prefix] of [['action','demoAction'],['awareness','demoAwareness']]) {
@@ -606,7 +643,7 @@ today(); setInterval(today, 60000);
     }
     const history = state.cards.filter(c => c.state !== 'open'), clear = !state.cards.some(c => c.state === 'open');
     if (guestActive) $('navHistoryCount').textContent = history.length || '';
-    $('demoHistory').hidden = !history.length; $('demoHistoryTitle').textContent = 'Handled & dismissed · ' + history.length;
+    $('demoHistory').hidden = !history.length; $('demoHistoryTitle').textContent = 'Done & not important · ' + history.length;
     $('demoHistoryCards').replaceChildren(...history.map(demoCard));
     $('demoEmpty').hidden = !clear; $('demoBoard').hidden = clear;
     if (clear && state.stage === 2) $('demoEmptyText').textContent = 'Day complete · ' + state.xp + ' XP · Level ' + (Math.floor(state.xp / 100) + 1) + '.';
@@ -633,40 +670,41 @@ today(); setInterval(today, 60000);
     meta.append(senderElement(c.sender));
     summary.append(meta, node('h3','',c.subject), node('p','description',c.description));
     const tags = node('div','tags'); for (const label of c.labels ?? [c.label]) tags.append(node('span','tag',label));
-    if (c.state !== 'open') tags.append(node('span','tag',c.state === 'handled' ? 'Handled' : 'Dismissed'));
-    const context = node('div','card-context'); context.append(timingBadge(c,state.now), tags); summary.append(context); article.append(summary);
-    const body = node('div','card-body'); body.id = 'demo-details-' + c.id; body.hidden = !c.expanded;
-    article.classList.toggle('expanded', !!c.expanded);
-    body.append(node('p','reason',c.reason), node('span','account','Fictional email'));
+    if (c.state !== 'open') tags.append(node('span','tag state-tag',c.state === 'handled' ? 'Done' : 'Not important'));
+    const context = node('div','card-context'); context.append(tags); summary.append(context); article.append(summary);
+    const body = node('div','card-body'); body.id = 'demo-details-' + c.id; body.hidden = true;
+
     const form = node('form','feedback-form'); form.setAttribute('aria-label','Demo feedback for ' + c.subject);
     const fields = node('div','fields');
-    const categoryInput = bucketField(fields,c.draftCategory || c.category);
+    const categoryInput = bucketField(fields,c.draftCategory || c.category,c.state !== 'handled',(c.draftDismiss ?? (c.state === 'dismissed')) === true);
+    categoryInput.querySelector('legend').textContent = 'Attention';
     form.append(fields);
-    const picker = node('details','label-picker'), pickerTitle = node('summary','','Labels'), boxes = node('div','label-options');
+    const picker = node('details','label-picker'), pickerTitle = node('summary','','Change labels'), boxes = node('div','label-options');
     const chosenLabels = c.draftLabels ?? c.labels ?? [c.label];
     for (const value of [...new Set(batches.flat().map(item => item.label))]) {
       const label = node('label'), box = node('input'); box.type = 'checkbox'; box.value = value; box.checked = chosenLabels.includes(value);
       box.onchange = () => { c.draftLabels = [...boxes.querySelectorAll('input:checked')].map(input => input.value); };
       label.append(box,node('span','',value)); boxes.append(label);
     }
-    picker.append(pickerTitle); labelSearch(picker,boxes); picker.append(boxes); form.append(picker);
+    picker.append(pickerTitle); labelChoices(picker,boxes); picker.append(boxes); form.append(picker);
     const readLabels = () => [...boxes.querySelectorAll('input:checked')].map(input => input.value);
-    const label = node('label','field','Note'), note = node('textarea');
-    note.rows = 3; note.maxLength = 500; note.value = c.draftNote ?? c.note; note.placeholder = 'Add context for the next review.'; label.append(note); form.append(label);
-    note.oninput = () => { c.draftNote = note.value; }; categoryInput.onchange = () => { c.draftCategory = categoryInput.value; };
-    const result = node('p','save-result'), saveRow = node('div','save-row'), save = node('button','context-save','Save context'); save.type = 'submit'; save.hidden=true; save.disabled=true;
+    const label = node('label','field','Context'), note = node('textarea');
+    note.rows = 3; note.maxLength = 500; note.value = c.draftNote ?? c.note; note.placeholder = 'Add context for the next review.'; label.append(note); form.insertBefore(label,picker);
+    note.oninput = () => { c.draftNote = note.value; }; categoryInput.onchange = () => { c.draftCategory = categoryInput.value; c.draftDismiss = categoryInput.dismissed; };
+    const result = node('p','save-result'), saveRow = node('div','save-row'), save = node('button','context-save','Save'); save.type = 'submit'; save.hidden=true; save.disabled=true;
     result.setAttribute('role','status'); saveRow.append(save,result); form.append(saveRow); body.append(form);
     async function decide(outcome) {
       if (pending.has(c.id)) return;
-      pending.add(c.id); const currentGeneration = generation;
-      const controls = article.querySelectorAll('button,input,textarea'); controls.forEach(control => { control.disabled = true; });
+      pending.add(c.id); panelPending = true; const currentGeneration = generation;
+      const controls = [...article.querySelectorAll('button,input,textarea'),...body.querySelectorAll('button,input,textarea'),$('closeContextPanel')]; controls.forEach(control => { control.disabled = true; });
       if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { article.classList.add('departing'); await new Promise(resolve => setTimeout(resolve,180)); }
-      if (generation !== currentGeneration) return;
-      if (!guestActive) { pending.delete(c.id); return; }
-      c.note = note.value; c.category = categoryInput.value; c.labels = readLabels(); delete c.draftNote; delete c.draftCategory; delete c.draftLabels; c.expanded = false;
+      if (generation !== currentGeneration) { panelPending=false; $('closeContextPanel').disabled=false; return; }
+      if (!guestActive) { panelPending=false; $('closeContextPanel').disabled=false; pending.delete(c.id); return; }
+      c.note = note.value; c.category = categoryInput.value; c.labels = readLabels(); delete c.draftNote; delete c.draftCategory; delete c.draftLabels; delete c.draftDismiss; c.expanded = false;
+      panelPending=false; closeContextPanel(false); $('closeContextPanel').disabled = false;
       const oldLevel = Math.floor(state.xp / 100), earned = resolveGuestCard(state,c.id,outcome);
       pending.delete(c.id); const levelUp = Math.floor(state.xp / 100) > oldLevel; renderDemo(); reward(earned,levelUp);
-      $('demoAnnouncement').textContent = state.travelling ? 'Next review: ' + timeLabel(guestTimes[state.stage + 1]) : state.stage === 2 && !state.cards.some(x => x.state === 'open') ? 'Demo complete.' : (outcome === 'handled' ? 'Handled' : 'Dismissed') + ' · +10 XP';
+      $('demoAnnouncement').textContent = state.travelling ? 'Next review: ' + timeLabel(guestTimes[state.stage + 1]) : state.stage === 2 && !state.cards.some(x => x.state === 'open') ? 'Demo complete.' : (outcome === 'handled' ? 'Done' : 'Not important') + ' · +10 XP';
       if (levelUp) $('demoAnnouncement').textContent = 'Level ' + (Math.floor(state.xp / 100) + 1) + '! ' + $('demoAnnouncement').textContent;
       if (!state.cards.some(x => x.state === 'open')) {
         (state.travelling ? $('skipDemo') : $('resetDemo')).focus({preventScroll:true});
@@ -675,41 +713,39 @@ today(); setInterval(today, 60000);
     }
     form.onsubmit = e => {
       e.preventDefault();
+      if (categoryInput.dismissed && c.state === 'open') { decide('dismissed'); return; }
       c.note = note.value; c.category = categoryInput.value; c.labels = readLabels(); delete c.draftNote; delete c.draftCategory; delete c.draftLabels;
       contextChanged();
       tags.replaceChildren(...c.labels.map(value => node('span','tag',value)));
-      if (c.state !== 'open') tags.append(node('span','tag',c.state === 'handled' ? 'Handled' : 'Dismissed'));
+      if (c.state !== 'open') tags.append(node('span','tag state-tag',c.state === 'handled' ? 'Done' : 'Not important'));
       result.textContent = 'Saved for this demo.';
       // Keep history read-only for outcomes; editing context never awards XP.
       save.hidden=true; save.disabled=true;
-      if (categoryInput.value !== article.dataset.category) { renderDemo(); focusHeading(c.category === 'action' ? 'demoActionTitle' : 'demoAwarenessTitle'); }
+      closeContextPanel(false); renderDemo(); focusHeading(c.category === 'action' ? 'demoActionTitle' : 'demoAwarenessTitle');
     };
     form.addEventListener('input',contextChanged); form.addEventListener('change',contextChanged);
     function contextChanged() {
-      const dirty=note.value !== c.note || categoryInput.value !== c.category || !same(readLabels(),c.labels ?? [c.label]);
-      save.hidden=!dirty; save.disabled=!dirty; result.textContent=dirty?'Unsaved context':'';
-      for (const button of article.querySelectorAll('[data-outcome]')) {
-        const caption=dirty ? button.dataset.outcome==='handled'?'Save & handle':'Save & dismiss' : button.dataset.outcome==='handled'?'Handled':'Dismiss';
-        button.querySelector('.decision-caption').textContent=caption; button.setAttribute('aria-label',caption + ': ' + c.subject);
-      }
+      const dirty=(categoryInput.dismissed && c.state === 'open') || note.value !== c.note || categoryInput.value !== c.category || !same(readLabels(),c.labels ?? [c.label]);
+      save.hidden=false; save.disabled=!dirty; save.textContent='Save'; result.textContent=dirty?'Unsaved context':'';
     }
     article.dataset.category = c.category;
     const actions = node('div','quick-actions');
-    if (c.state === 'open') for (const [outcome,caption] of [['handled','Handled'],['dismissed','Dismiss']]) {
+    if (c.state === 'open') for (const [outcome,caption] of [['handled','Done']]) {
       const button = node('button',outcome === 'handled' ? 'primary' : 'dismiss'); button.type = 'button';
-      if (outcome === 'handled') button.append(icon('check')); button.append(node('span','decision-caption',caption)); button.dataset.outcome=outcome;
+      button.append(node('span','decision-caption',caption)); button.dataset.outcome=outcome;
       button.setAttribute('aria-label',caption + ': ' + c.subject); button.onclick = () => decide(outcome); actions.append(button);
     }
-    const toggle = node('button','detail-toggle','Details'); toggle.type = 'button'; toggle.append(icon('right'));
-    toggle.setAttribute('aria-label','Details: ' + c.subject); toggle.setAttribute('aria-controls',body.id); toggle.setAttribute('aria-expanded',String(!body.hidden));
-    toggle.onclick = () => { c.expanded = !c.expanded; body.hidden = !c.expanded; article.classList.toggle('expanded',c.expanded); toggle.setAttribute('aria-expanded',String(c.expanded)); };
+    const toggle = node('button','detail-toggle','Context'); toggle.type = 'button';
+    toggle.setAttribute('aria-label','Context: ' + c.subject); toggle.setAttribute('aria-controls',body.id); toggle.setAttribute('aria-expanded',String(!body.hidden));
+    toggle.onclick = () => { toggle.setAttribute('aria-expanded','true'); openContextPanel(body,c,toggle,article,()=>{c.expanded=false;toggle.setAttribute('aria-expanded','false');},true); };
+    contextChanged();
     actions.insertBefore(toggle, actions.querySelector('.dismiss')); article.append(actions,body);
     return article;
   }
   function reset() {
     generation++; pending.clear(); state = createGuestDay(batches); levelRewardUntil = 0;
     clearTimeout(rewardTimer); $('reward').hidden = true; $('demoHistory').open = false;
-    renderDemo(); $('demoAnnouncement').textContent = 'Try Details, add context, then handle a card and find it in History. You can skip to the next review.';
+    renderDemo(); $('demoAnnouncement').textContent = 'Try Context, add a note, then mark a card Done. You can skip to the next review.';
     if (guestActive) runClock();
   }
   function enter() {

@@ -18,7 +18,7 @@ The board stays small. Both email accounts share one organization vocabulary and
 
 I use AI to help implement and explore ideas, while directing the product, reviewing behavior, and setting the boundaries. A few decisions show that process:
 
-- **Simplify through use.** A countdown and extra controls became a compact daily review track. The interface distinguishes confirmed updates from missing or failed reviews.
+- **Simplify through use.** A countdown and extra controls became a compact review summary. The interface distinguishes confirmed updates from missing or failed reviews.
 - **Make feedback durable.** Corrections and notes survive new summaries. Revision checks and deduplicated writes protect against stale edits and retries.
 - **Make the real interaction explorable.** The public demo simulates arrivals, feedback, history, and rewards using invented conversations, separate from the private workspace.
 - **Carry the idea through delivery.** The project includes automated checks, a restricted deployment path, code rollback, and live verification on the existing host.
@@ -27,7 +27,7 @@ The [build notes](docs/BUILDING.md) connect these choices to source files, tests
 
 ## What the app does
 
-Cards explain the conversation and why it was surfaced. They expand inline for bucket, label, and context edits. Handling a card records a decision; it does not send, archive, delete, or mark email read.
+Cards show a short conversation summary with Open email, Done and Context. The optional editor has three attention choices—Needs action, Worth knowing and Not important—plus a note and Save. Change labels retains manual correction without a search interface. Done records completion; Not important moves the card into history. Neither changes Inbox/read state or sends email. The editor’s Close control stays visible while its contents scroll; desktop board scrolling remains available.
 
 The interface pairs readable Inter text and pixel branding with light, dark, and system themes, illustrated empty states, and a four-frame robot companion. The companion plays one short greeting and settles; reduced-motion preferences keep it still. XP rewards confirmed decisions once per card: 10 XP within 48 hours of receipt and 5 XP afterward. Existing awards stay earned.
 
@@ -79,7 +79,7 @@ This covers JavaScript syntax, local assets, shared labels, guest-day behavior, 
 
 ## Current state
 
-**Version 0.5.1 is live.** A completed review of both recent inboxes says Updated; separate older-mail work says Older mail review ongoing. Unfinished recent scans say Review ongoing and errors say Needs attention. Board health separates recent inbox freshness from historical catch-up. Scheduled checkpoints use explicit run identity; manual and legacy publications do not impersonate scheduled success. History has its own view with search/status/date filters. The private System view shows run history, pending feedback, master-source provenance and aggregate API tokens/calculated costs by date and work type. No credit balance, monthly forecast or spending cap is inferred. See [current review-status meanings and acceptance](docs/REVIEW_STATUS.md) and the [0.5.0 feature record](docs/PRODUCT_UPDATE_050.md).
+**Version 0.6.0 is prepared for publication.** The simpler interface retains automatic labeling, manual corrections, saved context and the two-bucket board. See [the interaction guide](docs/CONTEXT_PANEL.md). A completed review of both recent inboxes says Updated; separate older-mail work says Older mail review ongoing. Unfinished recent scans say Review ongoing and errors say Needs attention. Board health separates recent inbox freshness from historical catch-up. Scheduled checkpoints use explicit run identity; manual and legacy publications do not impersonate scheduled success. History has its own view with search/status/date filters. The private System view shows run history, pending feedback, master-source provenance and aggregate API tokens/calculated costs by date and work type. No credit balance, monthly forecast or spending cap is inferred. See [current review-status meanings and acceptance](docs/REVIEW_STATUS.md) and the [0.5.0 feature record](docs/PRODUCT_UPDATE_050.md).
 
 The DreamHost schedule is active: weekdays 9 AM, 1 PM and 5:30 PM; weekends 9 AM and 5:30 PM, America/New_York including DST. The dispatcher operates independently of the Mac. Recent mailbox coverage was verified in both accounts; historical catch-up remains partial. Actual hosted scheduled publications are verified, including November 22’s morning review. Mac-offline acceptance remains pending. The desktop task monitors only.
 

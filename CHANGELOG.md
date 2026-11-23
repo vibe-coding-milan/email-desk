@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 — 2026-11-23
+
+- Simplified cards to Open email, Done and Context. Kept the two attention columns and existing decision history; Not important records a dismissal rather than creating a third column.
+- Added a compact nonmodal context editor with Attention choices, a note, one Save action and a Close control outside the scrolling area. Desktop board scrolling stays available and unsaved drafts survive closing or switching editors.
+- Retained automatic Gmail labeling and explicit manual corrections under Change labels, with the same 37-label vocabulary and verified feedback path. Removed label search/counts from ordinary triage.
+- Moved feedback/rules explanations to System. Reduced per-card XP/topic metadata, standardized centered button captions and condensed review status while preserving failure, missing-slot and historical-coverage information.
+- Preserved authentication, encrypted storage, revision/idempotency checks, owner decisions, notes and XP. No reviewer, Gmail permission, schedule, credential or master-playbook change. Publication acceptance will be recorded after deployment.
+
 ## 0.5.1 — 2026-11-22
 
 - Replaced the ambiguous Partial display with Updated when both recent inbox reviews completed. Historical review appears separately as Older mail review ongoing; unfinished recent work says Review ongoing, errors say Needs attention and missing evidence stays Coverage unconfirmed.
