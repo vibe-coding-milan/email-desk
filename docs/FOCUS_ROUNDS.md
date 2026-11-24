@@ -1,5 +1,12 @@
 # Focus rounds and achievements — 0.7.0
 
+## 0.7.1 category clarification — November 24, 2026
+
+Published through [PR #30](https://github.com/vibe-coding-milan/email-desk/pull/30), functional merge `0d4b1a0cc27f63963bd21cfa9c9630a4d643e14d`, receipt `arcade-20261124T234825442975Z`. Source PR CI [45512610545](https://github.com/vibe-coding-milan/email-desk/actions/runs/45512610545), branch CI 45512603563, main CI 45512847981 and [deployment 45512847945](https://github.com/vibe-coding-milan/email-desk/actions/runs/45512847945) passed, including installation and public verification. Independent acceptance matched the exact receipt/bundle, all 30 public hashes, unchanged homepage and all 27 live access checks. All 108 cards, Guidance, owner decisions/corrections, XP, achievement ledger, checkpoints, review history/report and pending feedback exactly matched the private pre-release baseline. Live fictional demo verified pending selection without advancement, explicit move, unchanged XP/achievements and the open card in Classic. No real card or Gmail mutation was used for QA. Physical-device, screen-reader and cross-device acceptance remain separate; existing reviewer/schedule/recovery limits are unchanged. Documentation-only follow-ups retain these runtime bytes and require no worker installation.
+
+The behavior below includes the staged-category contract introduced in this release. Earlier 0.7.0 evidence is retained as history.
+
+
 November 23, 2026. This is the implementation record for the selected game direction and its five rounds of feedback. Email Desk remains the name; “Inbox Quest” was only a suggestion, not an adopted rename.
 
 ## Decisions carried into production

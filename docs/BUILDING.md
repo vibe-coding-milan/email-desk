@@ -14,13 +14,14 @@ See [the board implementation](../public/app.js) and [the storage model](../serv
 
 ## Refine behavior through use
 
-Four iterations illustrate how I work:
+These iterations illustrate how I work:
 
 | Observation | Change | Evidence |
 | --- | --- | --- |
 | A countdown and extra review controls made the daily rhythm harder to understand. | Replaced them with a connected time track, actual publication marks, and explicit Due/Missed states. Elapsed time never implies a successful review. | [Timing tests](../tests/review-timing.mjs), [schedule tests](../tests/review_schedule.py), [0.2.1–0.2.3 release notes](../CHANGELOG.md) |
 | Cards could remain unhandled for days without a visible cost to postponing. | Show receipt age and a gentle 48-hour target; award 10 XP within the window and 5 afterward, preserving past awards. | [Card timing tests](../tests/card-timing.mjs), [storage checks](../tests/store.php), [0.3.2 release notes](../CHANGELOG.md) |
 | A new machine summary could otherwise overwrite useful context or obscure an unfinished request. | Preserve notes, corrections, decisions, and earlier machine context; require an explicit reason to reopen handled work. | [Store](../server/Store.php), [storage checks](../tests/store.php), [reviewer contract](REVIEWER.md) |
+| A category change immediately advanced the game, making a move look like completion. | Stage the selection on the same card, name the destination, and require Move & continue or an explicit decision. Moves remain open and have their own count. | [Focus-round contract](FOCUS_ROUNDS.md), [connection regressions](../tests/quest-connection.mjs), [fictional browser QA](../design-qa.md) |
 | Moving a still image did not deliver the intended character animation. | Replaced the treatment with four drawn idle poses beside stationary props, a single greeting cycle, offscreen pausing, and a reduced-motion still. | [Sprite design notes and prompt](COMPANION-IDLE.md), [styles](../public/styles.css) |
 
 The 0.4.0 refinement carries the same design through the landing page, demo and private workspace: stepped section frames, a compact Board/History rail, simpler rectangular actions and less explanatory copy. Bucket is one segmented choice; searchable labels and notes are context, while Handled/Dismiss are decisions. The visible timeline carries routine review status, and exceptions remain explicit. The card meter counts down the existing full-credit window without changing the server's XP policy.
@@ -33,7 +34,7 @@ The visual direction is deliberately playful: cobalt, pixel typography, a robot 
 
 The private hosted reviewer uses supplied priorities and organization rules, reads conversations through the Gmail API, publishes selected cards to the local encrypted Store, and retrieves feedback. The website stores and presents that result. It has no direct Gmail OAuth integration or embedded model API.
 
-A handled card records my decision. It grants no permission to send, archive, delete, or mark email read. Explicit label corrections are reconciled separately and acknowledged only after verification. Email and comment text are context to interpret, never instructions to execute.
+A handled/noted or Not important action records my explicit decision and, since 0.7.0, queues archival of only the reviewed messages at the next scheduled review. A category move remains open and requests no archive. Neither action sends, deletes or marks email read. Explicit label corrections are reconciled separately and acknowledged only after verification. Email and comment text are context to interpret, never instructions to execute.
 
 The [reviewer contract](REVIEWER.md) makes these boundaries concrete. Feedback informs later reviews; it is not model-weight training. The master organization playbook remains a Google Doc, with a dated Markdown reference.
 

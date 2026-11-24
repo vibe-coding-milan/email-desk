@@ -1,14 +1,18 @@
-# Using and refining 0.5.1
+# Using and refining 0.7.1
 
-Use [Email Desk](https://mijatovic.com/email-desk/) during your normal day. Choose **Milan sign in** for the real board. The public **Play the demo** uses fictional messages; its notes, decisions and XP reset on reload.
+Use [Email Desk](https://mijatovic.com/email-desk/) during your normal day. Choose **Milan sign in** for the real board. The public **Play the demo** uses fictional messages; its Guidance, decisions and XP reset on reload.
 
-Start with ordinary work rather than trying every control. Notice whether you can quickly identify what needs action, open the original email, record a decision, and find it again in History. When a card needs correction, try the bucket choice, label search or a note. Save context preserves its status; Handled/Dismiss include current edits. Reopen returns a decision to the board without awarding XP again.
+Sign-in starts a round of up to five Needs action items. End round opens Classic; both modes share saved cards, Guidance, labels and decisions. Worth knowing is a separate attention category, not completed history.
 
-The small card meter shows time left in the 48-hour 10-XP window. After that target, an amber “Past 48h” pill replaces the meter; later first decisions earn 5 XP. This is a board target, not a sender deadline. Friendly sender names appear when available; hover over a name for the full original sender. The review timeline reports saved publication results. A code release does not start an inbox review. Handling a card never sends, archives, deletes or marks email read.
+Choosing Needs action or Worth knowing prepares a category change and keeps the current card visible. The destination is selected and a status says the item will stay open. **Move & continue** saves the category, Guidance and label edits and then advances, without archival, XP or achievement progress. **Cancel category change** restores the saved category while keeping other edits. Switching between game and Classic preserves drafts; reload discards edits that were never submitted. Saved moves survive reload and appear in the corresponding Classic column.
+
+**Handled / Noted** explicitly completes the item; **Not important** dismisses it. Both save pending edits and request archiving of the exact reviewed messages at the next existing scheduled review. **Pass** also saves pending edits and leaves the item open at the back of the queue, without archival or XP. Guidance and label changes can use **Save changes** when no category move is pending. While a move is pending, Move & continue or a decision saves all edits together. The completion button follows the selected category, and moved items have their own round count. Failed saves retain the draft and do not advance.
+
+A first handled/dismissed decision earns 10 XP within 48 elapsed hours of the original attention date and 5 afterward. Moving and passing earn no XP; already-earned XP is retained. This is a board target, not a sender deadline. No email is sent, deleted or marked read. Gmail archival is confirmed separately from a saved board decision.
 
 The hosted reviewer schedule is active on DreamHost. Recent coverage, historical catch-up and actual scheduled publication are distinct. The board shows recent health; expand it for account coverage. Open **System** for saved review outcomes, usage, pending feedback and the master source. Reading System never starts a review. Historical records without trigger/slot metadata remain unverified for scheduled checkpoints; slots before activation are labelled separately. A manual publication can update freshness without satisfying a scheduled slot.
 
-Use **History** to find decisions by subject, sender, label or note, filter handled/dismissed, or select a first-decision date. Reopen returns the card to Board without another XP award. **Sign out** sits outside Appearance. The focused owner sign-in is separate from the public landing page.
+Use **History** for read-only decisions grouped by year, month and New York day, including saved Guidance and pending/verified archive status. There are no History search, filter or Reopen controls in the current game interface. Immediate Undo is available only in the current decision session before a newer revision or reviewer claim. Sign out is in the workspace header.
 
 Usage is a private token ledger with 7/30/90-day and work-type filters. Costs use dated model rates and include returned paid usage even on incomplete/unverified responses. Unknown requests/rates are labelled; old work is legacy/unclassified. Neither the initial funding amount nor a monthly forecast is shown as a balance. Actual hosted scheduled publications are verified; Mac-offline acceptance remains pending.
 
