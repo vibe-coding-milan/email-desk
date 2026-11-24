@@ -1,3 +1,7 @@
+# Category-change acceptance — November 24, 2026
+
+0.7.1 implements the selected staged interaction in the existing design. In a fictional authenticated preview, selection keeps the same subject and round item, changes the completion label, and announces the still-open pending move. Cancel restores the saved category while retaining Guidance. Confirmed Needs action → Worth knowing advances once, records a moved count, retains 0 XP/achievements and appears open in Classic with Guidance intact. Classic Worth knowing → Needs action also requires confirmation and stays open. Game-mode moves in both directions, explicit Noted with a pending category, History category/Guidance, reload persistence, and a move-only round with +0 XP/no celebration passed. The 320×844 pending controls fit without horizontal overflow; desktop and mobile screenshots are under docs/screenshots/category-moves/. All 32 game/achievement/connection checks, shared timing/guest checks, 5 destination guards, 34 release checks, 28 GitHub deployment checks, 20 transport checks and Python compilation passed. GitHub CI and live acceptance remain pending.
+
 # Focus-round integration QA — November 23, 2026
 
 Production integration of the selected revision-5 game and achievement design is live and independently verified. See [FOCUS_ROUNDS.md](docs/FOCUS_ROUNDS.md) for the final contract; the original snapshot remains under prototypes/decision-show.

@@ -1,5 +1,11 @@
 # Email Desk handoff
 
+## 0.7.1 — Explicit category moves — November 24, 2026
+
+Changing Needs action / Worth knowing now stages a category edit and keeps the current card visible. A pending status names the destination and says the item stays open; Move & continue explicitly saves Guidance, labels and the category before advancing. Cancel category change preserves other edits. Handled/Noted, Pass and Not important can also save pending edits with their existing decision. Moves remain open, do not archive, award XP or create achievement events, and are counted separately in the round. Classic and the fictional demo use the same staged controls. Saved decisions and owner state are unchanged. No backend/worker, credentials, schedule or master-playbook changes are required.
+
+Local acceptance passed: deterministic build, 32 game/achievement/connection checks, shared timing/guest checks, 5 destination guards, 34 release, 28 deployment and 20 transport checks, Python compilation and fictional authenticated browser checks in both directions, Classic, History, reload and 320px mobile. All changed source files matched current remote main before this scoped patch. The existing dirty checkout is preserved; publish only this patch parented to remote main. No worker installation is required. GitHub CI and live release evidence remain pending.
+
 ## Inbox-review parser recovery — November 23, 2026
 
 The personal Gmail midday review repeatedly failed while extracting visible text from an HTML message. A bounded read-only trace reproduced an AttributeError in VisibleHTML.handle_starttag: HTMLParser represents a valueless attribute (such as style) as None, while the extractor assumed every value was a string. Normalize missing attribute values to an empty string before inspecting style/aria-hidden/alt. Preserve hidden-element boundaries, and never render HTML or fetch linked resources.
