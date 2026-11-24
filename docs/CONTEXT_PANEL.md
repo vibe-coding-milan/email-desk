@@ -36,3 +36,7 @@ Draft retention, visible Save errors, idempotent retry and revision checks are u
 5. After a future scheduled review, inspect a related new conversation and an unrelated one. Confirm the guidance helps where applicable without creating a blanket sender rule.
 
 Source tests verify retrieval, bounds, preservation and actual delivery to the classifier with fictional data. Host installation/health and website acceptance are separate from observing model relevance on future real mail. Release acceptance is recorded in the release PR and HANDOFF; do not manufacture production email or decisions for QA.
+
+## Category edits — 0.7.1, November 24, 2026
+
+Attention choices now stage a category draft without advancing. Move & continue saves all edits and keeps the item open. Cancel category change preserves Guidance and label drafts. Explicit decisions also save pending edits; the primary action reads Handled or Noted according to the selected category. While a category move is pending, the separate Save changes action is replaced by a reminder that edits save with the next action, avoiding an ambiguous Save that unexpectedly advances the round. The same behavior applies in Classic and the demo.

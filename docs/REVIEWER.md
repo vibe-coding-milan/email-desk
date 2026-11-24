@@ -1,6 +1,8 @@
 # Reviewer integration contract
 
-## Current 0.7.0 contract
+## Current 0.7.0 backend contract
+
+The 0.7.1 frontend stages category selection until an explicit Move & continue or decision action. A confirmed category-only move uses the existing open-state feedback contract, preserving Guidance and label edits; it does not request archival, award XP or create a decision/achievement event. Both modes share the saved result. No worker upgrade or master change is needed.
 
 The current private worker includes the inbox-review HTML parser repair from [PR #28](https://github.com/vibe-coding-milan/email-desk/pull/28), merge `788d42e95f5c57d5b708be9d117f83df2779d30e`. Exact eight-file manifest and 38 installed fictional checks passed, preserving private state and cron. The original failing message now parses; a real bounded manual review completed at 5:24:21 PM New York on November 23 with zero errors and both recent scans complete. Saved owner state/XP/achievements were preserved. Historical catch-up and prior failed scheduled history remain distinct. See HANDOFF.md for complete recovery evidence. This supersedes the worker source/test count in the original 0.7.0 installation record below.
 

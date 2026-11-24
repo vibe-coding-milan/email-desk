@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.1 — Explicit category moves — November 24, 2026
+
+Changing Needs action / Worth knowing now stages a category edit and keeps the current card visible. A pending status names the destination and says the item stays open; Move & continue explicitly saves Guidance, labels and the category before advancing. Cancel category change preserves other edits. Handled/Noted, Pass and Not important can also save pending edits with their existing decision. Moves remain open, do not archive, award XP or create achievement events, and are counted separately in the round. Classic and the fictional demo use the same staged controls. Saved decisions and owner state are unchanged. No backend/worker, credentials, schedule or master-playbook changes are required.
+
 ## Inbox-review HTML parser fix — November 23, 2026
 
 Handle valid valueless HTML attributes without aborting an account review. Keep hidden content excluded and HTML inert. Add parser and full-review coverage regressions; all 38 fictional worker checks pass locally. Saved owner state and failed-account cursor protections remain intact. PR #28 is installed and the original failed window now parses. A real post-fix review verified 24 messages with zero errors and completed recent coverage for both accounts; prior failed history and older-mail catch-up remain distinct. See docs/HANDOFF.md for exact acceptance and workflow limits.

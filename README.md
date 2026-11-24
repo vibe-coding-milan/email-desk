@@ -27,7 +27,7 @@ The [build notes](docs/BUILDING.md) connect these choices to source files, tests
 
 ## What the app does
 
-Sign-in opens a focus round of up to five items, one at a time, with a separate Worth knowing round and an independent Classic list. Inline Guidance, multiple shared topic labels, source links, a robot review timeline and the XP meter retain the useful context. History is read-only and grouped by date.
+Sign-in opens a focus round of up to five items, one at a time, with a separate Worth knowing round and an independent Classic list. Category selection prepares a move without advancing the card. Move & continue saves it as still open; Handled/Noted explicitly completes it. Inline Guidance, multiple shared topic labels, source links, a robot review timeline and the XP meter retain the useful context. History is read-only and grouped by date.
 
 Handled and Not important save a decision and request archiving of the exact reviewed messages at the next scheduled review. Pass moves an item to the back without archiving or awarding XP. Pending and failed archive requests remain visible. New replies, existing decisions, labels, stars and read state are protected. Four persistent achievements reward follow-through without bonus XP or streak pressure. [Interaction, storage and archive contract](docs/FOCUS_ROUNDS.md).
 

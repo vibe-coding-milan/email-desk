@@ -58,3 +58,7 @@ Editable game source lives in frontend/. The build retains the existing fixed pu
 ## Separate installation and public verification
 
 The Deploy Email Desk workflow now reports install and verify as separate required jobs. Installation success confirms the exact bundle and durable receipt; release success additionally requires the fresh macOS runner's homepage/public-hash/access checks. Read the failed job name and named check before taking recovery action. Transient failures receive at most three bounded attempts; hashes, certificates, redirects and security-response failures do not retry. A public-verification failure never triggers another upload or database rollback. See GITHUB_DEPLOYMENT.md and PR #26 for probe evidence and acceptance.
+
+## 0.7.1 category interaction
+
+Frontend-only change: publish the deterministic frontend bundle and public version marker through normal GitHub Actions. No PHP/schema migration, worker upgrade, Gmail operation, credential/schedule change or playbook adoption. Verify staged selection/cancel, both move directions, open state with unchanged XP/achievements, explicit completion, Guidance/label retention, Classic parity and reload persistence using fictional cards. Compare the real board and pending feedback read-only across deployment.
